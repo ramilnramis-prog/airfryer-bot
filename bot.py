@@ -38,6 +38,8 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s | %(message)s", level=logging.INFO
 )
 log = logging.getLogger("airfryer-bot")
+# httpx логирует полный URL запроса (с токеном бота) — приглушаем, чтобы токен не попадал в логи
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 # ---------- состояние (позиция в очереди) ----------
@@ -69,22 +71,44 @@ CATEGORY_EMOJI = {
 def ozon_line() -> str:
     link = f"\n👉 {OZON_LINK}" if OZON_LINK else ""
     return (
-        "\n\n———\n🔥 Готовлю в силиконовой форме — чаша аэрогриля остаётся чистой.\n"
+        "\n———\n🔥 Готовлю в силиконовой форме — чаша аэрогриля остаётся чистой.\n"
         f"Форма на Ozon, артикул <b>{OZON_ARTIKUL}</b>{link}"
     )
 
 
+def _as_block(value, numbered: bool) -> str:
+    """ingredients/steps могут быть списком или строкой — приводим к красивому блоку."""
+    if isinstance(value, list):
+        if numbered:
+            return "\n".join(f"{i}. {x}" for i, x in enumerate(value, 1))
+        return "\n".join(f"• {x}" for x in value)
+    return str(value) if value else ""
+
+
 def format_recipe(r: dict, number: int, with_cta: bool) -> str:
     emoji = CATEGORY_EMOJI.get(r.get("category", ""), "🍽")
-    text = (
-        f"{emoji} <b>Рецепт #{number}: {r['title']}</b>\n\n"
-        f"🧂 <b>Ингредиенты:</b> {r['ingredients']}\n"
-        f"🌡 <b>Режим:</b> {r['mode']}\n"
-        f"🍽 Готовим в силиконовой форме — без мытья чаши аэрогриля.\n\n"
-        f"#аэрогриль #рецепты #{r.get('category','').lower()}"
-    )
+    parts = [f"{emoji} <b>{r['title']}</b>"]
+
+    tt = r.get("total_time")
+    parts.append(f"⏱ {tt} · 🍽 в силиконовой форме" if tt
+                 else "🍽 Готовим в силиконовой форме — без мытья чаши")
+
+    ing = _as_block(r.get("ingredients"), numbered=False)
+    if ing:
+        parts.append(f"\n🧂 <b>Ингредиенты:</b>\n{ing}")
+
+    steps = _as_block(r.get("steps"), numbered=True)
+    if steps:
+        parts.append(f"\n👨‍🍳 <b>Приготовление:</b>\n{steps}")
+    elif r.get("mode"):
+        parts.append(f"\n🌡 <b>Режим:</b> {r['mode']}")
+
+    cat = r.get("category", "").lower()
+    parts.append(f"\n#аэрогриль #рецепты #{cat}" if cat else "\n#аэрогриль #рецепты")
+
+    text = "\n".join(parts)
     if with_cta:
-        text += ozon_line()
+        text += "\n" + ozon_line()
     return text
 
 
@@ -113,6 +137,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 # ---------- задача: публикация рецепта в канал ----------
+def photo_source(recipe: dict):
+    """URL (http) -> строкой; локальный путь вида photos/01.png -> открытым файлом; иначе None."""
+    img = recipe.get("image")
+    if not img:
+        return None
+    if img.startswith("http"):
+        return img
+    path = os.path.join(BASE, img)
+    return open(path, "rb") if os.path.exists(path) else None
+
+
+CAPTION_LIMIT = 1024  # лимит подписи к фото в Telegram
+
+
 async def post_recipe(context: ContextTypes.DEFAULT_TYPE) -> None:
     recipes = load_recipes()
     if not recipes:
@@ -123,14 +161,33 @@ async def post_recipe(context: ContextTypes.DEFAULT_TYPE) -> None:
     state["posts_count"] += 1
     with_cta = state["posts_count"] % CTA_EVERY == 0
 
-    text = format_recipe(recipes[idx], state["posts_count"], with_cta)
+    recipe = recipes[idx]
+    text = format_recipe(recipe, state["posts_count"], with_cta)
+    image = photo_source(recipe)
     try:
-        await context.bot.send_message(
-            chat_id=CHANNEL_ID, text=text, parse_mode=ParseMode.HTML
-        )
+        if image and len(text) <= CAPTION_LIMIT:
+            # фото + полная подпись
+            await context.bot.send_photo(
+                chat_id=CHANNEL_ID, photo=image, caption=text, parse_mode=ParseMode.HTML
+            )
+        elif image:
+            # подпись длиннее лимита: фото с заголовком + текст отдельным сообщением
+            head = f"{CATEGORY_EMOJI.get(recipe.get('category',''),'🍽')} <b>{recipe['title']}</b>"
+            await context.bot.send_photo(
+                chat_id=CHANNEL_ID, photo=image, caption=head, parse_mode=ParseMode.HTML
+            )
+            await context.bot.send_message(
+                chat_id=CHANNEL_ID, text=text, parse_mode=ParseMode.HTML
+            )
+        else:
+            # без картинки — обычный текстовый пост
+            await context.bot.send_message(
+                chat_id=CHANNEL_ID, text=text, parse_mode=ParseMode.HTML
+            )
         state["index"] = idx + 1
         save_state(state)
-        log.info("Опубликован рецепт #%s (cta=%s)", state["posts_count"], with_cta)
+        log.info("Опубликован рецепт #%s (cta=%s, photo=%s)",
+                 state["posts_count"], with_cta, bool(image))
     except Exception as e:  # noqa: BLE001
         log.error("Не удалось опубликовать: %s", e)
 
