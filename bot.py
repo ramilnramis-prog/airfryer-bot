@@ -15,8 +15,6 @@ import logging
 import datetime as dt
 from zoneinfo import ZoneInfo
 
-import aiohttp
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -210,6 +208,7 @@ async def fetch_post_from_api():
     if not API_URL or not API_KEY:
         return None
     try:
+        import aiohttp  # ленивый импорт: бот стартует даже без aiohttp (API опционален)
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{API_URL}/prepare-telegram-post",
