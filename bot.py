@@ -170,6 +170,88 @@ def build_lead_magnet_messages(recipes: list, max_len: int = 3800) -> list:
     return msgs
 
 
+# ---------- PDF-версия рецептов (удобно листать в Telegram) ----------
+PDF_PATH = os.path.join(BASE, "50-receptov-aerogril.pdf")
+_PDF_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+_PDF_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+_EMOJI_RE = None
+
+
+def _strip_emoji(s) -> str:
+    """DejaVu не рисует эмодзи -> были бы квадраты. Убираем их из PDF."""
+    global _EMOJI_RE
+    if _EMOJI_RE is None:
+        import re
+        _EMOJI_RE = re.compile(
+            "[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U0001F1E6-\U0001F1FF"
+            "←-⇿⌀-⏿⬀-⯿️‍]")
+    return _EMOJI_RE.sub("", str(s)).strip()
+
+
+def build_recipes_pdf(recipes: list, out_path: str) -> None:
+    """Собирает PDF со всеми рецептами (кириллица через шрифт DejaVu)."""
+    from fpdf import FPDF
+    pdf = FPDF(format="A4")
+    pdf.add_font("DejaVu", "", _PDF_REG)
+    has_bold = True
+    try:
+        pdf.add_font("DejaVu", "B", _PDF_BOLD)
+    except Exception:
+        has_bold = False
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    def mc(h, txt, style="", size=11):
+        pdf.set_font("DejaVu", style if has_bold else "", size)
+        pdf.set_x(pdf.l_margin)                 # гарантируем ширину строки
+        try:
+            pdf.multi_cell(0, h, txt, wrapmode="CHAR")
+        except TypeError:                       # старый fpdf2 без wrapmode
+            pdf.multi_cell(0, h, txt)
+        except Exception:
+            pdf.set_x(pdf.l_margin)
+            try:
+                pdf.multi_cell(0, h, txt)
+            except Exception:
+                pdf.ln(h)
+
+    mc(10, "50 рецептов для аэрогриля", "B", 18)
+    mc(6, "Готовим в силиконовой форме — чашу аэрогриля мыть не надо.", "", 11)
+    pdf.ln(3)
+    for i, r in enumerate(recipes, 1):
+        tt = r.get("total_time", "")
+        mc(7, _strip_emoji(f"{i}. {r.get('title', '')}") + (f"  ({tt})" if tt else ""), "B", 14)
+        ing = r.get("ingredients")
+        if isinstance(ing, list):
+            ing = ", ".join(str(x) for x in ing)
+        if ing:
+            mc(6, "Ингредиенты:", "B", 11)
+            mc(6, _strip_emoji(ing), "", 11)
+        steps = r.get("steps")
+        if isinstance(steps, list) and steps:
+            mc(6, "Приготовление:", "B", 11)
+            for j, s in enumerate(steps, 1):
+                mc(6, f"{j}. " + _strip_emoji(s), "", 11)
+        elif steps:
+            mc(6, "Приготовление:", "B", 11)
+            mc(6, _strip_emoji(steps), "", 11)
+        pdf.ln(4)
+    pdf.output(out_path)
+
+
+def ensure_recipes_pdf():
+    """Путь к PDF (собираем один раз и кэшируем). None — если собрать не вышло."""
+    if os.path.exists(PDF_PATH):
+        return PDF_PATH
+    try:
+        build_recipes_pdf(load_recipes(), PDF_PATH)
+        log.info("PDF собран: %s", PDF_PATH)
+        return PDF_PATH
+    except Exception as e:
+        log.warning("PDF не собрался (%s) — отдам рецепты текстом", e)
+        return None
+
+
 # ---------- /start: выдача лид-магнита ----------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     buttons = []
@@ -187,18 +269,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
-    # Рецепты отдаём ТЕКСТОМ, а не .md-файлом: встроенный просмотрщик Telegram
-    # коверкает кодировку документа, а текст всегда читается корректно.
-    try:
-        msgs = build_lead_magnet_messages(load_recipes())
-        for k, chunk in enumerate(msgs):
-            await update.message.reply_text(
-                chunk, parse_mode=ParseMode.HTML, disable_web_page_preview=True
-            )
-            if k < len(msgs) - 1:
-                await asyncio.sleep(0.4)  # лёгкая пауза, чтобы не упереться во флуд-лимит
-    except Exception as e:
-        log.warning("Не удалось отправить рецепты: %s", e)
+    # Основной формат — PDF: удобно листать, кодировка не ломается (в отличие от .md).
+    # Если PDF не собрался (нет шрифтов/fpdf2) — отдаём рецепты текстом, чтобы /start
+    # никогда не остался пустым.
+    sent = False
+    pdf_path = ensure_recipes_pdf()
+    if pdf_path:
+        try:
+            with open(pdf_path, "rb") as f:
+                await update.message.reply_document(
+                    f,
+                    filename="50 рецептов для аэрогриля.pdf",
+                    caption=("🎁 Все 50 рецептов — листай и готовь! Все блюда в силиконовой "
+                             "форме, чтобы не мыть чашу аэрогриля."),
+                )
+            sent = True
+        except Exception as e:
+            log.warning("Не удалось отправить PDF: %s", e)
+    if not sent:
+        try:
+            msgs = build_lead_magnet_messages(load_recipes())
+            for k, chunk in enumerate(msgs):
+                await update.message.reply_text(
+                    chunk, parse_mode=ParseMode.HTML, disable_web_page_preview=True
+                )
+                if k < len(msgs) - 1:
+                    await asyncio.sleep(0.4)
+        except Exception as e:
+            log.warning("Не удалось отправить рецепты: %s", e)
 
 
 # ---------- задача: публикация рецепта в канал ----------
