@@ -11,6 +11,7 @@ Ozon Airfryer — Telegram-бот воронки.
 """
 import os
 import json
+import asyncio
 import logging
 import datetime as dt
 from zoneinfo import ZoneInfo
@@ -118,45 +119,55 @@ def format_recipe(r: dict, number: int, with_cta: bool) -> str:
     return text
 
 
-def build_lead_magnet_messages(recipes: list, max_len: int = 3500) -> list:
-    """Лид-магнит «50 рецептов» ТЕКСТОМ, разбитый на сообщения < max_len символов.
+def build_lead_magnet_messages(recipes: list, max_len: int = 3800) -> list:
+    """Полные рецепты (ингредиенты + приготовление) ТЕКСТОМ, разбитые на сообщения.
 
-    Раньше бот слал .md-файлом — встроенный просмотрщик Telegram коверкал кодировку.
-    Текстовые сообщения Telegram всегда показывает в правильной кодировке на любом телефоне.
+    Текст Telegram показывает в правильной кодировке на любом телефоне (в отличие
+    от .md-файла, который встроенный просмотрщик коверкал). Человек сразу видит,
+    КАК готовить блюдо, а не только название.
     """
-    head = ("🎁 <b>50 рецептов для аэрогриля</b>\n"
-            "Готовим в силиконовой форме — чашу аэрогриля мыть не надо.\n")
-    tail = ("\n———\n👨‍🍳 Полные пошаговые рецепты с фото — в канале каждый день. "
-            "Подпишись, чтобы не пропустить 👇")
+    intro = ("🎁 <b>50 рецептов для аэрогриля</b>\n"
+             "Все блюда — в силиконовой форме, чтобы не мыть чашу аэрогриля.\n"
+             "Листай — рецепты ниже 👇")
+    tail = ("———\n🔥 Готовлю в силиконовой форме — чаша аэрогриля остаётся чистой.\n"
+            f"Форма на Ozon, артикул <b>{OZON_ARTIKUL}</b>.\n"
+            "📲 Новые рецепты — каждый день в канале, подпишись!")
 
-    # группируем по категориям (в recipes.json они идут вперемешку)
-    by_cat: dict = {}
-    for r in recipes:
-        by_cat.setdefault(r.get("category", "Разное"), []).append(r)
-    ordered = ([c for c in CATEGORY_EMOJI if c in by_cat]
-               + [c for c in by_cat if c not in CATEGORY_EMOJI])
+    def _join(value, numbered: bool) -> str:
+        if isinstance(value, list):
+            if numbered:
+                return "\n".join(f"{i}. {x}" for i, x in enumerate(value, 1))
+            return ", ".join(str(x) for x in value)
+        return str(value) if value else ""
 
-    lines, n = [], 0
-    for cat in ordered:
-        lines.append(f"\n{CATEGORY_EMOJI.get(cat, '🍽')} <b>{cat}</b>")
-        for r in by_cat[cat]:
-            n += 1
-            tt = r.get("total_time", "")
-            lines.append(f"{n}. {r.get('title', '')}" + (f" — {tt}" if tt else ""))
+    blocks = []
+    for i, r in enumerate(recipes, 1):
+        emoji = CATEGORY_EMOJI.get(r.get("category", ""), "🍽")
+        tt = r.get("total_time", "")
+        b = f"{emoji} <b>{i}. {r.get('title', '')}</b>" + (f" — ⏱ {tt}" if tt else "")
+        ing = _join(r.get("ingredients"), numbered=False)
+        if ing:
+            b += f"\n🧂 <b>Ингредиенты:</b> {ing}"
+        steps = _join(r.get("steps"), numbered=True)
+        if steps:
+            b += f"\n👨‍🍳 <b>Приготовление:</b>\n{steps}"
+        blocks.append(b)
 
-    body = head + "\n".join(lines) + tail
-    if len(body) <= max_len:
-        return [body]
-
-    # запас на рост базы: режем по строкам
-    chunks, cur = [], head
-    for ln in lines:
-        if len(cur) + len(ln) + 1 > max_len:
-            chunks.append(cur)
-            cur = ""
-        cur += ln + "\n"
-    chunks.append(cur + tail)
-    return chunks
+    msgs, cur = [], intro
+    for b in blocks:
+        piece = "\n\n" + b
+        if len(cur) + len(piece) > max_len:
+            msgs.append(cur)
+            cur = b
+        else:
+            cur += piece
+    if len(cur) + len("\n\n" + tail) > max_len:
+        msgs.append(cur)
+        cur = tail
+    else:
+        cur += "\n\n" + tail
+    msgs.append(cur)
+    return msgs
 
 
 # ---------- /start: выдача лид-магнита ----------
@@ -170,21 +181,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await update.message.reply_text(
         "Привет! 👋\n\n"
-        "Держи <b>50 рецептов для аэрогриля</b> — список ниже. 🎁\n"
-        "Все блюда готовятся в силиконовой форме, чтобы <b>не мыть чашу аэрогриля</b>.\n\n"
-        "Полные пошаговые рецепты с фото выходят в канале каждый день — подпишись, чтобы не пропустить 👇",
+        "Держи <b>50 рецептов для аэрогриля</b> 🎁 — ниже полные рецепты с ингредиентами и приготовлением.\n"
+        "Все блюда — в силиконовой форме, чтобы <b>не мыть чашу аэрогриля</b>.\n\n"
+        "Новые рецепты выходят в канале каждый день — подпишись, чтобы не пропустить 👇",
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
     # Рецепты отдаём ТЕКСТОМ, а не .md-файлом: встроенный просмотрщик Telegram
     # коверкает кодировку документа, а текст всегда читается корректно.
     try:
-        for chunk in build_lead_magnet_messages(load_recipes()):
+        msgs = build_lead_magnet_messages(load_recipes())
+        for k, chunk in enumerate(msgs):
             await update.message.reply_text(
                 chunk, parse_mode=ParseMode.HTML, disable_web_page_preview=True
             )
+            if k < len(msgs) - 1:
+                await asyncio.sleep(0.4)  # лёгкая пауза, чтобы не упереться во флуд-лимит
     except Exception as e:
-        log.warning("Не удалось отправить список рецептов: %s", e)
+        log.warning("Не удалось отправить рецепты: %s", e)
 
 
 # ---------- задача: публикация рецепта в канал ----------
