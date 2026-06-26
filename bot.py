@@ -15,6 +15,8 @@ import logging
 import datetime as dt
 from zoneinfo import ZoneInfo
 
+import aiohttp
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -28,6 +30,12 @@ TG_CHANNEL_LINK = os.environ.get("TG_CHANNEL_LINK", "")   # https://t.me/your_ch
 POST_TIMES = os.environ.get("POST_TIMES", "10:00")        # "10:00" или "10:00,18:00"
 TZ = os.environ.get("TZ", "Europe/Moscow")
 CTA_EVERY = int(os.environ.get("CTA_EVERY", "4"))         # CTA на Ozon каждый N-й пост
+
+# Интеграция с API-сервисом. Если API_URL задан — пост берётся из API,
+# иначе бот генерирует пост локально (как раньше). API_KEY должен совпадать
+# с ключом API-сервиса.
+API_URL = os.environ.get("API_URL", "").rstrip("/")
+API_KEY = os.environ.get("API_KEY", "")
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 RECIPES_FILE = os.path.join(BASE, "recipes.json")
@@ -112,6 +120,47 @@ def format_recipe(r: dict, number: int, with_cta: bool) -> str:
     return text
 
 
+def build_lead_magnet_messages(recipes: list, max_len: int = 3500) -> list:
+    """Лид-магнит «50 рецептов» ТЕКСТОМ, разбитый на сообщения < max_len символов.
+
+    Раньше бот слал .md-файлом — встроенный просмотрщик Telegram коверкал кодировку.
+    Текстовые сообщения Telegram всегда показывает в правильной кодировке на любом телефоне.
+    """
+    head = ("🎁 <b>50 рецептов для аэрогриля</b>\n"
+            "Готовим в силиконовой форме — чашу аэрогриля мыть не надо.\n")
+    tail = ("\n———\n👨‍🍳 Полные пошаговые рецепты с фото — в канале каждый день. "
+            "Подпишись, чтобы не пропустить 👇")
+
+    # группируем по категориям (в recipes.json они идут вперемешку)
+    by_cat: dict = {}
+    for r in recipes:
+        by_cat.setdefault(r.get("category", "Разное"), []).append(r)
+    ordered = ([c for c in CATEGORY_EMOJI if c in by_cat]
+               + [c for c in by_cat if c not in CATEGORY_EMOJI])
+
+    lines, n = [], 0
+    for cat in ordered:
+        lines.append(f"\n{CATEGORY_EMOJI.get(cat, '🍽')} <b>{cat}</b>")
+        for r in by_cat[cat]:
+            n += 1
+            tt = r.get("total_time", "")
+            lines.append(f"{n}. {r.get('title', '')}" + (f" — {tt}" if tt else ""))
+
+    body = head + "\n".join(lines) + tail
+    if len(body) <= max_len:
+        return [body]
+
+    # запас на рост базы: режем по строкам
+    chunks, cur = [], head
+    for ln in lines:
+        if len(cur) + len(ln) + 1 > max_len:
+            chunks.append(cur)
+            cur = ""
+        cur += ln + "\n"
+    chunks.append(cur + tail)
+    return chunks
+
+
 # ---------- /start: выдача лид-магнита ----------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     buttons = []
@@ -123,17 +172,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await update.message.reply_text(
         "Привет! 👋\n\n"
-        "Держи <b>50 рецептов для аэрогриля</b> — файл ниже. 🎁\n"
+        "Держи <b>50 рецептов для аэрогриля</b> — список ниже. 🎁\n"
         "Все блюда готовятся в силиконовой форме, чтобы <b>не мыть чашу аэрогриля</b>.\n\n"
-        "Новые рецепты выходят в канале каждый день — подпишись, чтобы не пропустить 👇",
+        "Полные пошаговые рецепты с фото выходят в канале каждый день — подпишись, чтобы не пропустить 👇",
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
+    # Рецепты отдаём ТЕКСТОМ, а не .md-файлом: встроенный просмотрщик Telegram
+    # коверкает кодировку документа, а текст всегда читается корректно.
     try:
-        with open(LEAD_MAGNET, "rb") as doc:
-            await update.message.reply_document(doc, filename="50-receptov-aerogril.md")
-    except FileNotFoundError:
-        log.warning("Лид-магнит %s не найден", LEAD_MAGNET)
+        for chunk in build_lead_magnet_messages(load_recipes()):
+            await update.message.reply_text(
+                chunk, parse_mode=ParseMode.HTML, disable_web_page_preview=True
+            )
+    except Exception as e:
+        log.warning("Не удалось отправить список рецептов: %s", e)
 
 
 # ---------- задача: публикация рецепта в канал ----------
@@ -146,6 +199,28 @@ def photo_source(recipe: dict):
         return img
     path = os.path.join(BASE, img)
     return open(path, "rb") if os.path.exists(path) else None
+
+
+async def fetch_post_from_api():
+    """Готовый пост из API (POST /prepare-telegram-post). None -> локальная генерация.
+
+    Не блокирует event loop (aiohttp). recipe_id не шлём — рецепт выбирает сервер API.
+    Ответ маппим: text<-caption, photo<-image_url (API отдаёт оба варианта полей).
+    """
+    if not API_URL or not API_KEY:
+        return None
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{API_URL}/prepare-telegram-post",
+                headers={"x-api-key": API_KEY},
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as resp:
+                resp.raise_for_status()
+                return await resp.json()
+    except Exception as e:  # noqa: BLE001
+        log.warning("API error: %s", e)
+        return None
 
 
 CAPTION_LIMIT = 1024  # лимит подписи к фото в Telegram
@@ -161,9 +236,19 @@ async def post_recipe(context: ContextTypes.DEFAULT_TYPE) -> None:
     state["posts_count"] += 1
     with_cta = state["posts_count"] % CTA_EVERY == 0
 
-    recipe = recipes[idx]
-    text = format_recipe(recipe, state["posts_count"], with_cta)
-    image = photo_source(recipe)
+    # --- Пост из API; если недоступен/не задан — локальная генерация (fallback) ---
+    data = await fetch_post_from_api()
+    if data:
+        text = data.get("text") or data.get("caption") or ""
+        image = data.get("photo") or data.get("image_url")     # строка-URL
+        title = (data.get("metadata") or {}).get("title", "Рецепт")
+        log.info("Post from API")
+    else:
+        recipe = recipes[idx]
+        text = format_recipe(recipe, state["posts_count"], with_cta)
+        image = photo_source(recipe)                            # строка-URL или открытый файл
+        title = recipe.get("title", "Рецепт")
+        log.info("Fallback to local recipes")
     try:
         if image and len(text) <= CAPTION_LIMIT:
             # фото + полная подпись
@@ -172,7 +257,7 @@ async def post_recipe(context: ContextTypes.DEFAULT_TYPE) -> None:
             )
         elif image:
             # подпись длиннее лимита: фото с заголовком + текст отдельным сообщением
-            head = f"{CATEGORY_EMOJI.get(recipe.get('category',''),'🍽')} <b>{recipe['title']}</b>"
+            head = f"🍽 <b>{title}</b>"
             await context.bot.send_photo(
                 chat_id=CHANNEL_ID, photo=image, caption=head, parse_mode=ParseMode.HTML
             )
