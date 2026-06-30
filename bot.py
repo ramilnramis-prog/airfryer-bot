@@ -37,9 +37,17 @@ API_URL = os.environ.get("API_URL", "").rstrip("/")
 API_KEY = os.environ.get("API_KEY", "")
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+# DATA_DIR — ПОСТОЯННОЕ хранилище (Railway Volume). По умолчанию — папка кода (для локали).
+# На Railway: смонтируй Volume и задай DATA_DIR=/data, иначе state.json обнуляется при каждом
+# редеплое -> бот снова постит рецепты с начала -> повторы в канале.
+DATA_DIR = os.environ.get("DATA_DIR") or BASE
+try:
+    os.makedirs(DATA_DIR, exist_ok=True)
+except Exception:
+    DATA_DIR = BASE
 RECIPES_FILE = os.path.join(BASE, "recipes.json")
 LEAD_MAGNET = os.path.join(BASE, "lead_magnet.md")
-STATE_FILE = os.path.join(BASE, "state.json")
+STATE_FILE = os.path.join(DATA_DIR, "state.json")
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s | %(message)s", level=logging.INFO
