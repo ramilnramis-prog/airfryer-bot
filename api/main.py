@@ -11,14 +11,17 @@
   /files/{name}         -> сгенерированные PDF
 """
 import time
+import sqlite3
 import logging
 
 from fastapi import FastAPI, Depends, BackgroundTasks, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 
-from .config import PHOTOS_DIR, GEN_DIR, BASE_URL
+from .config import PHOTOS_DIR, GEN_DIR, BASE_URL, REGISTRY_AUTO_MIGRATE
 from .auth import require_api_key
-from . import db, jobs
+from . import db, jobs, registry_db
+from .registry import router as registry_router
 from .posts import prepare_post
 
 logging.basicConfig(
@@ -33,13 +36,34 @@ _START = time.time()
 
 @app.on_event("startup")
 def _startup():
-    db.init_db()
+    db.init_db()                 # очередь jobs (без изменений)
+    # Реестр НЕ мигрируем автоматически в prod — только при явном REGISTRY_AUTO_MIGRATE=1.
+    if REGISTRY_AUTO_MIGRATE:
+        registry_db.run_migrations()
+        log.info("registry: auto-migrate ON")
+    else:
+        log.info("registry: auto-migrate OFF (run `python -m api.registry_db` to migrate)")
     log.info("API up. photos=%s gen=%s", PHOTOS_DIR, GEN_DIR)
 
 
 # Статика. Более специфичный префикс (/files/photos) монтируем ПЕРВЫМ.
 app.mount("/files/photos", StaticFiles(directory=str(PHOTOS_DIR)), name="photos")
 app.mount("/files", StaticFiles(directory=str(GEN_DIR)), name="files")
+
+# Единый реестр (источник истины) — отдельный набор роутов /registry/*
+app.include_router(registry_router)
+
+
+@app.exception_handler(sqlite3.IntegrityError)
+async def _on_integrity(request: Request, exc: sqlite3.IntegrityError):
+    # FK/UNIQUE/CHECK нарушение -> понятный 409 без stack trace и без секретов
+    return JSONResponse(status_code=409, content={"detail": "integrity constraint violated"})
+
+
+@app.exception_handler(sqlite3.OperationalError)
+async def _on_operational(request: Request, exc: sqlite3.OperationalError):
+    # БД занята/недоступна -> 503 без stack trace
+    return JSONResponse(status_code=503, content={"detail": "database busy or unavailable"})
 
 
 def _base_url(request: Request) -> str:

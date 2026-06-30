@@ -20,6 +20,12 @@ API_KEY = os.environ.get("API_KEY", "")
 # Публичный URL сервиса для сборки file_url/image_url. Если пусто — берём из запроса.
 BASE_URL = os.environ.get("BASE_URL", "").rstrip("/")
 
+# Авто-применение миграций реестра на старте API. По умолчанию ВЫКЛ, чтобы prod-база
+# не мигрировала случайно при деплое кода. Включать ЯВНО: REGISTRY_AUTO_MIGRATE=1
+# (локально/в тестах) либо запускать миграцию командой `python -m api.registry_db`.
+REGISTRY_AUTO_MIGRATE = os.environ.get("REGISTRY_AUTO_MIGRATE", "").strip().lower() in (
+    "1", "true", "yes", "on")
+
 # Шрифты для PDF с кириллицей (ставятся в Docker через fonts-dejavu-core)
 PDF_FONT = os.environ.get("PDF_FONT", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 PDF_FONT_BOLD = os.environ.get("PDF_FONT_BOLD", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
