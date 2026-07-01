@@ -11,7 +11,9 @@ draft-публикации по каналам. Пакет проходит ва
 
 ## Пример
 
-См. [`api/examples/content_package.example.json`](examples/content_package.example.json).
+Синтетический fixture-пакет (не привязан к реальному контенту/видео) — см. `_base_package()`
+в [`api/tests/test_content_package.py`](tests/test_content_package.py). Отдельного файла-примера
+в репозитории нет намеренно: JSON-пример вне тестов легко принять за описание реального контента.
 
 ## Схема (schema_version: 1)
 
@@ -118,14 +120,17 @@ draft-публикации по каналам. Пакет проходит ва
 
 ```bash
 # dry-run (по умолчанию) — ничего не пишет, показывает planned/existing/conflicts
-python -m api.import_content_package api/examples/content_package.example.json
+python -m api.import_content_package pkg.json
 
 # реальная запись — только с явным флагом
-python -m api.import_content_package api/examples/content_package.example.json --apply
+python -m api.import_content_package pkg.json --apply
 
 # на отдельной временной базе (не production jobs.db)
 python -m api.import_content_package pkg.json --apply --db-path /tmp/registry-test.db
 ```
+
+`pkg.json` — файл с content package в вашей файловой системе (см. схему выше); в репозитории
+такого файла нет, чтобы не путать демонстрационные данные с реальным контентом.
 
 Коды выхода: `0` — успех (или dry-run без конфликтов), ненулевой — ошибка валидации,
 конфликт (только для dry-run — показывает их в выводе) или нечитаемый файл/немигрированная схема.

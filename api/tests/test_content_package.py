@@ -20,45 +20,50 @@ from api import import_content_package as CLI
 
 PRODUCT_CODE = "airfryer-silicone-form"
 
+# Синтетический fixture-пакет для тестов content-package моста. Намеренно НЕ похож на
+# реальный content_code/hook/publication_code проекта (video2-forma-ad, хуки A/B/C и т.д.),
+# чтобы его нельзя было спутать с настоящим контентом.
+SYNTHETIC_CONTENT_CODE = "synthetic-test-fixture-zz"
+
 
 def _base_package():
     return {
         "schema_version": 1,
         "product": {"product_code": PRODUCT_CODE},
         "content": {
-            "content_code": "video3-recipes-teaser",
+            "content_code": SYNTHETIC_CONTENT_CODE,
             "content_type": "short_video",
-            "title": "Ролик 3",
-            "core_idea": "идея",
-            "audience_segment": "аудитория",
-            "pain_or_desire": "боль",
-            "hypothesis": "гипотеза",
-            "source_path": "content/video3.md",
+            "title": "SYNTHETIC TEST FIXTURE — not real content",
+            "core_idea": "synthetic test data",
+            "audience_segment": "synthetic test data",
+            "pain_or_desire": "synthetic test data",
+            "hypothesis": "synthetic test data",
+            "source_path": None,
             "status": "draft",
         },
         "hooks": [
-            {"hook_code": "A", "hook_text": "текст A", "version": 1, "status": "draft"},
-            {"hook_code": "B", "hook_text": "текст B", "version": 1, "status": "draft"},
+            {"hook_code": "A", "hook_text": "synthetic hook A", "version": 1, "status": "draft"},
+            {"hook_code": "B", "hook_text": "synthetic hook B", "version": 1, "status": "draft"},
         ],
         "publication_drafts": [
             {
-                "publication_code": "video3-recipes-teaser-tiktok",
+                "publication_code": f"{SYNTHETIC_CONTENT_CODE}-tiktok",
                 "hook_code": "A",
                 "channel_code": "tiktok",
                 "status": "draft",
                 "utm_source": "tiktok",
                 "utm_medium": "organic",
-                "utm_campaign": "video3",
+                "utm_campaign": SYNTHETIC_CONTENT_CODE,
                 "utm_content": "hookA",
             },
             {
-                "publication_code": "video3-recipes-teaser-youtube",
+                "publication_code": f"{SYNTHETIC_CONTENT_CODE}-youtube",
                 "hook_code": "B",
                 "channel_code": "youtube_shorts",
                 "status": "draft",
                 "utm_source": "youtube_shorts",
                 "utm_medium": "organic",
-                "utm_campaign": "video3",
+                "utm_campaign": SYNTHETIC_CONTENT_CODE,
                 "utm_content": "hookB",
             },
         ],
@@ -103,7 +108,7 @@ class ContentPackageTests(unittest.TestCase):
         self.assertTrue(result["created"]["content"])
         self.assertEqual(sorted(result["created"]["hooks"]), ["A", "B"])
         self.assertEqual(sorted(result["created"]["publications"]),
-                          sorted(["video3-recipes-teaser-tiktok", "video3-recipes-teaser-youtube"]))
+                          sorted([f"{SYNTHETIC_CONTENT_CODE}-tiktok", f"{SYNTHETIC_CONTENT_CODE}-youtube"]))
         self.assertEqual(self._counts(), {"contents": 1, "hooks": 2, "publications": 2})
 
     # 2. повторный импорт не создаёт дублей
@@ -114,7 +119,7 @@ class ContentPackageTests(unittest.TestCase):
         self.assertTrue(result2["existing"]["content"])
         self.assertEqual(sorted(result2["existing"]["hooks"]), ["A", "B"])
         self.assertEqual(sorted(result2["existing"]["publications"]),
-                          sorted(["video3-recipes-teaser-tiktok", "video3-recipes-teaser-youtube"]))
+                          sorted([f"{SYNTHETIC_CONTENT_CODE}-tiktok", f"{SYNTHETIC_CONTENT_CODE}-youtube"]))
         self.assertEqual(self._counts(), {"contents": 1, "hooks": 2, "publications": 2})
 
     # 3. неизвестный channel_code отклоняет весь пакет
@@ -193,7 +198,7 @@ class ContentPackageTests(unittest.TestCase):
                 "SELECT hook_code, hook_text FROM hooks WHERE content_id=?", (result["content_id"],))}
         finally:
             c.close()
-        self.assertEqual(rows, {"A": "текст A", "B": "текст B"})
+        self.assertEqual(rows, {"A": "synthetic hook A", "B": "synthetic hook B"})
 
     # 11. UTM-поля сохраняются
     def test_utm_fields_saved(self):
@@ -202,12 +207,12 @@ class ContentPackageTests(unittest.TestCase):
         try:
             row = c.execute(
                 "SELECT utm_source, utm_medium, utm_campaign, utm_content FROM publications "
-                "WHERE id=?", (result["publication_ids"]["video3-recipes-teaser-tiktok"],)).fetchone()
+                "WHERE id=?", (result["publication_ids"][f"{SYNTHETIC_CONTENT_CODE}-tiktok"],)).fetchone()
         finally:
             c.close()
         self.assertEqual(row["utm_source"], "tiktok")
         self.assertEqual(row["utm_medium"], "organic")
-        self.assertEqual(row["utm_campaign"], "video3")
+        self.assertEqual(row["utm_campaign"], SYNTHETIC_CONTENT_CODE)
         self.assertEqual(row["utm_content"], "hookA")
 
     # 17. секреты отклоняются до записи и не попадают в исключение молча
@@ -227,7 +232,7 @@ class ContentPackageTests(unittest.TestCase):
         result = CP.import_package(pkg)
         self.assertTrue(any("title" in w for w in result["warnings"]))
         content = R.get_content(result["content_id"])
-        self.assertEqual(content["title"], "Ролик 3")  # не перезаписан
+        self.assertEqual(content["title"], "SYNTHETIC TEST FIXTURE — not real content")  # не перезаписан
 
 
 class ImportContentPackageCLITests(unittest.TestCase):

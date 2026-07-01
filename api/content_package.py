@@ -1,6 +1,7 @@
 """Content package: валидированный мост между выходом контентного skill и реестром.
 
-Формат пакета — см. api/CONTENT_PACKAGE.md, пример — api/examples/content_package.example.json.
+Формат пакета — см. api/CONTENT_PACKAGE.md; синтетический пример-fixture — `_base_package()`
+в api/tests/test_content_package.py (не привязан к реальному контенту/видео).
 Импорт — ОДНА SQLite-транзакция (product -> content -> hooks -> channel-check -> publications).
 Любая ошибка откатывает весь пакет целиком. Повторный импорт того же пакета не создаёт дублей
 (идемпотентность — через те же стабильные коды, что и у registry_db: product_code,
