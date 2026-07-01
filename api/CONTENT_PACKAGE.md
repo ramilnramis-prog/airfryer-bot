@@ -24,7 +24,7 @@ draft-публикации по каналам. Пакет проходит ва
     "product_code": "airfryer-silicone-form"   // ДОЛЖЕН уже существовать в реестре
   },
   "content": {
-    "content_code": "video3-recipes-ad",       // стабильный, не меняется
+    "content_code": "synthetic-content-example-001",       // стабильный, не меняется
     "content_type": "short_video",             // video / article / post / short_video / ...
     "title": "...",                            // редактируемое
     "core_idea": "...",
@@ -44,7 +44,7 @@ draft-публикации по каналам. Пакет проходит ва
   ],
   "publication_drafts": [
     {
-      "publication_code": "video3-recipes-ad-tiktok", // стабильный, глобально уникальный
+      "publication_code": "synthetic-content-example-001-tiktok-A-v1", // стабильный, глобально уникальный
       "hook_code": "A",                          // опционально; должен существовать (в пакете или в БД)
       "channel_code": "tiktok",                  // ДОЛЖЕН существовать в реестре (см. GET /registry/channels)
       "status": "draft",                         // сейчас разрешено ТОЛЬКО "draft"
@@ -94,11 +94,11 @@ draft-публикации по каналам. Пакет проходит ва
 
 ```jsonc
 {
-  "created": {"content": true, "hooks": ["A", "B"], "publications": ["video3-recipes-ad-tiktok"]},
+  "created": {"content": true, "hooks": ["A", "B"], "publications": ["synthetic-content-example-001-tiktok-A-v1"]},
   "existing": {"content": false, "hooks": [], "publications": []},
   "content_id": 4,
   "hook_ids": {"A": 7, "B": 8},
-  "publication_ids": {"video3-recipes-ad-tiktok": 12},
+  "publication_ids": {"synthetic-content-example-001-tiktok-A-v1": 12},
   "warnings": []
 }
 ```
