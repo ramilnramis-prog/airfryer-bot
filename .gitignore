@@ -3,3 +3,21 @@ state.json
 __pycache__/
 *.pyc
 .venv/
+data/
+api/data/
+
+# Локальные артефакты валидации/прогона (не коммитим)
+.local-validation-data*/
+
+# SQLite базы и бэкапы (prod jobs.db / валидация / тесты)
+*.db
+*.db-shm
+*.db-wal
+*.bak
+jobs.db*
+
+# Секреты/окружение (но .env.example остаётся в git)
+.env.*
+!.env.example
+secrets/
+credentials/
