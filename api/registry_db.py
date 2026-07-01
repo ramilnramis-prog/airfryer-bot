@@ -11,11 +11,12 @@ publications -> metric_snapshots / commerce_snapshots / decision_records.
 FOREIGN KEYS включаются на КАЖДОМ соединении. busy_timeout — на случай конкуренции писателей.
 Применение схемы — только явно (run_migrations); автоприменение на старте гейтится флагом в main.py.
 """
+import re
 import sys
 import sqlite3
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
 
 from .config import DB_PATH  # ТОТ ЖЕ файл БД, что и у jobs
 
@@ -277,14 +278,28 @@ def list_channels():
 # ---------- публикации ----------
 _PUB_UPDATABLE = (
     "hook_id", "external_publication_id", "status", "scheduled_at", "published_at",
-    "destination_url", "tracking_url", "utm_source", "utm_medium", "utm_campaign",
-    "utm_content", "error_message",
+    "published_date", "destination_url", "tracking_url", "utm_source", "utm_medium",
+    "utm_campaign", "utm_content", "error_message",
 )
+
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _validate_published_date(value):
+    """published_date — только 'YYYY-MM-DD' (календарная дата, без времени/зоны).
+    NULL разрешён (время/дата ещё не известны). Невалидные строки/несуществующие
+    календарные даты (напр. 2026-02-30) отклоняются ValueError."""
+    if value is None:
+        return
+    if not isinstance(value, str) or not _DATE_RE.match(value):
+        raise ValueError(f"published_date must be 'YYYY-MM-DD': {value!r}")
+    date.fromisoformat(value)  # бросает ValueError на несуществующую календарную дату
 
 
 def create_or_get_publication(content_id, channel_id, publication_code, hook_id=None,
                               status="draft", **fields):
     """Идемпотентно по publication_code. Существующую публикацию НЕ перезаписываем."""
+    _validate_published_date(fields.get("published_date"))
     now = now_utc()
     c = _connect()
     try:
@@ -311,6 +326,7 @@ def create_or_get_publication(content_id, channel_id, publication_code, hook_id=
 
 
 def update_publication(publication_code, **fields):
+    _validate_published_date(fields.get("published_date"))
     sets, vals = [], []
     for k in _PUB_UPDATABLE:
         if k in fields:

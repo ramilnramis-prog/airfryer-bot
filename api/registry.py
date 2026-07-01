@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from .auth import require_api_key
 from . import registry_db as R
+from . import content_package as CP
 
 
 def _require_migrated():
@@ -195,3 +196,18 @@ def add_decision(payload: dict):
         data_window_start=payload.get("data_window_start"),
         data_window_end=payload.get("data_window_end"))
     return {"ok": True}
+
+
+# ---------- content package (мост skill -> реестр, только draft) ----------
+@router.post("/content-packages")
+def import_content_package(payload: dict):
+    """Транзакционный идемпотентный импорт: product -> content -> hooks -> publications (draft).
+    Формат — api/CONTENT_PACKAGE.md. Ничего не публикует; статусы кроме draft отклоняются."""
+    try:
+        return CP.import_package(payload)
+    except CP.ProductNotFoundError as e:
+        raise HTTPException(status_code=404, detail={"error": str(e), "field": e.field})
+    except CP.PackageConflict as e:
+        raise HTTPException(status_code=409, detail={"error": str(e), "field": e.field})
+    except CP.PackageError as e:
+        raise HTTPException(status_code=400, detail={"error": str(e), "field": e.field})

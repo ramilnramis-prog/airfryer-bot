@@ -49,7 +49,7 @@ class RegistryTests(unittest.TestCase):
             vers = [r["version"] for r in c.execute("SELECT version FROM schema_version")]
         finally:
             c.close()
-        self.assertEqual(vers, [1])
+        self.assertEqual(vers, [1, 2])  # 0002_add_published_date.sql добавлена
 
     def test_expression_and_partial_indexes_exist(self):
         c = registry_db._connect()
