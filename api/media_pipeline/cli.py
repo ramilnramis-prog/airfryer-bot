@@ -31,7 +31,8 @@ from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
                                    OpenAIImagesProvider)
 from .openai_vision_evaluator import OpenAIVisionEvaluator
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
-                              needs_food_second_pass, reconcile_food_counts,
+                              needs_food_second_pass, needs_handle_second_pass,
+                              reconcile_food_counts, reconcile_handle_geometry,
                               vision_result_to_observation)
 from .mock_provider import MockImageProvider
 from .pipeline import PipelineGateError, produce_scene, save_report
@@ -43,6 +44,17 @@ PILOT_CAP_USD = 2.00
 PILOT_QUALITY = "medium"
 PILOT_CANDIDATES = 3
 PILOT_REGENERATION_ROUNDS = 0
+
+# Канонический крупный crop ручек (visual bible): silhouette-сравнение,
+# handle_count == 2 сам по себе недостаточен
+HANDLE_REFERENCE_CROP = ("assets/visual-bible/airfryer-silicone-form/"
+                         "references/handles_reference_crop.png")
+
+
+def handle_reference_crop_path() -> str | None:
+    p = Path(HANDLE_REFERENCE_CROP)
+    return str(p) if p.is_file() else None
+
 
 # Категоризация референсов кампании для vision evaluator
 _REF_CATEGORIES = {
@@ -215,6 +227,7 @@ def _scene_vision_request(spec, cid: str, image_path: str, cats: dict):
         hands_references=cats["hands"],
         kitchen_reference=(cats["kitchen"][0] if cats["kitchen"] else None),
         food_reference=(cats["food"][0] if cats["food"] else None),
+        handle_reference_crop=handle_reference_crop_path(),
         scene_spec={"scene_id": spec.scene_id,
                     "exact_food_count": spec.exact_food_count,
                     "hand_requirements": spec.hand_requirements,
@@ -251,6 +264,8 @@ def cmd_reevaluate(args) -> int:
 
     evaluations, observations = [], []
     second_pass_calls = 0
+    handle_second_pass_calls = 0
+    handle_crop = handle_reference_crop_path()
     for img in candidates:
         cid = img.stem
         ev = evaluator.evaluate(_scene_vision_request(spec, cid, str(img), cats),
@@ -270,9 +285,25 @@ def cmd_reevaluate(args) -> int:
                 second = sp["result"]
             recon = reconcile_food_counts(detail, second, expected)
             entry["food_count_resolution"] = recon
+            # геометрия ручек: silhouette-проверка, count == 2 недостаточен
+            hcheck = needs_handle_second_pass(ev["result"])
+            entry["handle_second_pass_check"] = hcheck
+            hsecond = None
+            if hcheck["needed"] and handle_crop:
+                hp = evaluator.verify_handles(
+                    str(img), handle_crop,
+                    regions=ev["result"].get("handle_regions"),
+                    apply=args.apply)
+                handle_second_pass_calls += 1
+                entry["handle_second_pass"] = hp
+                hsecond = hp["result"]
+            hrecon = reconcile_handle_geometry(ev["result"], hsecond)
+            entry["handle_geometry_resolution"] = hrecon
             observations.append(vision_result_to_observation(
                 cid, ev["result"], food_count_final=recon["final_count"],
-                food_count_status=recon["status"]))
+                food_count_status=recon["status"],
+                handle_geometry_ok=hrecon["geometry_ok"],
+                handle_geometry_status=hrecon["status"]))
         evaluations.append(entry)
 
     decision = None
@@ -291,6 +322,8 @@ def cmd_reevaluate(args) -> int:
         "images_api_calls": 0,
         "generation_calls": 0,
         "food_second_pass_calls": second_pass_calls,
+        "handle_second_pass_calls": handle_second_pass_calls,
+        "handle_reference_crop": handle_crop,
         "vision_evaluations": evaluations,
         "decision": decision,
         "budget": tracker.summary(),

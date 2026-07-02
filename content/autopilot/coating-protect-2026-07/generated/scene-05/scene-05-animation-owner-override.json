@@ -1,0 +1,16 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "clip": "scene-05-c3-animation-test.mp4",
+  "historical_qa_report": "scene-05-animation-qa.json (НЕ изменялся и НЕ переписывался)",
+  "previous_status": "approved_for_owner_review",
+  "owner_status": "rejected",
+  "final_status": "rejected_by_owner_needs_regeneration",
+  "hard_fail_code": "handle_geometry_mismatch",
+  "reason": "handles do not match canonical straight elongated reference geometry: side handles are too rounded and do not match the straight elongated reference geometry",
+  "reason_ru": "геометрия боковых ручек не соответствует референсу: ручек две, но внешний силуэт слишком округлый; по референсу ручки — прямые вытянутые, с ровными параллельными длинными сторонами и вытянутым овальным вырезом",
+  "regeneration_required": true,
+  "reviewed_by": "owner",
+  "reviewed_at": "2026-07-02",
+  "notes": "Автоматический animation QA пропустил дефект, потому что проверял только количество ручек (handle_count == 2). С этого решения количество недостаточно: силуэт обязан совпадать с visual bible handle_geometry / handles_reference_crop.png. Повторная генерация НЕ запускалась (запрещена этим же решением)."
+}

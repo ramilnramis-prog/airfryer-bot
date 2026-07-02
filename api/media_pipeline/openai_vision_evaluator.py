@@ -30,6 +30,7 @@ from .openai_images_client import API_BASE, MissingAPIKeyError
 from .vision_provider import (HARD_FAIL_CODES, SCORE_DIMENSIONS,
                               VisionEvaluationRequest, VisionEvaluator,
                               validate_food_count_result,
+                              validate_handle_check_result,
                               validate_vision_result)
 
 DEFAULT_VISION_MODEL = "gpt-5.4-mini"
@@ -52,7 +53,11 @@ def _structured_output_schema() -> dict:
         "type": "object",
         "additionalProperties": False,
         "required": [
-            "detected_objects", "handle_count", "product_match", "airfryer_match",
+            "detected_objects", "handle_count", "handle_outer_shape_match",
+            "handle_cutout_shape_match", "handle_parallel_sides",
+            "handle_symmetry", "handle_reference_similarity",
+            "handle_geometry_confidence", "handle_geometry_issues",
+            "handle_regions", "product_match", "airfryer_match",
             "hand_gender_presentation", "hand_anatomy_issues", "grip_correct",
             "food_count", "food_count_detail", "text_or_watermark",
             "physical_intersections", "photorealism", "animation_readiness",
@@ -63,6 +68,29 @@ def _structured_output_schema() -> dict:
         "properties": {
             "detected_objects": {"type": "array", "items": {"type": "string"}},
             "handle_count": {"type": "integer"},
+            "handle_outer_shape_match": {"type": "boolean"},
+            "handle_cutout_shape_match": {"type": "boolean"},
+            "handle_parallel_sides": {"type": "boolean"},
+            "handle_symmetry": {"type": "boolean"},
+            "handle_reference_similarity": {"type": "number", "minimum": 0,
+                                            "maximum": 1},
+            "handle_geometry_confidence": {"type": "number", "minimum": 0,
+                                           "maximum": 1},
+            "handle_geometry_issues": {"type": "array",
+                                       "items": {"type": "string"}},
+            "handle_regions": {
+                "type": ["object", "null"],
+                "additionalProperties": False,
+                "required": ["left", "right"],
+                "properties": {side: {
+                    "type": ["object", "null"],
+                    "additionalProperties": False,
+                    "required": ["x0", "y0", "x1", "y1"],
+                    "properties": {d: {"type": "number", "minimum": 0,
+                                       "maximum": 1}
+                                   for d in ("x0", "y0", "x1", "y1")},
+                } for side in ("left", "right")},
+            },
             "product_match": {"type": "boolean"},
             "airfryer_match": {"type": "boolean"},
             "hand_gender_presentation": {
@@ -138,10 +166,30 @@ def _instructions(req: VisionEvaluationRequest) -> str:
         "The FIRST image is the CANDIDATE frame. All following images are "
         "REFERENCE images in this order: product references, air fryer "
         "references, hands references, kitchen reference, food reference, "
+        "handle geometry reference crop (close-ups of the CANONICAL handles), "
         "previous approved scene (each group may be absent — see the manifest "
         "below). Compare the candidate against the references and the scene "
         "spec. Count objects carefully (handles, fingers, food items). "
         "Doubt counts AGAINST the candidate.\n\n"
+        "HANDLE GEOMETRY RULES — handle_count == 2 is NOT sufficient:\n"
+        "The canonical handles (see the handle geometry reference crop) are "
+        "STRAIGHT ELONGATED strap-like tabs: outer silhouette straight and "
+        "elongated, long sides visually straight and PARALLEL, a narrow "
+        "ELONGATED OVAL cut-out, uniform thin silicone frame around the "
+        "cut-out, left and right handles identical and symmetric. Compare "
+        "each handle's SILHOUETTE against the reference crop, not just the "
+        "count. Set handle_outer_shape_match, handle_cutout_shape_match, "
+        "handle_parallel_sides, handle_symmetry accordingly; "
+        "handle_reference_similarity = overall silhouette similarity 0-1; "
+        "handle_geometry_confidence = your confidence in this geometry "
+        "judgement; handle_regions = normalized bounding boxes of the left "
+        "and right handle in the CANDIDATE (null for a handle that is not "
+        "visible). If a handle is rounded, puffy, arched, curved, shortened, "
+        "thickened, D-shaped, merges into a rounded rim, or its cut-out is "
+        "not an elongated oval — that is hard fail handle_geometry_mismatch "
+        "EVEN IF there are exactly two handles. List concrete deviations in "
+        "handle_geometry_issues. If handles are occluded or too small to "
+        "judge, lower handle_geometry_confidence instead of guessing.\n\n"
         f"REFERENCE MANIFEST (JSON): {json.dumps(_manifest(req), ensure_ascii=False)}\n\n"
         f"SCENE SPEC (JSON): {json.dumps(req.scene_spec, ensure_ascii=False)}\n\n"
         "NEXT SCENE (context that begins AFTER the current scene's motion "
@@ -240,6 +288,52 @@ def _food_count_schema() -> dict:
     }
 
 
+def _handle_check_instructions() -> str:
+    """Точное задание second-pass проверки геометрии ручек."""
+    return (
+        "You are a strict product-geometry inspector. The FIRST image(s) are "
+        "close-up crops of the CANDIDATE's left and/or right handle (or the "
+        "full candidate frame if crops are unavailable). The LAST image is "
+        "the CANONICAL handle reference crop of the real product.\n"
+        "The canonical handle is a STRAIGHT ELONGATED strap-like tab: outer "
+        "silhouette straight and elongated, long sides visually straight and "
+        "PARALLEL, a narrow ELONGATED OVAL cut-out, uniform thin silicone "
+        "frame, left and right handles identical and symmetric.\n"
+        "Judge ONLY the handle silhouettes against the reference: rounded, "
+        "puffy, arched, curved, shortened, thickened or D-shaped handles, a "
+        "non-elongated cut-out, unequal frame thickness, or left/right "
+        "asymmetry all mean NO MATCH even with exactly two handles. Doubt "
+        "counts AGAINST the candidate. If a handle is occluded by a hand, "
+        "judge the visible part and lower confidence. Respond ONLY with the "
+        "required JSON."
+    )
+
+
+def _handle_check_schema() -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["left_handle_matches_reference",
+                     "right_handle_matches_reference",
+                     "outer_silhouette_straight_elongated",
+                     "cutout_elongated_oval", "long_sides_parallel",
+                     "left_right_symmetric", "similarity_to_reference",
+                     "confidence", "issues"],
+        "properties": {
+            "left_handle_matches_reference": {"type": "boolean"},
+            "right_handle_matches_reference": {"type": "boolean"},
+            "outer_silhouette_straight_elongated": {"type": "boolean"},
+            "cutout_elongated_oval": {"type": "boolean"},
+            "long_sides_parallel": {"type": "boolean"},
+            "left_right_symmetric": {"type": "boolean"},
+            "similarity_to_reference": {"type": "number", "minimum": 0,
+                                        "maximum": 1},
+            "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+            "issues": {"type": "array", "items": {"type": "string"}},
+        },
+    }
+
+
 def _cropped_food_region(image_path: str, region: dict | None) -> tuple:
     """Возвращает (путь, cropped: bool). Кроп области формы + upscale x2 через
     Pillow; при отсутствии Pillow или региона — исходное изображение."""
@@ -275,6 +369,8 @@ def _manifest(req: VisionEvaluationRequest) -> dict:
         "hands_references": [Path(p).name for p in req.hands_references],
         "kitchen_reference": Path(req.kitchen_reference).name if req.kitchen_reference else None,
         "food_reference": Path(req.food_reference).name if req.food_reference else None,
+        "handle_geometry_reference_crop": (Path(req.handle_reference_crop).name
+                                           if req.handle_reference_crop else None),
         "previous_approved_scene": (Path(req.previous_approved_scene).name
                                     if req.previous_approved_scene else None),
     }
@@ -372,6 +468,66 @@ class OpenAIVisionEvaluator(VisionEvaluator):
                             actual_usd=actual_from_usage(usage, self.token_prices))
         raw = _extract_output_text(payload)
         result = validate_food_count_result(json.loads(raw))
+        return {"mode": "apply", "result": result, "planned_request": planned,
+                "model": self.model}
+
+    # -- second-pass проверка геометрии ручек ----------------------------------
+
+    def verify_handles(self, image_path: str, handle_reference_crop: str,
+                       regions: dict | None = None, apply: bool = False) -> dict:
+        """Second-pass геометрия ручек: crop левой и правой ручки кандидата
+        (по handle_regions первичной оценки; fallback — полный кадр) +
+        канонический reference crop. Модель — основная, НЕ арбитр.
+        Вызывается при needs_handle_second_pass."""
+        for p in (image_path, handle_reference_crop):
+            if not Path(p).is_file():
+                raise FileNotFoundError(f"изображение не найдено: {p}")
+        crops = []
+        for side in ("left", "right"):
+            region = (regions or {}).get(side)
+            if region:
+                path, cropped = _cropped_food_region(image_path, region)
+                if cropped:
+                    crops.append(path)
+        candidate_images = crops or [image_path]
+        est = self.price_per_eval_usd
+        self.tracker.check("vision_evaluation", est)
+        planned = {
+            "endpoint": "/responses", "model": self.model,
+            "structured_output": "json_schema:handle_geometry_check (strict)",
+            "purpose": "handle_geometry_second_pass",
+            "candidate_image": image_path,
+            "candidate_crops": len(crops),
+            "handle_reference_crop": handle_reference_crop,
+            "image_count": len(candidate_images) + 1,
+            "estimated_cost_usd": est,
+        }
+        if not apply:
+            return {"mode": "dry-run", "result": None, "planned_request": planned}
+
+        key = self._api_key()
+        content = [{"type": "input_text", "text": _handle_check_instructions()}]
+        content += [_image_part(p) for p in candidate_images]
+        content.append(_image_part(handle_reference_crop))
+        body = json.dumps({
+            "model": self.model,
+            "input": [{"role": "user", "content": content}],
+            "text": {"format": {"type": "json_schema",
+                                "name": "handle_geometry_check", "strict": True,
+                                "schema": _handle_check_schema()}},
+        }).encode()
+        http_req = urllib.request.Request(
+            f"{API_BASE}/responses", data=body,
+            headers={"Authorization": f"Bearer {key}",
+                     "Content-Type": "application/json"})
+        with urllib.request.urlopen(http_req, timeout=300) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+
+        usage = payload.get("usage")
+        self.tracker.record("vision_evaluation", est, usage=usage,
+                            actual_usd=actual_from_usage(usage, self.token_prices))
+        raw = _extract_output_text(payload)
+        result = validate_handle_check_result(json.loads(raw))
         return {"mode": "apply", "result": result, "planned_request": planned,
                 "model": self.model}
 

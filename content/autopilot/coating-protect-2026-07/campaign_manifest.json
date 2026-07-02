@@ -9,6 +9,9 @@
       "selected_candidate": "scene-05-c3.png",
       "selection_file": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-selection.json",
       "owner_approved": true,
+      "animation_status": "rejected_by_owner_needs_regeneration",
+      "animation_owner_override": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-animation-owner-override.json",
+      "animation_reject_reason": "handle_geometry_mismatch — силуэт ручек не совпадает с каноническим референсом (см. visual bible handle_geometry)",
       "updated_at": "2026-07-02"
     }
   },

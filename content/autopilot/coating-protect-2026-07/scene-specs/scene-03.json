@@ -1,10 +1,11 @@
 {
   "scene_id": "scene-03",
   "title": "РЕШЕНИЕ: рука опускает форму в чашу",
-  "prompt_action": "The woman's hand lowers the empty matte graphite-gray square silicone liner (exact product from reference photo) into the clean black air fryer basket on the countertop; the liner settles in neatly, ribbed bottom visible, both oval handles visible. No food yet. No text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_action": "The woman's hand lowers the empty matte graphite-gray square silicone liner (exact product from reference photo) into the clean black air fryer basket on the countertop; the liner settles in neatly, ribbed bottom visible, both handles visible: the liner's two handles are straight elongated strap-like tabs with a narrow elongated oval cut-out, long sides straight and parallel, uniform thin silicone frame, left and right handles identical, NOT rounded, NOT puffy, NOT curved — exactly matching the product reference. No food yet. No text, no watermarks. Photographic, realistic, vertical 9:16.",
   "prompt_camera": "45-degree high angle over the basket, static, shallow depth of field",
   "immutable_elements": [
     "форма канон 1:1 (тёмно-серый матовый квадрат, 2 овальные ручки, рифлёное дно)",
+    "handle geometry must match the canonical product reference exactly (visual bible handle_geometry: прямой вытянутый силуэт, параллельные длинные стороны, вытянутый овальный вырез, симметрия)",
     "тот же аэрогриль/корзина",
     "те же женские руки",
     "кухня и свет Style Anchor"
@@ -26,6 +27,7 @@
   "hard_fail_conditions": [
     "еда в форме (её ещё нет)",
     "ручек не две / не овальные",
+    "геометрия ручек не по референсу (округлые/пухлые/изогнутые) — handle_geometry_mismatch",
     "форма глянцевая или не серая"
   ]
 }

@@ -30,9 +30,15 @@ natural friendly look, wearing an oatmeal/beige apron over a white tee. For bran
 match many shots may show only her hands.
 
 PRODUCT: the exact same matte graphite-gray SQUARE silicone air fryer liner —
-rounded corners, ribbed/grooved bottom (parallel raised ridges), two oval cut-out
-handles on opposite walls, ~18.5×18.5 cm, 5 cm walls. Use the uploaded product
-photo as reference for fidelity.
+rounded corners, ribbed/grooved bottom (parallel raised ridges), two cut-out
+handles on opposite walls, ~18.5×18.5 cm, 5 cm walls. HANDLE GEOMETRY (critical,
+hard fail if violated): the handles are straight elongated strap-like tabs with
+a narrow elongated oval cut-out; long sides visually straight and PARALLEL;
+uniform thin silicone frame around the cut-out; left and right handles identical
+and symmetric; NOT rounded, NOT puffy, NOT arched, NOT D-shaped, never merging
+into a rounded rim; the silhouette must match the product reference exactly and
+must NOT change during motion. Use the uploaded product photo as reference for
+fidelity.
 
 AIR FRYER: the same modern black air fryer with a front viewing window and a handle,
 in every cooking shot.
@@ -78,8 +84,10 @@ CAMERA: macro shot, very slow lateral tracking following the sponge, shallow foc
 
 ACTION: the woman's hand lowers the empty matte graphite-gray square silicone liner
 (exact product from reference photo) into the clean black air fryer basket on the
-countertop; the liner settles in neatly, ribbed bottom visible, both oval handles
-visible. No food yet. No text, no watermarks.
+countertop; the liner settles in neatly, ribbed bottom visible, both handles
+visible — straight elongated strap-like tabs with a narrow elongated oval cut-out,
+long sides straight and parallel, identical left and right, exactly as in the
+product reference. No food yet. No text, no watermarks.
 
 CAMERA: 45-degree high angle over the basket, static, shallow depth of field.
 ```
@@ -103,7 +111,10 @@ CAMERA: frontal close crop on the viewing window, static with a very subtle push
 [STYLE ANCHOR]
 
 ACTION: the woman lifts the graphite-gray square silicone liner out of the open air
-fryer basket by its two oval cut-out handles; inside the liner exactly 3 roasted
+fryer basket by its two handles (straight elongated strap-like tabs with a narrow
+elongated oval cut-out, long sides straight and parallel, identical left and right,
+exactly as in the product reference, silhouette unchanged during motion); inside
+the liner exactly 3 roasted
 golden chicken thighs and potato wedges, light steam rising; below, the inside of
 the black basket is visibly clean and dry, untouched by grease. No text, no watermarks.
 
@@ -129,9 +140,11 @@ CAMERA: close-up, short slow push-in on the clean coating, eye-level.
 [STYLE ANCHOR]
 
 ACTION: clean product composition on the light greige countertop: the empty matte
-graphite-gray square silicone liner in front, both oval handles and ribbed bottom
-ridges clearly visible, the black air fryer slightly behind at camera-right, soft
-daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos.
+graphite-gray square silicone liner in front, both handles (straight elongated
+strap-like tabs with a narrow elongated oval cut-out, long sides straight and
+parallel, identical left and right, exactly as in the product reference) and ribbed
+bottom ridges clearly visible, the black air fryer slightly behind at camera-right,
+soft daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos.
 
 CAMERA: static three-quarter product angle, gentle parallax drift, shallow depth of field.
 ```

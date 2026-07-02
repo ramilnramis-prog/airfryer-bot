@@ -1,10 +1,11 @@
 {
   "scene_id": "scene-07",
   "title": "CTA: product shot формы рядом с аэрогрилем",
-  "prompt_action": "Clean product composition on the light greige countertop: the empty matte graphite-gray square silicone liner in front, both oval handles and ribbed bottom ridges clearly visible, the black air fryer slightly behind at camera-right, soft daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos. Photographic, realistic, vertical 9:16.",
+  "prompt_action": "Clean product composition on the light greige countertop: the empty matte graphite-gray square silicone liner in front, both handles and ribbed bottom ridges clearly visible; the liner's two handles are straight elongated strap-like tabs with a narrow elongated oval cut-out, long sides straight and parallel, uniform thin silicone frame, left and right handles identical, NOT rounded, NOT puffy, NOT curved — exactly matching the product reference; the black air fryer slightly behind at camera-right, soft daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos. Photographic, realistic, vertical 9:16.",
   "prompt_camera": "static three-quarter product angle, gentle parallax drift, shallow depth of field",
   "immutable_elements": [
     "форма канон 1:1 (обе ручки и рёбра дна видны)",
+    "handle geometry must match the canonical product reference exactly (visual bible handle_geometry: прямой вытянутый силуэт, параллельные длинные стороны, вытянутый овальный вырез, симметрия)",
     "тот же аэрогриль на заднем плане",
     "кухня и дневной свет Style Anchor"
   ],
@@ -23,6 +24,7 @@
   "hard_fail_conditions": [
     "еда в кадре",
     "ручки или рёбра дна не видны (кадр = витрина товара)",
+    "геометрия ручек не по референсу (округлые/пухлые/изогнутые) — handle_geometry_mismatch",
     "композиция не оставляет места под CTA-плашку внизу"
   ]
 }

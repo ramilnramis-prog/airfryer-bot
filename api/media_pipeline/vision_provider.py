@@ -26,14 +26,24 @@ HARD_FAIL_CODES = {
     "airfryer_mismatch", "hands_male", "hand_anatomy", "wrong_grip",
     "food_count_changed", "text_watermark", "impossible_intersection",
     "cgi_look", "not_animatable", "current_scene_violation",
-    "transition_impossible",
+    "transition_impossible", "handle_geometry_mismatch",
 }
+
+# Анимационный hard-fail (по кадрам видео, не по одному изображению):
+# ручки меняют силуэт/округляются/изгибаются в процессе движения.
+HANDLE_DRIFT_CODE = "handle_geometry_drift"
 
 # Информационные флаги: никогда не являются hard fail.
 INFORMATIONAL_FLAGS = {"next_scene_state_not_yet_present"}
 
 # Порог уверенности первичного подсчёта еды; ниже — обязателен second pass.
 FOOD_COUNT_CONFIDENCE_THRESHOLD = 0.85
+
+# Порог уверенности оценки геометрии ручек; ниже — обязательна отдельная
+# проверка crop левой и правой ручки. «handle_count == 2» НЕ достаточен:
+# силуэт обязан совпадать с каноническим референсом (см. visual_bible.json
+# handle_geometry и handles_reference_crop.png).
+HANDLE_GEOMETRY_CONFIDENCE_THRESHOLD = 0.85
 
 SCORE_DIMENSIONS = [
     "product_reference_match", "airfryer_reference_match", "human_continuity",
@@ -65,6 +75,15 @@ VISION_RESULT_FIELDS = {
     "transition_possible": (bool, False),
     "next_scene_state_not_yet_present": (bool, False),
     "food_count_detail": ((dict, type(None)), False),
+    # геометрия ручек: count == 2 больше НЕ достаточен
+    "handle_outer_shape_match": (bool, False),
+    "handle_cutout_shape_match": (bool, False),
+    "handle_parallel_sides": (bool, False),
+    "handle_symmetry": (bool, False),
+    "handle_reference_similarity": (float, False),   # 0.0-1.0
+    "handle_geometry_confidence": (float, False),    # 0.0-1.0
+    "handle_geometry_issues": (list, False),
+    "handle_regions": ((dict, type(None)), False),   # {"left": bbox|null, "right": bbox|null}
 }
 
 # Схема food_count_detail: (тип, обязательное внутри detail)
@@ -260,6 +279,125 @@ def reconcile_food_counts(detail: dict | None, second_result: dict | None,
             "reasons": [f"оба прохода согласны: {second_best}"]}
 
 
+# ---------------------------------------------------------------------------
+# Геометрия ручек: silhouette-проверка против канонического референса.
+# «Ровно две ручки» — необходимое, но НЕ достаточное условие.
+# ---------------------------------------------------------------------------
+
+HANDLE_GEOMETRY_CONFIRMED = "confirmed"
+HANDLE_GEOMETRY_UNCERTAIN = "handle_geometry_uncertain"
+
+# Булевы сигналы первичной оценки; False любого => handle_geometry_mismatch
+HANDLE_GEOMETRY_SIGNALS = ("handle_outer_shape_match", "handle_cutout_shape_match",
+                           "handle_parallel_sides", "handle_symmetry")
+
+# Схема результата second-pass проверки ручек (crop левой и правой ручки)
+HANDLE_CHECK_FIELDS = {
+    "left_handle_matches_reference": (bool, True),
+    "right_handle_matches_reference": (bool, True),
+    "outer_silhouette_straight_elongated": (bool, True),
+    "cutout_elongated_oval": (bool, True),
+    "long_sides_parallel": (bool, True),
+    "left_right_symmetric": (bool, True),
+    "similarity_to_reference": (float, True),   # 0.0-1.0
+    "confidence": (float, True),                # 0.0-1.0
+    "issues": (list, True),
+}
+
+
+def validate_handle_check_result(data: dict) -> dict:
+    """Проверка структуры результата second-pass проверки ручек."""
+    if not isinstance(data, dict):
+        raise VisionSchemaError("handle check result должен быть объектом")
+    for name, (types, required) in HANDLE_CHECK_FIELDS.items():
+        if name not in data:
+            if required:
+                raise VisionSchemaError(f"handle check без поля: {name}")
+            continue
+        value = data[name]
+        ok_types = types if isinstance(types, tuple) else (types,)
+        if isinstance(value, bool) and bool not in ok_types:
+            raise VisionSchemaError(f"handle check.{name}: bool недопустим")
+        if not isinstance(value, ok_types):
+            if float in ok_types and isinstance(value, int) and not isinstance(value, bool):
+                continue
+            raise VisionSchemaError(
+                f"handle check.{name}: тип {type(value).__name__} не подходит")
+    for f in ("similarity_to_reference", "confidence"):
+        if not 0.0 <= data[f] <= 1.0:
+            raise VisionSchemaError(f"handle check.{f} вне [0,1]: {data[f]!r}")
+    return data
+
+
+def handle_geometry_primary_ok(result: dict) -> bool:
+    """Первичная оценка: True только если все silhouette-сигналы совпали и
+    код handle_geometry_mismatch не выставлен."""
+    if "handle_geometry_mismatch" in result.get("hard_fail_codes", []):
+        return False
+    return all(result.get(sig, True) for sig in HANDLE_GEOMETRY_SIGNALS)
+
+
+def needs_handle_second_pass(result: dict,
+                             threshold: float = HANDLE_GEOMETRY_CONFIDENCE_THRESHOLD) -> dict:
+    """Нужна ли отдельная проверка crop левой и правой ручки.
+
+    Триггеры: низкая уверенность первичной оценки; противоречие сигналов
+    (mismatch при высокой заявленной similarity и наоборот); отсутствие полей
+    геометрии в результате (старая схема)."""
+    if not all(sig in result for sig in HANDLE_GEOMETRY_SIGNALS):
+        return {"needed": True,
+                "reasons": ["в первичной оценке нет полей геометрии ручек"]}
+    reasons = []
+    conf = result.get("handle_geometry_confidence")
+    if conf is None or conf < threshold:
+        reasons.append(f"handle_geometry_confidence {conf} < {threshold}")
+    sim = result.get("handle_reference_similarity")
+    ok = handle_geometry_primary_ok(result)
+    if sim is not None:
+        if ok and sim < 0.8:
+            reasons.append(f"сигналы ok, но similarity {sim} < 0.8 — противоречие")
+        if not ok and sim >= 0.9:
+            reasons.append(f"сигналы mismatch, но similarity {sim} >= 0.9 — противоречие")
+    return {"needed": bool(reasons), "reasons": reasons}
+
+
+def reconcile_handle_geometry(result: dict, second: dict | None,
+                              threshold: float = HANDLE_GEOMETRY_CONFIDENCE_THRESHOLD) -> dict:
+    """Сводит первичную оценку и second-pass в статус геометрии ручек.
+
+    Возвращает {"status": confirmed|handle_geometry_uncertain,
+                "geometry_ok": bool, "reasons": [...]}.
+    - second pass не выполнялся и не требовался -> confirmed по первичной;
+    - проходы согласны и second pass уверен -> confirmed;
+    - расхождение/низкая уверенность -> handle_geometry_uncertain:
+      кандидат НЕ утверждается автоматически (uncertain != mismatch)."""
+    primary_ok = handle_geometry_primary_ok(result)
+    if second is None:
+        check = needs_handle_second_pass(result, threshold)
+        if check["needed"]:
+            return {"status": HANDLE_GEOMETRY_UNCERTAIN, "geometry_ok": primary_ok,
+                    "reasons": ["second pass требовался, но не выполнен"]
+                    + check["reasons"]}
+        return {"status": HANDLE_GEOMETRY_CONFIRMED, "geometry_ok": primary_ok,
+                "reasons": ["первичная оценка уверенная и непротиворечивая"]}
+    second_ok = (second["left_handle_matches_reference"]
+                 and second["right_handle_matches_reference"]
+                 and second["outer_silhouette_straight_elongated"]
+                 and second["cutout_elongated_oval"]
+                 and second["long_sides_parallel"]
+                 and second["left_right_symmetric"])
+    reasons = []
+    if second["confidence"] < threshold:
+        reasons.append(f"second pass confidence {second['confidence']} < {threshold}")
+    if primary_ok != second_ok:
+        reasons.append(f"расхождение проходов: primary {primary_ok} vs second {second_ok}")
+    if reasons:
+        return {"status": HANDLE_GEOMETRY_UNCERTAIN,
+                "geometry_ok": primary_ok and second_ok, "reasons": reasons}
+    return {"status": HANDLE_GEOMETRY_CONFIRMED, "geometry_ok": second_ok,
+            "reasons": [f"оба прохода согласны: geometry_ok={second_ok}"]}
+
+
 @dataclass
 class VisionEvaluationRequest:
     candidate_id: str
@@ -269,6 +407,9 @@ class VisionEvaluationRequest:
     hands_references: list = field(default_factory=list)
     kitchen_reference: str | None = None
     food_reference: str | None = None
+    # крупный канонический crop ручек (visual bible) — сравнение силуэта,
+    # не только количества
+    handle_reference_crop: str | None = None
     scene_spec: dict = field(default_factory=dict)
     previous_approved_scene: str | None = None  # путь к утверждённому кадру N-1
     next_scene_requirements: str = ""
@@ -277,7 +418,7 @@ class VisionEvaluationRequest:
         refs = (list(self.product_references) + list(self.airfryer_references)
                 + list(self.hands_references))
         for extra in (self.kitchen_reference, self.food_reference,
-                      self.previous_approved_scene):
+                      self.handle_reference_crop, self.previous_approved_scene):
             if extra:
                 refs.append(extra)
         return refs
@@ -318,7 +459,9 @@ class MockVisionEvaluator(VisionEvaluator):
 
 def vision_result_to_observation(candidate_id: str, result: dict,
                                  food_count_final: int | None = ...,
-                                 food_count_status: str | None = None) -> CandidateObservation:
+                                 food_count_status: str | None = None,
+                                 handle_geometry_ok: bool | None = None,
+                                 handle_geometry_status: str | None = None) -> CandidateObservation:
     """Перевод validated vision result в CandidateObservation для visual_qa.
 
     food_count_final/food_count_status приходят из reconcile_food_counts;
@@ -328,11 +471,15 @@ def vision_result_to_observation(candidate_id: str, result: dict,
     codes = set(result["hard_fail_codes"])
     if food_count_final is ...:
         food_count_final = result["food_count"]
+    if handle_geometry_ok is None:
+        handle_geometry_ok = handle_geometry_primary_ok(result)
     return CandidateObservation(
         candidate_id=candidate_id,
         product_matches_reference=(result["product_match"]
                                    and "product_mismatch" not in codes),
         handle_count=result["handle_count"],
+        handle_geometry_ok=handle_geometry_ok,
+        handle_geometry_status=handle_geometry_status or HANDLE_GEOMETRY_CONFIRMED,
         product_color_material_ok="color_material_changed" not in codes,
         airfryer_matches_reference=(result["airfryer_match"]
                                     and "airfryer_mismatch" not in codes),

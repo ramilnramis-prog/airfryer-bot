@@ -49,6 +49,13 @@ class CandidateObservation:
     # hard-fail сигналы
     product_matches_reference: bool = True
     handle_count: int = 2
+    # силуэт ручек совпадает с каноническим референсом (handles_reference_crop):
+    # прямой вытянутый контур, параллельные длинные стороны, вытянутый овальный
+    # вырез, равная толщина силикона, симметрия левой/правой.
+    # handle_count == 2 сам по себе НЕ достаточен.
+    handle_geometry_ok: bool = True
+    # confirmed | handle_geometry_uncertain; uncertain блокирует auto-approval
+    handle_geometry_status: str = "confirmed"
     product_color_material_ok: bool = True
     airfryer_matches_reference: bool = True
     airfryer_in_frame: bool = True

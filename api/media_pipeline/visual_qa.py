@@ -34,6 +34,10 @@ def hard_fails(obs: CandidateObservation, spec: SceneSpec) -> list:
         fails.append("product_mismatch")
     if obs.handle_count != 2:
         fails.append("handle_count")
+    if not obs.handle_geometry_ok:
+        # правильный count НЕ перекрывает геометрию: силуэт ручек обязан
+        # совпадать с каноническим референсом (visual bible handle_geometry)
+        fails.append("handle_geometry_mismatch")
     if not obs.product_color_material_ok:
         fails.append("color_material_changed")
     if obs.airfryer_in_frame and not obs.airfryer_matches_reference:
@@ -91,6 +95,12 @@ def evaluate_candidate(obs: CandidateObservation, spec: SceneSpec) -> CandidateV
         v.reasons = ["food_count_uncertain: количество еды не подтверждено — "
                      "автоматическое утверждение запрещено"]
         return v
+    if obs.handle_geometry_status != "confirmed":
+        # геометрия ручек не подтверждена: auto-approval запрещён
+        v.passed = False
+        v.reasons = ["handle_geometry_uncertain: геометрия ручек не "
+                     "подтверждена — автоматическое утверждение запрещено"]
+        return v
     low = [d for d, s in v.scores.items() if s < MIN_DIMENSION_SCORE]
     if low:
         v.passed = False
@@ -113,6 +123,7 @@ def build_regeneration_brief(verdicts: list) -> str:
     fixes = {
         "product_mismatch": "усилить reference image формы (forma_6angles.png), режим edit + high input fidelity",
         "handle_count": "явно в промпт: 'exactly TWO oval cut-out handles on OPPOSITE walls'",
+        "handle_geometry_mismatch": "точная геометрия из visual bible: 'straight elongated strap handles with a narrow elongated oval cut-out, long sides straight and parallel, uniform thin silicone frame, both handles identical, NOT rounded, NOT puffy, NOT curved' + референс handles_reference_crop.png",
         "color_material_changed": "явно: 'matte graphite-gray silicone, not glossy, no color shift'",
         "airfryer_mismatch": "добавить референс аэрогриля (place.png), 'the same black air fryer'",
         "hands_male": "явно: 'woman's hands, early 30s, neat short nails, no jewelry'",
