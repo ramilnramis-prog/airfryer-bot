@@ -109,10 +109,13 @@ class ImageRequest:
     scene_id: str
     prompt: str
     n: int = 3
-    size: str = "1024x1536"               # вертикаль под 9:16
+    size: str = "1024x1536"               # portrait, максимально близкий к 9:16
     mode: str = "generate"                # generate | edit
     reference_images: list = field(default_factory=list)
-    input_fidelity: str | None = None     # "high" для edit с референсами
+    quality: str | None = None            # например "medium" (если модель поддерживает)
+    # legacy-параметр gpt-image-1; gpt-image-2 обрабатывает image inputs с высокой
+    # fidelity автоматически — capability map не даст отправить его не туда
+    input_fidelity: str | None = None
 
 
 @dataclass

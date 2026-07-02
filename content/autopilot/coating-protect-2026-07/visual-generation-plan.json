@@ -9,15 +9,36 @@
 
   "generation": {
     "provider": "openai",
-    "model": "gpt-image-1",
+    "model": "gpt-image-2 (основная; OPENAI_IMAGE_MODEL для override; gpt-image-1 — legacy fallback, по умолчанию не используется)",
     "size": "1024x1536",
     "mode": "edit_with_references",
-    "input_fidelity": "high",
+    "input_fidelity": "не передаётся: gpt-image-2 обрабатывает image inputs с высокой fidelity автоматически (capability map)",
     "candidates_per_scene": 3,
     "max_rounds_per_scene": 3,
-    "budget_cap_usd": 10.0,
-    "estimated_cost_round1_usd": "7 сцен x 3 кандидата x ~$0.30 = ~$6.30",
+    "budget": {
+      "note": "фиксированной сметы нет: estimate до вызова + hard cap + фактический usage после вызова (SpendTracker, раздельно image_generation / vision_evaluation)",
+      "hard_cap_full_campaign_usd": 10.0,
+      "retries": "отключены для первого пилота"
+    },
     "cli": "python -m api.media_pipeline.cli generate content/autopilot/coating-protect-2026-07 --scene scene-NN [--apply]"
+  },
+
+  "vision_evaluation": {
+    "evaluator": "OpenAIVisionEvaluator (api/media_pipeline/openai_vision_evaluator.py)",
+    "model": "gpt-5.4-mini (OPENAI_VISION_MODEL)",
+    "arbiter": "gpt-5.5 (OPENAI_VISION_ARBITER_MODEL), ВЫКЛЮЧЕН по умолчанию, только спорные случаи",
+    "api": "Responses API, image inputs, structured output (json_schema strict) + validate_vision_result"
+  },
+
+  "pilot": {
+    "scope": "ТОЛЬКО scene-05; сцены 01-04 и 06-07 заблокированы в cmd_pilot",
+    "command": "python -m api.media_pipeline.cli pilot content/autopilot/coating-protect-2026-07 --scene scene-05 --apply",
+    "model": "gpt-image-2", "quality": "medium", "size": "1024x1536",
+    "candidates": 3, "regeneration_rounds": 0,
+    "hard_cap_usd": 2.0,
+    "after_generation": "автоматически реальный VisionEvaluator по каждому кандидату, победитель только при прохождении hard-fail и порогов 70/80",
+    "higgsfield": "остаётся заблокированным",
+    "status": "команда подготовлена, НЕ выполнялась (нет разрешения на траты)"
   },
 
   "qa": {
@@ -46,6 +67,6 @@
     "publication": "вне этого плана; отдельное подтверждение"
   },
 
-  "status": "awaiting_owner_approval_for_image_generation",
+  "status": "awaiting_owner_approval_for_scene05_pilot",
   "api_spend_usd": 0
 }

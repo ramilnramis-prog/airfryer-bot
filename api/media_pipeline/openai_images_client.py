@@ -1,15 +1,22 @@
-"""Провайдер OpenAI Images API (gpt-image-1). Только stdlib.
+"""Провайдер OpenAI Images API. Только stdlib.
+
+Модели:
+- основная: **gpt-image-2** (по умолчанию; настраивается OPENAI_IMAGE_MODEL);
+- legacy fallback: gpt-image-1 (НЕ используется по умолчанию);
+- capability map гарантирует, что неподдерживаемые параметры не отправляются:
+  gpt-image-2 автоматически обрабатывает image inputs с высокой fidelity,
+  поэтому input_fidelity ему НЕ передаётся никогда.
 
 Безопасность:
 - OPENAI_API_KEY читается ТОЛЬКО из environment в момент вызова;
 - ключ никогда не логируется, не сохраняется в файлы и не попадает в результаты;
-- по умолчанию dry-run: БЕЗ apply=True никакой сети нет вообще;
-- лимиты: бюджет в USD и число кандидатов на запрос.
+- по умолчанию dry-run: без apply=True никакой сети нет вообще;
+- бюджет: SpendTracker (estimate до вызова, hard cap, usage после вызова);
+- retries отсутствуют by design (первый пилот — без автоматических повторов).
 
 Endpoints:
 - POST /v1/images/generations — text-to-image (JSON);
-- POST /v1/images/edits — c reference images (multipart), поддерживает
-  несколько изображений и input_fidelity="high" для точности референса.
+- POST /v1/images/edits — с reference images (multipart, несколько image[]).
 """
 from __future__ import annotations
 
@@ -22,13 +29,25 @@ import urllib.request
 import uuid
 from pathlib import Path
 
+from .budget import SpendTracker, actual_from_usage
 from .models import ImageProvider, ImageRequest, ImageResult
 
 API_BASE = "https://api.openai.com/v1"
-DEFAULT_MODEL = "gpt-image-1"
-# Верхняя оценка цены за 1 изображение 1024x1536 high quality (для бюджет-гейта;
-# консервативно с запасом, реальная цена может быть ниже).
-DEFAULT_PRICE_PER_IMAGE_USD = 0.30
+
+PRIMARY_MODEL = "gpt-image-2"
+LEGACY_MODEL = "gpt-image-1"
+
+# Какие параметры каким моделям МОЖНО отправлять. Неизвестная модель получает
+# самый строгий профиль (ничего лишнего не отправляем).
+MODEL_CAPABILITIES = {
+    "gpt-image-2": {"input_fidelity": False, "quality": True},
+    "gpt-image-1": {"input_fidelity": True, "quality": True},
+}
+_STRICTEST = {"input_fidelity": False, "quality": False}
+
+# Верхняя ОЦЕНКА цены за 1 изображение для бюджет-гейта (не «стоимость»!):
+# реальная цена зависит от модели/качества/размера и берётся из usage ответа.
+DEFAULT_PRICE_ESTIMATE_USD = 0.30
 DEFAULT_BUDGET_USD = 5.0
 MAX_CANDIDATES_PER_REQUEST = 3
 
@@ -41,8 +60,16 @@ class MissingAPIKeyError(MediaPipelineError):
     """OPENAI_API_KEY не задан в environment (в сообщении ключей нет и быть не может)."""
 
 
-class BudgetExceededError(MediaPipelineError):
-    pass
+# Обратная совместимость: бюджетная остановка — подкласс прежней ошибки.
+from .budget import BudgetStop as BudgetExceededError  # noqa: E402,F401
+
+
+def default_image_model() -> str:
+    return os.environ.get("OPENAI_IMAGE_MODEL", "").strip() or PRIMARY_MODEL
+
+
+def model_capabilities(model: str) -> dict:
+    return MODEL_CAPABILITIES.get(model, dict(_STRICTEST))
 
 
 def _multipart(fields: dict, files: list) -> tuple:
@@ -67,15 +94,25 @@ def _multipart(fields: dict, files: list) -> tuple:
 class OpenAIImagesProvider(ImageProvider):
     name = "openai"
 
-    def __init__(self, model: str = DEFAULT_MODEL,
-                 price_per_image_usd: float = DEFAULT_PRICE_PER_IMAGE_USD,
-                 budget_usd: float = DEFAULT_BUDGET_USD):
-        self.model = model
+    def __init__(self, model: str | None = None,
+                 price_per_image_usd: float = DEFAULT_PRICE_ESTIMATE_USD,
+                 budget_usd: float = DEFAULT_BUDGET_USD,
+                 tracker: SpendTracker | None = None,
+                 token_prices: dict | None = None):
+        self.model = model or default_image_model()
         self.price_per_image_usd = price_per_image_usd
-        self.budget_usd = budget_usd
-        self.spent_usd = 0.0
+        self.tracker = tracker or SpendTracker(cap_usd=budget_usd)
+        self.token_prices = token_prices  # если заданы — считаем actual из usage
 
-    # -- внутреннее -------------------------------------------------------
+    @property
+    def budget_usd(self) -> float:
+        return self.tracker.cap_usd
+
+    @property
+    def spent_usd(self) -> float:
+        return self.tracker.total_estimated()
+
+    # -- внутреннее ---------------------------------------------------------
 
     @staticmethod
     def _api_key() -> str:
@@ -86,28 +123,25 @@ class OpenAIImagesProvider(ImageProvider):
                 "окружения (НЕ передавайте ключ аргументом и не пишите в файлы).")
         return key
 
-    def _check_budget(self, n: int) -> float:
-        est = round(n * self.price_per_image_usd, 4)
-        if self.spent_usd + est > self.budget_usd:
-            raise BudgetExceededError(
-                f"запрос ~${est} превысит бюджет ${self.budget_usd} "
-                f"(потрачено ~${self.spent_usd}). Увеличьте budget_usd осознанно.")
-        return est
+    def _payload_params(self, req: ImageRequest) -> dict:
+        """Параметры запроса с фильтром по capability map: неподдерживаемое
+        моделью НИКОГДА не отправляется."""
+        caps = model_capabilities(self.model)
+        params = {"model": self.model, "prompt": req.prompt,
+                  "n": req.n, "size": req.size}
+        if req.quality and caps.get("quality"):
+            params["quality"] = req.quality
+        if req.mode == "edit" and req.input_fidelity and caps.get("input_fidelity"):
+            params["input_fidelity"] = req.input_fidelity
+        return params
 
     def _planned_payload(self, req: ImageRequest) -> dict:
         """Payload для журнала/dry-run. Секретов не содержит по построению."""
-        planned = {
-            "endpoint": ("/images/edits" if req.mode == "edit"
-                         else "/images/generations"),
-            "model": self.model,
-            "prompt": req.prompt,
-            "n": req.n,
-            "size": req.size,
-        }
+        planned = dict(self._payload_params(req))
+        planned["endpoint"] = ("/images/edits" if req.mode == "edit"
+                               else "/images/generations")
         if req.mode == "edit":
             planned["reference_images"] = list(req.reference_images)
-            if req.input_fidelity:
-                planned["input_fidelity"] = req.input_fidelity
         return planned
 
     # -- ImageProvider ------------------------------------------------------
@@ -122,11 +156,12 @@ class OpenAIImagesProvider(ImageProvider):
         if request.mode == "edit" and not request.reference_images:
             raise MediaPipelineError("mode=edit требует reference_images")
 
-        est = self._check_budget(request.n)
+        est = round(request.n * self.price_per_image_usd, 4)
+        self.tracker.check("image_generation", est)
         planned = self._planned_payload(request)
 
         if not apply:
-            # DRY-RUN: никакой сети, ключ даже не читается.
+            # DRY-RUN: никакой сети, ключ даже не читается, spend не копится.
             return [ImageResult(
                 candidate_id=f"{request.scene_id}-c{i + 1}",
                 scene_id=request.scene_id, provider=self.name, model=self.model,
@@ -136,29 +171,28 @@ class OpenAIImagesProvider(ImageProvider):
             ) for i in range(request.n)]
 
         key = self._api_key()
+        params = self._payload_params(request)
         if request.mode == "edit":
-            files = []
-            for ref in request.reference_images:
-                files.append(("image[]", ref, Path(ref).read_bytes()))
-            fields = {"model": self.model, "prompt": request.prompt,
-                      "n": request.n, "size": request.size}
-            if request.input_fidelity:
-                fields["input_fidelity"] = request.input_fidelity
-            body, ctype = _multipart(fields, files)
+            files = [("image[]", ref, Path(ref).read_bytes())
+                     for ref in request.reference_images]
+            body, ctype = _multipart(params, files)
             http_req = urllib.request.Request(
                 f"{API_BASE}/images/edits", data=body,
                 headers={"Authorization": f"Bearer {key}", "Content-Type": ctype})
         else:
-            body = json.dumps({"model": self.model, "prompt": request.prompt,
-                               "n": request.n, "size": request.size}).encode()
+            body = json.dumps(params).encode()
             http_req = urllib.request.Request(
                 f"{API_BASE}/images/generations", data=body,
                 headers={"Authorization": f"Bearer {key}",
                          "Content-Type": "application/json"})
 
+        # Без retries: одна попытка, ошибка — наверх (первый пилот).
         with urllib.request.urlopen(http_req, timeout=300) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
-        self.spent_usd = round(self.spent_usd + est, 4)
+
+        usage = payload.get("usage")
+        self.tracker.record("image_generation", est, usage=usage,
+                            actual_usd=actual_from_usage(usage, self.token_prices))
 
         out = Path(out_dir)
         out.mkdir(parents=True, exist_ok=True)
