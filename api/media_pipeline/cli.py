@@ -8,6 +8,10 @@
                                         gpt-image-2 quality=medium + реальный
                                         VisionEvaluator, hard cap $2.00,
                                         без перегенераций; Higgsfield блокирован
+  reevaluate <campaign_dir> --scene NN  — повторный visual QA УЖЕ существующих
+                                        кандидатов: Images API не вызывается,
+                                        только vision (+ food-count second pass
+                                        при необходимости)
   qa <observations.json>              — детерминированный вердикт по наблюдениям
   sequence-qa <transitions.json>      — вердикт по последовательности
 
@@ -27,9 +31,10 @@ from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
                                    OpenAIImagesProvider)
 from .openai_vision_evaluator import OpenAIVisionEvaluator
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
+                              needs_food_second_pass, reconcile_food_counts,
                               vision_result_to_observation)
 from .mock_provider import MockImageProvider
-from .pipeline import PipelineGateError, produce_scene
+from .pipeline import PipelineGateError, produce_scene, save_report
 from .visual_qa import select_winner
 from .sequence_qa import check_sequence
 
@@ -201,6 +206,103 @@ def cmd_pilot(args) -> int:
     })
 
 
+def _scene_vision_request(spec, cid: str, image_path: str, cats: dict):
+    return VisionEvaluationRequest(
+        candidate_id=cid,
+        candidate_image=image_path,
+        product_references=cats["product"],
+        airfryer_references=cats["airfryer"],
+        hands_references=cats["hands"],
+        kitchen_reference=(cats["kitchen"][0] if cats["kitchen"] else None),
+        food_reference=(cats["food"][0] if cats["food"] else None),
+        scene_spec={"scene_id": spec.scene_id,
+                    "exact_food_count": spec.exact_food_count,
+                    "hand_requirements": spec.hand_requirements,
+                    "hard_fail_conditions": spec.hard_fail_conditions,
+                    "immutable_elements": spec.immutable_elements,
+                    "animation_intent": spec.animation_intent},
+        next_scene_requirements=spec.relationship_to_next)
+
+
+def cmd_reevaluate(args) -> int:
+    """Повторный visual QA УЖЕ сгенерированных кандидатов сцены.
+
+    Images API НЕ вызывается (OpenAIImagesProvider даже не создаётся):
+    только основной VisionEvaluator и — при низкой уверенности или
+    расхождении с expected_count — second-pass подсчёт еды на crop формы.
+    Арбитр (gpt-5.5) выключен."""
+    specs = {s.scene_id: s for s in _load_specs(args.campaign_dir)}
+    spec = specs.get(args.scene)
+    if spec is None:
+        return _emit({"error": f"scene не найдена: {args.scene}",
+                      "known": sorted(specs)}, 1)
+    gen_dir = Path(args.campaign_dir) / "generated" / spec.scene_id
+    candidates = sorted(gen_dir.glob(f"{spec.scene_id}-c*.png"))
+    if not candidates:
+        return _emit({"error": f"нет существующих кандидатов в {gen_dir} — "
+                               "reevaluate ничего не генерирует"}, 1)
+
+    tracker = SpendTracker(cap_usd=PILOT_CAP_USD)
+    evaluator = OpenAIVisionEvaluator(tracker=tracker)  # арбитр ВЫКЛ
+    cats = categorize_references(spec.required_references)
+    food_spec = spec.exact_food_count or {}
+    expected = food_spec.get("count")
+    item_label = food_spec.get("item", "food item")
+
+    evaluations, observations = [], []
+    second_pass_calls = 0
+    for img in candidates:
+        cid = img.stem
+        ev = evaluator.evaluate(_scene_vision_request(spec, cid, str(img), cats),
+                                apply=args.apply)
+        entry = {"candidate_id": cid, **ev}
+        if ev["result"] is not None:
+            detail = ev["result"].get("food_count_detail")
+            check = needs_food_second_pass(detail, expected)
+            entry["food_second_pass_check"] = check
+            second = None
+            if check["needed"]:
+                sp = evaluator.count_food(
+                    str(img), item_label, expected,
+                    region=(detail or {}).get("region"), apply=args.apply)
+                second_pass_calls += 1
+                entry["food_second_pass"] = sp
+                second = sp["result"]
+            recon = reconcile_food_counts(detail, second, expected)
+            entry["food_count_resolution"] = recon
+            observations.append(vision_result_to_observation(
+                cid, ev["result"], food_count_final=recon["final_count"],
+                food_count_status=recon["status"]))
+        evaluations.append(entry)
+
+    decision = None
+    if observations:
+        decision = select_winner(spec.scene_id, observations, spec,
+                                 round_no=1).to_dict()
+    out = {
+        "mode": "apply" if args.apply else "dry-run",
+        "command": "reevaluate",
+        "scene": spec.scene_id,
+        "candidates": [str(p) for p in candidates],
+        "vision_model": evaluator.model,
+        "arbiter": {"enabled": evaluator.arbiter_enabled,
+                    "model": evaluator.arbiter_model,
+                    "calls": evaluator.arbiter_calls},
+        "images_api_calls": 0,
+        "generation_calls": 0,
+        "food_second_pass_calls": second_pass_calls,
+        "vision_evaluations": evaluations,
+        "decision": decision,
+        "budget": tracker.summary(),
+        "usage_log": tracker.usage_log,
+        "higgsfield": "BLOCKED — reevaluate не открывает гейт higgsfield_gate",
+    }
+    if args.report_out:
+        save_report(args.report_out, out)
+        out["report_saved_to"] = args.report_out
+    return _emit(out)
+
+
 def cmd_qa(args) -> int:
     data = _load_json(args.observations)
     spec = SceneSpec.from_dict(data["scene_spec"])
@@ -246,6 +348,17 @@ def main(argv=None) -> int:
     p.add_argument("--apply", action="store_true",
                    help="РЕАЛЬНЫЕ платные вызовы OpenAI (нужен OPENAI_API_KEY)")
     p.set_defaults(fn=cmd_pilot)
+
+    p = sub.add_parser("reevaluate",
+                       help="повторный visual QA существующих кандидатов "
+                            "(Images API не вызывается)")
+    p.add_argument("campaign_dir")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--apply", action="store_true",
+                   help="РЕАЛЬНЫЕ платные vision-вызовы (генерации нет никогда)")
+    p.add_argument("--report-out", default=None,
+                   help="сохранить полный JSON-отчёт в указанный файл")
+    p.set_defaults(fn=cmd_reevaluate)
 
     p = sub.add_parser("qa", help="вердикт по наблюдениям кандидатов")
     p.add_argument("observations")

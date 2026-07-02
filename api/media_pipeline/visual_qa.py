@@ -44,7 +44,9 @@ def hard_fails(obs: CandidateObservation, spec: SceneSpec) -> list:
         fails.append("hand_anatomy")
     if obs.product_held and not obs.grip_on_specified_handles:
         fails.append("wrong_grip")
-    if spec.exact_food_count is not None:
+    if spec.exact_food_count is not None and obs.food_count_status == "confirmed":
+        # при food_count_uncertain число НЕ утверждается и hard fail по счёту
+        # не ставится — блокировка идёт статусом в evaluate_candidate
         expected = spec.exact_food_count.get("count")
         if expected is not None and obs.food_count_actual != expected:
             fails.append("food_count_changed")
@@ -56,8 +58,13 @@ def hard_fails(obs: CandidateObservation, spec: SceneSpec) -> list:
         fails.append("cgi_look")
     if not obs.animation_ready:
         fails.append("not_animatable")
+    if not obs.matches_own_scene_spec:
+        # кадр нарушает СОБСТВЕННЫЙ scene spec
+        fails.append("current_scene_violation")
     if not obs.adjacent_scene_compatible:
-        fails.append("adjacent_scene_break")
+        # невозможно естественно анимировать кадр в состояние следующей сцены;
+        # то, что состояние следующей сцены ещё не наступило, — НЕ hard fail
+        fails.append("transition_impossible")
     return fails
 
 
@@ -77,6 +84,13 @@ def evaluate_candidate(obs: CandidateObservation, spec: SceneSpec) -> CandidateV
 
     v.scores = {d: obs.scores[d] for d in DIMENSIONS}
     v.total = round(sum(v.scores.values()) / len(DIMENSIONS), 1)
+    if obs.food_count_status != "confirmed":
+        # количество еды не подтверждено двумя проходами: победителем стать
+        # нельзя, но и неверное число не утверждаем
+        v.passed = False
+        v.reasons = ["food_count_uncertain: количество еды не подтверждено — "
+                     "автоматическое утверждение запрещено"]
+        return v
     low = [d for d, s in v.scores.items() if s < MIN_DIMENSION_SCORE]
     if low:
         v.passed = False
@@ -109,7 +123,8 @@ def build_regeneration_brief(verdicts: list) -> str:
         "impossible_intersection": "упростить композицию, убрать перекрытия объектов",
         "cgi_look": "'photographic, realistic skin and materials, not 3D render, not illustration'",
         "not_animatable": "оставить пространство для движения по animation_intent, не обрезать объект",
-        "adjacent_scene_break": "согласовать позу/положение с соседним кадром (relationship в spec)",
+        "current_scene_violation": "привести кадр в соответствие с СОБСТВЕННЫМ scene spec (действие, состояние объектов, композиция)",
+        "transition_impossible": "обеспечить физически возможное продолжение движения в следующую сцену (позиции immutable-объектов должны допускать анимацию перехода)",
     }
     todo = [fixes[c] for c in sorted(codes) if c in fixes]
     if todo:

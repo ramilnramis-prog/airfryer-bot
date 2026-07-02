@@ -58,10 +58,18 @@ class CandidateObservation:
     product_held: bool = False
     grip_on_specified_handles: bool = True
     food_count_actual: int | None = None
+    # confirmed | food_count_uncertain (из reconcile_food_counts);
+    # uncertain блокирует автоматическое утверждение победителя
+    food_count_status: str = "confirmed"
     has_text_or_watermark: bool = False
     has_impossible_intersections: bool = False
     looks_cgi: bool = False
     animation_ready: bool = True
+    # кадр соответствует СОБСТВЕННОМУ scene spec (иначе current_scene_violation)
+    matches_own_scene_spec: bool = True
+    # из кадра возможен естественный переход в следующую сцену
+    # (False -> transition_impossible); различие состояний соседних сцен
+    # само по себе дефектом НЕ является
     adjacent_scene_compatible: bool = True
     # scoring 0-100 (только для кандидатов без hard fail)
     scores: dict = field(default_factory=dict)
