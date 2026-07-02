@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-01-01T00:00:00Z",
+  "snapshots": [
+    {
+      "publication_code": "example-content-example_channel-A-v1",
+      "source": "example_channel",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": null,
+      "saves": null
+    },
+    {
+      "publication_code": "example-content-example_channel-B-v1",
+      "source": "example_channel",
+      "views": null,
+      "likes": null,
+      "comments": null,
+      "shares": null,
+      "saves": null
+    }
+  ]
+}
