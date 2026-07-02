@@ -127,6 +127,19 @@ planned → content_ready → qa_passed → package_validated
 }
 ```
 
+## Визуальный конвейер (этап между qa_passed и awaiting_asset_generation)
+
+Кадры кампании проходят автоматизированный визуальный конвейер
+(см. `VISUAL_AUTOMATION_PIPELINE.md`): creative-scout (паттерны) →
+image-producer (3 кандидата на сцену, OpenAI Images API через
+`api/media_pipeline`, dry-run по умолчанию) → visual-director (hard-fail +
+scoring, один победитель или regeneration brief, максимум 3 раунда) →
+sequence-director (проверка всей последовательности) → только после
+sequence approval И подтверждения владельца — Higgsfield (гейт
+`media_pipeline.pipeline.higgsfield_gate`), затем animation-qa.
+Канон внешнего вида: `assets/visual-bible/airfryer-silicone-form/`.
+Реальные OpenAI-вызовы — только `--apply` + явное «да» владельца на траты.
+
 ## Что пока остаётся ручным (не автоматизируй молча)
 
 - Генерация видео/изображений (Higgsfield) — платно, только после «да».

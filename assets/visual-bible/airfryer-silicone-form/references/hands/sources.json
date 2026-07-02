@@ -1,0 +1,25 @@
+{
+  "category": "hands",
+  "canonical": "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png",
+  "notes": "Женские руки ~30 лет, короткие ногти без лака, без украшений; захват формы ТОЛЬКО за две овальные ручки",
+  "sources": [
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png",
+      "origin": "approved_generation (видео №2, форма в руке)",
+      "usable_for": ["reference_image", "hard_fail_comparison"]
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png",
+      "origin": "approved_generation (видео №2, доставание за ручки)",
+      "usable_for": ["reference_image", "grip_reference"]
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3b.png",
+      "origin": "approved_generation (видео №2)",
+      "usable_for": ["grip_reference"]
+    }
+  ],
+  "missing": [
+    "опционально: фото реальных рук владелицы (тыльная сторона + захват за ручки), если нужно соответствие живым съёмкам"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "scene_id": "scene-03",
+  "title": "РЕШЕНИЕ: рука опускает форму в чашу",
+  "prompt_action": "The woman's hand lowers the empty matte graphite-gray square silicone liner (exact product from reference photo) into the clean black air fryer basket on the countertop; the liner settles in neatly, ribbed bottom visible, both oval handles visible. No food yet. No text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "45-degree high angle over the basket, static, shallow depth of field",
+  "immutable_elements": [
+    "форма канон 1:1 (тёмно-серый матовый квадрат, 2 овальные ручки, рифлёное дно)",
+    "тот же аэрогриль/корзина",
+    "те же женские руки",
+    "кухня и свет Style Anchor"
+  ],
+  "allowed_changes": ["угол наклона формы в момент опускания"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png"
+  ],
+  "exact_food_count": null,
+  "hand_requirements": {"gender": "female", "in_frame": true, "jewelry": "none",
+                        "grip": "держит форму за одну овальную ручку, вторая ручка видна"},
+  "camera_requirements": {"framing": "верхний ракурс 45° над корзиной", "movement": "статика",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "резкий кат от боли (scene-02) к решению; корзина теперь чистая — это ЗАДУМАННЫЙ контраст, не ошибка континьюити",
+  "relationship_to_next": "scene-04 — форма уже с едой внутри работающего аэрогриля",
+  "animation_intent": "форма плавно опускается в корзину и садится на место",
+  "hard_fail_conditions": [
+    "еда в форме (её ещё нет)",
+    "ручек не две / не овальные",
+    "форма глянцевая или не серая"
+  ]
+}

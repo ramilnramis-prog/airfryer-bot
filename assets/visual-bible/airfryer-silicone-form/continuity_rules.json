@@ -1,0 +1,66 @@
+{
+  "rules_version": 1,
+  "product_code": "airfryer-silicone-form",
+
+  "hard_fail_codes": {
+    "product_mismatch": "форма не совпадает с эталоном forma_6angles.png (форма/пропорции/рифлёное дно)",
+    "handle_count": "овальных ручек не ровно две (или не на противоположных стенках)",
+    "color_material_changed": "изменён цвет или материал формы (не тёмно-серый матовый силикон)",
+    "airfryer_mismatch": "аэрогриль отличается от канонического (другой корпус/окно/корзина)",
+    "hands_male": "женские руки стали мужскими",
+    "hand_anatomy": "неправильная анатомия рук (число/форма пальцев, суставы, пропорции)",
+    "wrong_grip": "форма удерживается не за две овальные ручки",
+    "food_count_changed": "изменилось заданное количество продуктов",
+    "text_watermark": "в кадре есть текст, надпись, логотип или watermark",
+    "impossible_intersection": "физически невозможные пересечения объектов",
+    "cgi_look": "CGI/рендерный вид вместо реалистичной фотографии",
+    "not_animatable": "кадр не подходит для анимации (обрезаны ключевые объекты, нет пространства для движения)",
+    "adjacent_scene_break": "соседняя сцена не может логично продолжить движение из этого кадра"
+  },
+
+  "scoring": {
+    "scale": "0-100 на каждое измерение",
+    "dimensions": [
+      "product_reference_match",
+      "airfryer_reference_match",
+      "human_continuity",
+      "hand_anatomy",
+      "food_continuity",
+      "photorealism",
+      "composition",
+      "marketing_clarity",
+      "animation_readiness",
+      "adjacent_scene_continuity"
+    ],
+    "min_dimension_score": 70,
+    "min_total_score": 80,
+    "rule": "победитель не выбирается, если ни один кандидат не проходит оба порога; все hard-fail кандидаты исключаются до scoring"
+  },
+
+  "sequence_checks": {
+    "compare": "каждая пара смежных выбранных кадров (1-2, 2-3, ... 6-7)",
+    "jump_types": [
+      "form_jump: форма изменила цвет/пропорции/положение ручек",
+      "airfryer_jump: другой прибор или корзина",
+      "hands_jump: другие руки, ногти, рукав, украшения",
+      "food_jump: изменилось количество/раскладка/степень готовности еды",
+      "kitchen_jump: другая кухня, фон, реквизит",
+      "light_jump: направление/температура/время суток света изменились",
+      "camera_jump: несовместимый ракурс/фокусное/палитра",
+      "composition_jump: объект телепортировался без логичного продолжения движения"
+    ],
+    "output": "список кадров на перегенерацию с указанием типа скачка; approved=true только при пустом списке"
+  },
+
+  "generation_limits": {
+    "candidates_per_scene_default": 3,
+    "max_generation_rounds": 3,
+    "on_exhausted_rounds": "остановиться и эскалировать владельцу (не генерировать дальше)"
+  },
+
+  "gates": {
+    "higgsfield_animation": "разрешена ТОЛЬКО после: (1) победитель в каждой сцене, (2) sequence QA approved, (3) явное подтверждение владельца",
+    "real_api_calls": "только с флагом --apply и OPENAI_API_KEY из environment",
+    "spending": "любая платная генерация — только после явного «да» владельца (память feedback-ask-before-spending-credits)"
+  }
+}

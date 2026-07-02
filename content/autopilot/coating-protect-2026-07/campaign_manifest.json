@@ -36,8 +36,25 @@
     "content/autopilot/coating-protect-2026-07/ad-angles.md",
     "content/autopilot/coating-protect-2026-07/content-package.json",
     "content/autopilot/coating-protect-2026-07/qa-report.md",
-    "content/autopilot/coating-protect-2026-07/README.md"
+    "content/autopilot/coating-protect-2026-07/README.md",
+    "content/autopilot/coating-protect-2026-07/visual-generation-plan.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-01.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-02.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-03.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-04.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-05.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-06.json",
+    "content/autopilot/coating-protect-2026-07/scene-specs/scene-07.json",
+    "content/autopilot/coating-protect-2026-07/visual-qa-report.template.json",
+    "content/autopilot/coating-protect-2026-07/sequence-qa-report.template.json"
   ],
+  "visual_pipeline": {
+    "visual_bible": "assets/visual-bible/airfryer-silicone-form/visual_bible.json",
+    "generation_plan": "content/autopilot/coating-protect-2026-07/visual-generation-plan.json",
+    "documentation": "VISUAL_AUTOMATION_PIPELINE.md",
+    "api_spend_usd": 0,
+    "higgsfield_status": "blocked_until_sequence_approval_and_owner_approval"
+  },
   "assumptions": [
     "Утверждение «губка/абразив царапает антипригарное покрытие, царапины необратимы» — общеизвестное правило ухода за антипригарными покрытиями, товарных гарантий не содержит",
     "«Форма в разы дешевле нового аэрогриля» — цена формы ~400-478 руб. против тысяч за прибор (analysis/product-analysis_1931921872.md), конкретные цифры в креативах не называются",
@@ -66,5 +83,5 @@
     "foreign_key_check": "empty (no violations)",
     "tests": "compileall OK; unittest 64/64 OK; pip check OK"
   },
-  "approval_required_for": "asset_generation: платная генерация кадров в Higgsfield по higgsfield-prompts.md"
+  "approval_required_for": "image_candidate_generation: платная генерация кандидатов кадров через OpenAI Images API (python -m api.media_pipeline.cli generate ... --apply, ~$6.30 первый раунд); Higgsfield — позже, после sequence approval"
 }

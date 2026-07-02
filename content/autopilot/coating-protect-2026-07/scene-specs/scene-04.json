@@ -1,0 +1,30 @@
+{
+  "scene_id": "scene-04",
+  "title": "ГОТОВКА: окно работающего аэрогриля",
+  "prompt_action": "Front view of the closed modern black air fryer working on the countertop; through its front viewing window the graphite-gray square silicone liner is visible holding exactly 3 golden chicken thighs and potato wedges, warm cooking glow inside, subtle heat shimmer. No steam outside, no text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "frontal close crop on the viewing window, static with a very subtle push-in",
+  "immutable_elements": [
+    "тот же аэрогриль (корпус, окно)",
+    "форма канон внутри",
+    "блюдо кампании: ровно 3 куриных бёдрышка + дольки картофеля",
+    "кухня и дневной свет"
+  ],
+  "allowed_changes": ["интенсивность тёплого свечения внутри"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/place.png"
+  ],
+  "exact_food_count": {"item": "chicken thigh", "count": 3,
+                       "extras": "дольки картофеля в промежутках; раскладка должна повториться в scene-05"},
+  "hand_requirements": {"gender": "female", "in_frame": false},
+  "camera_requirements": {"framing": "фронтальный кроп на окно", "movement": "лёгкий наезд",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "продолжение scene-03: та форма теперь с едой, аэрогриль закрыт и работает",
+  "relationship_to_next": "scene-05 — корзина выдвинута, ту же форму с ТЕМ ЖЕ блюдом достают",
+  "animation_intent": "лёгкое мерцание горячего воздуха, микро-наезд камеры",
+  "hard_fail_conditions": [
+    "бёдрышек не ровно 3",
+    "аэрогриль без окна или другой формы корпуса",
+    "еда вне формы (на решётке корзины)"
+  ]
+}

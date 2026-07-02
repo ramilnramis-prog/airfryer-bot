@@ -1,0 +1,19 @@
+{
+  "category": "product",
+  "canonical": "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+  "notes": "6 ракурсов формы, эталон 1:1 — использовать как reference image в КАЖДОЙ генерации, где форма в кадре",
+  "sources": [
+    {
+      "path": "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+      "origin": "owner_photo",
+      "usable_for": ["reference_image", "hard_fail_comparison"]
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/cta.png",
+      "origin": "approved_generation (видео №2)",
+      "usable_for": ["style_reference"],
+      "caution": "AI-кадр — сверять форму с forma_6angles.png, не с ним"
+    }
+  ],
+  "missing": []
+}

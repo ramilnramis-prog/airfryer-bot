@@ -1,0 +1,28 @@
+{
+  "scene_id": "scene-07",
+  "title": "CTA: product shot формы рядом с аэрогрилем",
+  "prompt_action": "Clean product composition on the light greige countertop: the empty matte graphite-gray square silicone liner in front, both oval handles and ribbed bottom ridges clearly visible, the black air fryer slightly behind at camera-right, soft daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "static three-quarter product angle, gentle parallax drift, shallow depth of field",
+  "immutable_elements": [
+    "форма канон 1:1 (обе ручки и рёбра дна видны)",
+    "тот же аэрогриль на заднем плане",
+    "кухня и дневной свет Style Anchor"
+  ],
+  "allowed_changes": ["лёгкая перестановка второстепенного реквизита кухни"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/cta.png"
+  ],
+  "exact_food_count": null,
+  "hand_requirements": {"gender": "female", "in_frame": false},
+  "camera_requirements": {"framing": "3/4 product shot", "movement": "лёгкий параллакс",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "финал после scene-06: от чистой чаши к товару-герою",
+  "relationship_to_next": "последний кадр ролика; поверх на монтаже — плашка CTA",
+  "animation_intent": "лёгкий параллакс/дрейф камеры, объекты статичны",
+  "hard_fail_conditions": [
+    "еда в кадре",
+    "ручки или рёбра дна не видны (кадр = витрина товара)",
+    "композиция не оставляет места под CTA-плашку внизу"
+  ]
+}

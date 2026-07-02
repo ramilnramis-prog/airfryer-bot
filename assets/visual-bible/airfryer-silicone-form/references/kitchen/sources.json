@@ -1,0 +1,20 @@
+{
+  "category": "kitchen",
+  "canonical": "D:/OzonGrowthProject/content/assets/video2-formaad/cta.png",
+  "notes": "Кухня по Style Anchor (белый кабанчик, серо-бежевая столешница, доска справа, растение слева, бутылка масла). Реального фото кухни нет — канон на утверждённых AI-кадрах видео №2",
+  "sources": [
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/cta.png",
+      "origin": "approved_generation (видео №2)",
+      "usable_for": ["reference_image", "style_reference"]
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/b1_wings.png",
+      "origin": "approved_generation (видео №2)",
+      "usable_for": ["style_reference"]
+    }
+  ],
+  "missing": [
+    "фото зоны раковины той же кухни (сцены 1-2 coating-protect происходят у раковины — в утверждённых кадрах раковины нет)"
+  ]
+}

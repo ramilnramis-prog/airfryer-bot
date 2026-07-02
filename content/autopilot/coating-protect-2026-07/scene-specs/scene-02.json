@@ -1,0 +1,28 @@
+{
+  "scene_id": "scene-02",
+  "title": "БОЛЬ: макро — губка по антипригарному покрытию",
+  "prompt_action": "Extreme close-up inside the black air fryer basket: the scouring side of a kitchen sponge drags slowly across the dark non-stick coated bottom, smearing a thin film of grease, tiny soap bubbles. Same daylight. No text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "macro shot, very slow lateral tracking following the sponge, shallow focus",
+  "immutable_elements": [
+    "та же корзина, что в scene-01",
+    "та же жёлто-зелёная губка, что в scene-01",
+    "дневной свет слева"
+  ],
+  "allowed_changes": ["степень размазанности жира", "количество пузырьков"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/video2-formaad/place.png"
+  ],
+  "exact_food_count": null,
+  "hand_requirements": {"gender": "female", "in_frame": false,
+                        "note": "допустимы пальцы на губке по краю кадра — тогда женские, канон"},
+  "camera_requirements": {"framing": "макро дна корзины", "movement": "медленный боковой проезд",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "макро-врезка того же действия из scene-01 (та же губка, корзина, жир)",
+  "relationship_to_next": "scene-03 — резкий кат: боль обрывается, начинается решение",
+  "animation_intent": "медленный проезд губки по дну — единственное движение в кадре",
+  "hard_fail_conditions": [
+    "силиконовая форма в кадре",
+    "губка не совпадает со scene-01",
+    "царапины показаны как глубокие борозды (перегиб — не запугивать)"
+  ]
+}

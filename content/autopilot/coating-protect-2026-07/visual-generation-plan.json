@@ -1,0 +1,51 @@
+{
+  "plan_version": 1,
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "visual_bible": "assets/visual-bible/airfryer-silicone-form/visual_bible.json",
+  "continuity_rules": "assets/visual-bible/airfryer-silicone-form/continuity_rules.json",
+  "storyboard": "content/autopilot/coating-protect-2026-07/storyboard.md",
+  "scene_specs_dir": "content/autopilot/coating-protect-2026-07/scene-specs",
+
+  "generation": {
+    "provider": "openai",
+    "model": "gpt-image-1",
+    "size": "1024x1536",
+    "mode": "edit_with_references",
+    "input_fidelity": "high",
+    "candidates_per_scene": 3,
+    "max_rounds_per_scene": 3,
+    "budget_cap_usd": 10.0,
+    "estimated_cost_round1_usd": "7 сцен x 3 кандидата x ~$0.30 = ~$6.30",
+    "cli": "python -m api.media_pipeline.cli generate content/autopilot/coating-protect-2026-07 --scene scene-NN [--apply]"
+  },
+
+  "qa": {
+    "visual_qa_agent": "visual-director",
+    "sequence_qa_agent": "sequence-director",
+    "report_templates": [
+      "visual-qa-report.template.json",
+      "sequence-qa-report.template.json"
+    ],
+    "thresholds": {"min_dimension_score": 70, "min_total_score": 80}
+  },
+
+  "scenes": [
+    {"scene_id": "scene-01", "status": "spec_ready"},
+    {"scene_id": "scene-02", "status": "spec_ready"},
+    {"scene_id": "scene-03", "status": "spec_ready"},
+    {"scene_id": "scene-04", "status": "spec_ready"},
+    {"scene_id": "scene-05", "status": "spec_ready"},
+    {"scene_id": "scene-06", "status": "spec_ready"},
+    {"scene_id": "scene-07", "status": "spec_ready"}
+  ],
+
+  "gates": {
+    "image_generation": "требует явного «да» владельца на траты OpenAI (--apply)",
+    "higgsfield_animation": "требует: победители всех сцен + sequence QA approved + явное «да» владельца (media_pipeline.pipeline.higgsfield_gate)",
+    "publication": "вне этого плана; отдельное подтверждение"
+  },
+
+  "status": "awaiting_owner_approval_for_image_generation",
+  "api_spend_usd": 0
+}

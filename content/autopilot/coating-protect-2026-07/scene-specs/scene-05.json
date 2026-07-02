@@ -1,0 +1,34 @@
+{
+  "scene_id": "scene-05",
+  "title": "ДОСТАВАНИЕ: форма с блюдом за две ручки, чаша чистая («денежный» кадр)",
+  "prompt_action": "The woman lifts the graphite-gray square silicone liner out of the open air fryer basket by its two oval cut-out handles; inside the liner exactly 3 roasted golden chicken thighs and potato wedges, light steam rising; below, the inside of the black basket is visibly clean and dry, untouched by grease. No text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "medium shot, gentle upward tilt following the liner as it rises, shallow focus",
+  "immutable_elements": [
+    "форма канон 1:1",
+    "тот же аэрогриль, та же корзина",
+    "те же женские руки",
+    "блюдо: ровно 3 бёдрышка + картофель, ТА ЖЕ раскладка и румяность, что в scene-04",
+    "кухня и дневной свет"
+  ],
+  "allowed_changes": ["высота подъёма формы", "количество пара (лёгкий)"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/place.png"
+  ],
+  "exact_food_count": {"item": "chicken thigh", "count": 3,
+                       "extras": "дольки картофеля как в scene-04, та же степень готовности"},
+  "hand_requirements": {"gender": "female", "in_frame": true, "jewelry": "none",
+                        "grip": "ТОЛЬКО за две овальные ручки, большие пальцы сверху, обе руки"},
+  "camera_requirements": {"framing": "средний план", "movement": "плавный подъём вслед за формой",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "прямое продолжение scene-04: корзина выдвинута, блюдо то же",
+  "relationship_to_next": "scene-06 — форма уже вынута, показываем пустую чистую корзину",
+  "animation_intent": "ГЛАВНАЯ анимация ролика: подъём формы + пар; руки без деформаций",
+  "hard_fail_conditions": [
+    "бёдрышек не ровно 3 или раскладка не как в scene-04",
+    "захват не за обе ручки",
+    "корзина под формой грязная (ломает сообщение)",
+    "пар чрезмерный (закрывает продукт)"
+  ]
+}

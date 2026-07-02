@@ -27,11 +27,24 @@
 | `content-package.json` | Пакет для реестра: content + 3 hooks + 12 draft-публикаций |
 | `qa-report.md` | Результаты QA и локального dry-run |
 
+### Визуальный конвейер (добавлено 2026-07-02)
+
+| Файл | Что это |
+|---|---|
+| `visual-generation-plan.json` | План генерации: 3 кандидата/сцену, ≤3 раундов, бюджет, гейты |
+| `scene-specs/scene-01..07.json` | Спецификации сцен: immutable elements, референсы, точное число еды, руки, камера, связи, animation intent |
+| `visual-qa-report.template.json` | Шаблон отчёта visual-director |
+| `sequence-qa-report.template.json` | Шаблон отчёта sequence-director |
+
+Канон внешнего вида: `assets/visual-bible/airfryer-silicone-form/`.
+Конвейер: `VISUAL_AUTOMATION_PIPELINE.md`. Изображения НЕ генерировались, API spend: $0.
+
 ## Статус и следующий шаг
 
 Статус кампании — в `campaign_manifest.json` (`status`).
 Всё создано локально, только draft. Production не изменялся, ничего не
 публиковалось, платные генерации не запускались.
 
-**Следующее подтверждение владельца:** запуск генерации кадров в Higgsfield
-по `higgsfield-prompts.md` (платно).
+**Следующее подтверждение владельца:** запуск платной генерации КАНДИДАТОВ кадров
+через OpenAI Images API (`--apply`, ~$6.30 за первый раунд 7×3). Higgsfield —
+только после победителей всех сцен + sequence approval + отдельного «да».

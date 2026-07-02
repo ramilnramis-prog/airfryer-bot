@@ -1,0 +1,50 @@
+{
+  "_template": "Заполняет visual-director после каждого раунда генерации сцены. Проверить детерминированно: python -m api.media_pipeline.cli qa <этот-файл-с-наблюдениями>",
+  "campaign_code": "coating-protect-2026-07",
+  "scene_id": "scene-NN",
+  "round": 1,
+  "generated_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "provider": "openai",
+  "model": "gpt-image-1",
+  "scene_spec": {"_note": "копия scene-specs/scene-NN.json"},
+  "candidates": [
+    {
+      "candidate_id": "scene-NN-rR-c1",
+      "image_path": "generated/scene-NN/....png",
+      "prompt": "...",
+      "revised_prompt": "...",
+      "product_matches_reference": true,
+      "handle_count": 2,
+      "product_color_material_ok": true,
+      "airfryer_matches_reference": true,
+      "airfryer_in_frame": true,
+      "hands_in_frame": true,
+      "hands_gender": "female",
+      "hand_anatomy_ok": true,
+      "product_held": false,
+      "grip_on_specified_handles": true,
+      "food_count_actual": null,
+      "has_text_or_watermark": false,
+      "has_impossible_intersections": false,
+      "looks_cgi": false,
+      "animation_ready": true,
+      "adjacent_scene_compatible": true,
+      "scores": {
+        "product_reference_match": 0,
+        "airfryer_reference_match": 0,
+        "human_continuity": 0,
+        "hand_anatomy": 0,
+        "food_continuity": 0,
+        "photorealism": 0,
+        "composition": 0,
+        "marketing_clarity": 0,
+        "animation_readiness": 0,
+        "adjacent_scene_continuity": 0
+      },
+      "notes": "..."
+    }
+  ],
+  "decision": {
+    "_note": "вывод cli qa: winner_id | null, rejection_reasons, regeneration_brief"
+  }
+}
