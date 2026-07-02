@@ -2,7 +2,16 @@
   "campaign_code": "coating-protect-2026-07",
   "product_code": "airfryer-silicone-form",
   "content_code": "coating-protect-ad",
-  "status": "package_validated",
+  "status": "awaiting_asset_generation",
+  "scene_status": {
+    "scene-05": {
+      "status": "selected_for_animation_test",
+      "selected_candidate": "scene-05-c3.png",
+      "selection_file": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-selection.json",
+      "owner_approved": true,
+      "updated_at": "2026-07-02"
+    }
+  },
   "created_at": "2026-07-02T10:05:51Z",
   "target_channels": [
     "youtube_shorts",

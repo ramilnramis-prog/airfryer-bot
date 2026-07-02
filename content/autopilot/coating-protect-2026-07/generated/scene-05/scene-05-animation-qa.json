@@ -1,0 +1,64 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "status": "approved_for_owner_review",
+  "note": "Клип НЕ используется в монтаже до просмотра владельцем.",
+  "generation": {
+    "provider": "Higgsfield MCP (claude.ai For ozon)",
+    "model": "kling3_0_turbo",
+    "job_id": "2961e711-4e23-43de-b0a7-5a101aa666fe",
+    "requested": {"aspect_ratio": "9:16", "resolution": "720p", "duration_s": 5,
+                  "count": 1, "start_image": "scene-05-c3.png (media 92e834ac-7d8c-4015-917d-4eb074757f5e)"},
+    "actual_output": {"width": 784, "height": 1176, "fps": 24, "duration_s": 5.04,
+                      "aspect_note": "фактически 2:3 — модель повторила аспект стартового кадра 1024x1536; при необходимости строгого 9:16 использовать reframe"},
+    "local_path": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-c3-animation-test.mp4",
+    "source_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FGMdTYJLeowvXzulSRTMuIIn6p/hf_20260702_155520_2961e711-4e23-43de-b0a7-5a101aa666fe.mp4",
+    "generations": 1,
+    "retries": 0,
+    "credits_spent": 7.5,
+    "balance_before": 117.5,
+    "balance_after": 110.0,
+    "failed_attempts_without_spend": [
+      {"model": "seedance_2_0", "error": "403: 'Pro' or 'Ultimate' plan required (план аккаунта — starter)", "job_created": false, "credits_spent": 0}
+    ],
+    "prompt": "Animate this exact photo. The woman's hands hold the graphite-gray square silicone liner strictly by its two oval cut-out handles, thumbs on top, both hands. She slowly and confidently lifts the liner slightly higher and moves it a little away from the black air fryer basket below. By the end of the motion the clean, empty, dry black basket below becomes fully visible. The three roasted chicken thighs and the potato wedges remain completely motionless inside the liner. Light natural steam rises gently from the food. Camera is locked and static: no zoom, no pan, no shake. Slow, physically plausible hand movement. Everything else stays exactly the same: same kitchen, same daylight, same air fryer, same liner shape and matte dark-gray silicone color, exactly two handles, five fingers per hand, basket stays clean. Photorealistic, no morphing, no new objects, no text, no watermarks, no excessive steam.",
+    "generated_at": "2026-07-02T15:55:20Z"
+  },
+  "qa": {
+    "method": "агент animation-qa: покадровый разбор 8 равномерных кадров (frame-0000..frame-0120, 121 кадр всего) + сравнение первого кадра с исходным scene-05-c3.png",
+    "verdict": "approved",
+    "hard_fails": [],
+    "confidence": 0.8,
+    "checklist": {
+      "first_frame_matches_source": {"pass": true, "evidence": "frame-0000 совпадает с scene-05-c3.png: та же поза рук, тот же захват, те же 3 бёдрышка и раскладка картофеля, тот же фон; различие только в разрешении (784x1176 vs 1024x1536)"},
+      "form_unchanged": {"pass": true, "evidence": "форма графитово-серая с вертикальным рифлением, пропорции и цвет стабильны во всех кадрах"},
+      "two_handles": {"pass": true, "evidence": "ровно две овальные вырезные ручки в каждом кадре, ручки не появляются и не исчезают"},
+      "hands_anatomy": {"pass": true, "evidence": "пальцы обеих рук читаются раздельно (frame-0017/0034/0051/0069/0086/0103/0120), без слияний, лишних пальцев и прохождений сквозь силикон"},
+      "grip_maintained": {"pass": true, "evidence": "захват идентичен стартовому кадру и удерживается непрерывно все 5 секунд"},
+      "three_thighs": {"pass": true, "evidence": "во всех кадрах ровно 3 бёдрышка в неизменной раскладке, картофель сохраняет кластеры, морфинга еды нет"},
+      "same_airfryer": {"pass": true, "evidence": "корпус, корзина, хромированная кнопка и ручка корзины идентичны и неподвижны"},
+      "basket_clean": {"pass": true, "evidence": "ребристое дно корзины чистое и сухое от первого до последнего кадра"},
+      "motion_physical": {"pass": true, "evidence": "форма плавно поднимается (зазор с корзиной растёт), руки движутся синхронно, скачков и протеканий нет"},
+      "last_frame_fits_scene06": {"pass": true, "evidence": "в frame-0120 форма поднята и отведена, чистая пустая корзина полностью видна — стыкуется со scene-06"},
+      "no_watermark_text": {"pass": true, "evidence": "watermark/текст/логотипы отсутствуют во всех кадрах"},
+      "steam_camera_ok": {"pass": true, "evidence": "пар лёгкий и не закрывает продукт, камера — медленный микро-дрейф без рывков"}
+    },
+    "soft_issues": [
+      "Правая рука держит борт формы вплотную к правой ручке, а не через овальный вырез — унаследовано из утверждённого стартового кадра c3, не дефект анимации; учесть в будущих кадрах (hand_requirements спеки)",
+      "Амплитуда подъёма небольшая — возможно, потребуется лёгкий speed-ramp в монтаже",
+      "Лёгкий дрейф текстуры еды к концу клипа (контраст/детализация), количество и раскладка не меняются",
+      "Пар почти исчезает к последней трети — стык со scene-06 планировать без пара"
+    ],
+    "regeneration_brief": null
+  },
+  "constraints_confirmed": {
+    "single_generation": true,
+    "retries": 0,
+    "openai_images_calls": 0,
+    "openai_vision_calls": 0,
+    "animated_candidates": ["scene-05-c3.png"],
+    "other_scenes_animated": false,
+    "production": "NO",
+    "git_push": "NO"
+  }
+}
