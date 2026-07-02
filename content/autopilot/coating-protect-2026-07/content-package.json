@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "product": {
+    "product_code": "airfryer-silicone-form"
+  },
+  "content": {
+    "content_code": "coating-protect-ad",
+    "content_type": "short_video",
+    "title": "Губка убивает аэрогриль: форма-барьер бережёт антипригарное покрытие",
+    "core_idea": "Аэрогриль портит не готовка, а мытьё: губка стирает антипригарное покрытие, царапины необратимы. Силиконовая форма — физический барьер: жир остаётся в форме, чаша не пачкается, тереть её не нужно.",
+    "audience_segment": "Владельцы аэрогрилей, моющие чашу руками; берегут технику, боятся испортить покрытие или уже заметили царапины",
+    "pain_or_desire": "Страх необратимо испортить антипригарное покрытие чаши (loss aversion); желание сохранить прибор",
+    "hypothesis": "Угол №2 из MARKETING_HYPOTHESIS.md (защита покрытия) даст CTR/удержание не хуже углов видео №1 (мытьё) и №2 (must-have), т.к. защита инвестиции — более сильный рациональный мотив покупки",
+    "source_path": "content/autopilot/coating-protect-2026-07/short-video-script.md",
+    "status": "draft"
+  },
+  "hooks": [
+    {
+      "hook_code": "A",
+      "hook_text": "Аэрогриль чаще всего портит не готовка, а губка.",
+      "version": 1,
+      "status": "draft"
+    },
+    {
+      "hook_code": "B",
+      "hook_text": "Царапины на чаше аэрогриля не убрать. Но их можно не допустить.",
+      "version": 1,
+      "status": "draft"
+    },
+    {
+      "hook_code": "C",
+      "hook_text": "Копеечная штука, которая бережёт аэрогриль за несколько тысяч.",
+      "version": 1,
+      "status": "draft"
+    }
+  ],
+  "publication_drafts": [
+    {
+      "publication_code": "coating-protect-ad-youtube_shorts-A-v1",
+      "hook_code": "A",
+      "channel_code": "youtube_shorts",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "youtube",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-A"
+    },
+    {
+      "publication_code": "coating-protect-ad-youtube_shorts-B-v1",
+      "hook_code": "B",
+      "channel_code": "youtube_shorts",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "youtube",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-B"
+    },
+    {
+      "publication_code": "coating-protect-ad-youtube_shorts-C-v1",
+      "hook_code": "C",
+      "channel_code": "youtube_shorts",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "youtube",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-C"
+    },
+    {
+      "publication_code": "coating-protect-ad-instagram_reels-A-v1",
+      "hook_code": "A",
+      "channel_code": "instagram_reels",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "instagram",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-A"
+    },
+    {
+      "publication_code": "coating-protect-ad-instagram_reels-B-v1",
+      "hook_code": "B",
+      "channel_code": "instagram_reels",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "instagram",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-B"
+    },
+    {
+      "publication_code": "coating-protect-ad-instagram_reels-C-v1",
+      "hook_code": "C",
+      "channel_code": "instagram_reels",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "instagram",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-C"
+    },
+    {
+      "publication_code": "coating-protect-ad-tiktok-A-v1",
+      "hook_code": "A",
+      "channel_code": "tiktok",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "tiktok",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-A"
+    },
+    {
+      "publication_code": "coating-protect-ad-tiktok-B-v1",
+      "hook_code": "B",
+      "channel_code": "tiktok",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "tiktok",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-B"
+    },
+    {
+      "publication_code": "coating-protect-ad-tiktok-C-v1",
+      "hook_code": "C",
+      "channel_code": "tiktok",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "tiktok",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-C"
+    },
+    {
+      "publication_code": "coating-protect-ad-vk_video-A-v1",
+      "hook_code": "A",
+      "channel_code": "vk_video",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "vk",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-A"
+    },
+    {
+      "publication_code": "coating-protect-ad-vk_video-B-v1",
+      "hook_code": "B",
+      "channel_code": "vk_video",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "vk",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-B"
+    },
+    {
+      "publication_code": "coating-protect-ad-vk_video-C-v1",
+      "hook_code": "C",
+      "channel_code": "vk_video",
+      "status": "draft",
+      "destination_url": null,
+      "tracking_url": null,
+      "utm_source": "vk",
+      "utm_medium": "organic",
+      "utm_campaign": "coating-protect",
+      "utm_content": "hook-C"
+    }
+  ]
+}

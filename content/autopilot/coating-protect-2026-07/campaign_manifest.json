@@ -1,0 +1,70 @@
+{
+  "campaign_code": "coating-protect-2026-07",
+  "product_code": "airfryer-silicone-form",
+  "content_code": "coating-protect-ad",
+  "status": "package_validated",
+  "created_at": "2026-07-02T10:05:51Z",
+  "target_channels": [
+    "youtube_shorts",
+    "instagram_reels",
+    "tiktok",
+    "vk_video",
+    "dzen",
+    "telegram"
+  ],
+  "source_files": [
+    "D:/OzonGrowthProject/.claude/skills/ozon-airfryer-growth/MARKETING_HYPOTHESIS.md",
+    "D:/OzonGrowthProject/.claude/skills/ozon-airfryer-growth/VISUAL_CONSISTENCY_SYSTEM.md",
+    "D:/OzonGrowthProject/.claude/skills/ozon-airfryer-growth/SKILL.md",
+    "D:/OzonGrowthProject/analysis/product-analysis_1931921872.md",
+    "D:/OzonGrowthProject/content/video2-voiceover.md",
+    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "api/CONTENT_PACKAGE.md",
+    "api/seed_registry.py",
+    "api/backfill_video2_publications.py"
+  ],
+  "output_files": [
+    "content/autopilot/coating-protect-2026-07/campaign_manifest.json",
+    "content/autopilot/coating-protect-2026-07/brief.md",
+    "content/autopilot/coating-protect-2026-07/short-video-script.md",
+    "content/autopilot/coating-protect-2026-07/hooks.json",
+    "content/autopilot/coating-protect-2026-07/storyboard.md",
+    "content/autopilot/coating-protect-2026-07/higgsfield-prompts.md",
+    "content/autopilot/coating-protect-2026-07/platform-captions.md",
+    "content/autopilot/coating-protect-2026-07/dzen-article.md",
+    "content/autopilot/coating-protect-2026-07/telegram-post.md",
+    "content/autopilot/coating-protect-2026-07/ad-angles.md",
+    "content/autopilot/coating-protect-2026-07/content-package.json",
+    "content/autopilot/coating-protect-2026-07/qa-report.md",
+    "content/autopilot/coating-protect-2026-07/README.md"
+  ],
+  "assumptions": [
+    "Утверждение «губка/абразив царапает антипригарное покрытие, царапины необратимы» — общеизвестное правило ухода за антипригарными покрытиями, товарных гарантий не содержит",
+    "«Форма в разы дешевле нового аэрогриля» — цена формы ~400-478 руб. против тысяч за прибор (analysis/product-analysis_1931921872.md), конкретные цифры в креативах не называются",
+    "Мытьё формы под краном/в посудомойке упоминается по материалам skill и утверждённых текстов видео №1; обещаний «моется за секунды» сознательно нет (жалоба №1 в отзывах — выступы на дне)",
+    "Дзен и Telegram оформлены как отдельные материалы кампании: схема content-package связывает один content (short_video) и не предназначена для связывания статьи и ролика в один объект",
+    "Блюдо в кадрах — 3 куриных бёдрышка + картофель: выбрано для отличия от кадров видео №2 (крылья, запеканка)"
+  ],
+  "unresolved_questions": [
+    "Запускать ли платную генерацию кадров в Higgsfield по higgsfield-prompts.md (баланс кредитов?)",
+    "Анимировать только кадр 5 или также кадры 1 и 6?",
+    "Использовать ли программу Ozon «Внешний трафик» (трекаемые ссылки) вместо ручных UTM для этой кампании?"
+  ],
+  "registry_dry_run_result": {
+    "mode": "dry-run",
+    "date": "2026-07-02",
+    "db": "temporary SQLite (scratchpad), production untouched",
+    "planned": {
+      "content": true,
+      "hooks": ["A", "B", "C"],
+      "publications_count": 12
+    },
+    "existing": {"content": false, "hooks": [], "publications": []},
+    "conflicts": [],
+    "exit_code": 0,
+    "integrity_check": "ok",
+    "foreign_key_check": "empty (no violations)",
+    "tests": "compileall OK; unittest 64/64 OK; pip check OK"
+  },
+  "approval_required_for": "asset_generation: платная генерация кадров в Higgsfield по higgsfield-prompts.md"
+}

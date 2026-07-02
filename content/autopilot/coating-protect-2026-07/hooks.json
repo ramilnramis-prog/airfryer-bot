@@ -1,0 +1,26 @@
+{
+  "content_code": "coating-protect-ad",
+  "hooks": [
+    {
+      "hook_code": "A",
+      "hook_text": "Аэрогриль чаще всего портит не готовка, а губка.",
+      "psychology": "инсайт-переворот привычной картины",
+      "version": 1,
+      "status": "draft"
+    },
+    {
+      "hook_code": "B",
+      "hook_text": "Царапины на чаше аэрогриля не убрать. Но их можно не допустить.",
+      "psychology": "loss aversion — страх необратимой потери",
+      "version": 1,
+      "status": "draft"
+    },
+    {
+      "hook_code": "C",
+      "hook_text": "Копеечная штука, которая бережёт аэрогриль за несколько тысяч.",
+      "psychology": "выгода/находка — рациональное оправдание покупки",
+      "version": 1,
+      "status": "draft"
+    }
+  ]
+}
