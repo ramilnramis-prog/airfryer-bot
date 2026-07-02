@@ -1,0 +1,11 @@
+{
+  "purpose": "какой канонический вид пакета соответствует ракурсу каждой сцены; perspective внутри лимитов product_lock.json, недостающие ракурсы = requires_real_photo",
+  "scenes": {
+    "scene-03": {"view": "top", "note": "верхний ракурс 45° над корзиной; допустимо top с perspective<=0.08", "gap": "форма, опускающаяся в корзину под 45° — точнее снять реальное фото"},
+    "scene-04": {"view": null, "note": "форма видна через окно аэрогриля с едой", "gap": "requires_real_photo: форма с едой"},
+    "scene-05": {"view": "three_quarter_45", "note": "medium shot, форма приподнята; three_quarter_45 ближе всего", "gap": "requires_real_photo: форма с ЕДОЙ внутри + фронтальный ракурс на уровне глаз"},
+    "scene-06": {"view": null, "note": "формы в кадре нет"},
+    "scene-07": {"view": "three_quarter_45b", "note": "product shot 3/4; пустая форма — покрыт пакетом полностью"}
+  },
+  "transform_limits_source": "../product_lock.json"
+}

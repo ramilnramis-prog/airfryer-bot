@@ -1,0 +1,41 @@
+{
+  "product_code": "airfryer-silicone-form",
+  "lock_version": 1,
+  "principle": "AI генерирует кухню, руки, аэрогриль, свет, фон и пар; пиксели товара берутся ТОЛЬКО из product asset pack и не перерисовываются никогда",
+  "immutable": {
+    "product_pixels": "пиксели внутри product mask неизменяемы; единственный источник — assets из product_asset_manifest.json (SHA256 сверяется при загрузке)",
+    "handle_masks": "маски левой и правой ручки неизменяемы; ручки — часть исходного product layer и не существуют отдельно от него"
+  },
+  "forbidden": {
+    "generative_redraw": "запрещена любая генеративная перерисовка товара (full-frame generation товара, img2img поверх товара)",
+    "inpainting_inside_product_mask": "запрещён inpainting/generative fill внутри product mask, включая область вырезов ручек",
+    "non_uniform_stretch": "запрещено неравномерное масштабирование (sx != sy)",
+    "local_warp": "запрещены локальные деформации: warp, liquify, mesh/grid transform, morphing между кадрами",
+    "silhouette_modification": "запрещено изменение силуэта товара и ручек любым способом"
+  },
+  "allowed_transforms": {
+    "uniform_scale": {"min": 0.25, "max": 1.6},
+    "translation": "не ограничена (в пределах холста)",
+    "rotation_deg": {"max_abs": 8.0},
+    "perspective": {"max_abs": 0.08, "note": "лёгкое сужение верх/низ, доля ширины"}
+  },
+  "occlusion_rules": {
+    "hands_over_handles": "руки перекрывают ручки только foreground-слоем поверх товара (alpha = occlusion mask); пиксели товара под ними не редактируются",
+    "max_handle_coverage": 0.6,
+    "note": "каждая ручка обязана оставаться различимой для QA"
+  },
+  "post_composite_validation": {
+    "validator": "api/media_pipeline/compositor/product_lock_validator.py",
+    "checks": ["silhouette", "handle_geometry", "aspect_ratio", "pixel_similarity", "no_local_warp"],
+    "pixel_tolerance": 8,
+    "max_bad_pixel_fraction": 0.002,
+    "min_handle_visible_fraction": 0.4,
+    "hard_fail_code": "product_lock_violation",
+    "rule": "после КАЖДОЙ композиции (и каждого кадра анимации) итоговый слой сравнивается с каноническим ассетом + transform; несовпадение = hard fail"
+  },
+  "animation_rules": {
+    "rigid_only": "product layer (+еда внутри) движется как ОДИН rigid object; никакого image-to-video морфинга товара",
+    "per_frame_validation": true,
+    "hard_fail_on_drift": "product_lock_violation"
+  }
+}
