@@ -1,0 +1,112 @@
+{
+  "visual_set_id": "coating-protect-visual-set-01",
+  "status": "proposed_not_activated",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "prepared_at": "2026-07-05",
+
+  "supersedes_note": "Это ПРЕДЛОЖЕНИЕ v2, не замена. content/autopilot/coating-protect-2026-07/campaign_visual_lock.json (v1) НЕ изменён и НЕ удалён — резервная копия не потребовалась, т.к. v1 не редактировался.",
+
+  "product_canon": "real-product-v1",
+  "product_canon_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+  "product_canon_resolution": "repository_only",
+
+  "appearance": {
+    "label": "Set A (proposed default)",
+    "primary_person_asset_id": "person-b-exhausted-01",
+    "primary_hands_asset_id": "person-b-exhausted-01",
+    "primary_clothing_asset_id": "person-b-exhausted-01",
+    "primary_kitchen_asset_id": "person-b-exhausted-01",
+    "primary_lighting_asset_id": "person-b-exhausted-01",
+    "primary_airfryer_asset_id": "real-airfryer-front-01",
+    "continuity_group_id": "coating-protect-appearance-group-A",
+    "internal_consistency_basis": "все primary_* (кроме airfryer) взяты из ОДНОГО исходного изображения (person-b-exhausted-01) — согласованность гарантирована конструктивно (один кадр), а не выведена сопоставлением разных изображений",
+    "pose_gap_note": "person-b-exhausted-01 показывает руки, трущие корзину губкой, НЕ хват формы за ручки — фактический жест для scene-05 берётся из mechanics_only (real-grip-motion-01), а не из этого appearance-источника; appearance даёт только тон кожи/форму кисти/одежду/кухню/свет"
+  },
+
+  "supporting_views": [],
+  "supporting_views_note": "Пусто намеренно: ни один другой asset не подтверждён как тот же человек/руки/одежда/кухня/свет/аэрогриль строго (см. visual-lock-audit.json) — по правилу ШАГ 3 не объединяем без доказательства.",
+
+  "alternative_candidate_sets": [
+    {
+      "label": "Set B",
+      "primary_person_asset_id": "person-pain-01",
+      "primary_hands_asset_id": "person-pain-01",
+      "primary_clothing_asset_id": "person-pain-01",
+      "primary_kitchen_asset_id": "person-pain-01",
+      "primary_lighting_asset_id": "person-pain-01",
+      "primary_airfryer_asset_id": "real-airfryer-front-01",
+      "continuity_group_id": "coating-protect-appearance-group-B",
+      "note": "Визуально очень близко к Set A (пучок, серый рубчатый кардиган, та же плитка-кабанчик), но НЕ объединено с Set A — сходство стиля не равно подтверждённой идентичности. Предлагается как равноценная альтернатива на случай, если владелец предпочтёт эту композицию (видны растения на подоконнике)."
+    },
+    {
+      "label": "Set C",
+      "primary_person_asset_id": "person-rinse-01",
+      "primary_hands_asset_id": "person-rinse-01",
+      "primary_clothing_asset_id": "person-rinse-01",
+      "primary_kitchen_asset_id": "person-rinse-01",
+      "primary_lighting_asset_id": "person-rinse-01",
+      "primary_airfryer_asset_id": "real-airfryer-front-01",
+      "continuity_group_id": "coating-protect-appearance-group-C",
+      "note": "Единственный кандидат, где руки УЖЕ показаны держащими продукт (ближе всего к жесту scene-05), но кухонная арматура (фартучная мойка) и цвет/фактура одежды отличаются от Set A/B. Выбор Set C означает другую кухню/свет для всей кампании, не смешение с A/B."
+    }
+  ],
+
+  "excluded_candidates": [
+    {"asset_id": "person-c-frustrated-01",
+     "reason": "причёска (распущены) и одежда (простая футболка) не совпадают с кластером пучок+кардиган (Set A/B); не объединено ни с одним набором"},
+    {"asset_id": "v2-hand-hold-01",
+     "reason": "другая кухонная среда (тёплое дерево, video2-formaad set) и продукт устаревшей геометрии в кадре; не используется как appearance-источник ни в одном наборе"}
+  ],
+
+  "mechanics_only": [
+    {"asset_id": "real-grip-motion-01",
+     "influence_scope": "hand_pose_only",
+     "must_not_influence_hand_appearance": true,
+     "note": "реальный кадр движения (мужская рука) — задаёт ТОЛЬКО траекторию/позу хвата обеих ручек"},
+    {"asset_id": "v2-form-in-basket-01",
+     "influence_scope": "placement_only",
+     "must_not_influence_airfryer_appearance": true,
+     "must_not_influence_product_geometry": true,
+     "note": "форма корпуса аэрогриля на этом фото визуально отличается от real-airfryer-front-01 — используется только для механики размещения формы в корзине"}
+  ],
+
+  "style_only": [
+    {"asset_id": "food-wings-01",
+     "influence_scope": "food_style_only",
+     "must_not_define_recipe": true,
+     "must_not_define_food_count": true,
+     "note": "влияет только на стиль глазури/цвета готового блюда, не на состав/количество"}
+  ],
+
+  "scene_specific": {
+    "food": {
+      "is_global_visual_lock": false,
+      "rule": "Состав и количество еды задаются ТОЛЬКО scene spec конкретной сцены, не этим visual lock",
+      "scene-05": {"item": "chicken thigh", "count": 3, "extras": "potato wedges, та же раскладка/румяность что в scene-04",
+                  "source": "content/autopilot/coating-protect-2026-07/scene-specs/scene-05.json"}
+    }
+  },
+
+  "hooks": {
+    "content_code": "coating-protect-ad",
+    "variants": ["A", "B", "C"],
+    "shared_visual_set_id": true,
+    "visual_set_id": "coating-protect-visual-set-01",
+    "rule": "Хуки A/B/C (варианты первых 1-3 секунд ролика) используют ОДИН и тот же visual_set_id независимо от того, какой из Set A/B/C будет утверждён владельцем — hook-выбор и appearance-выбор ортогональны."
+  },
+
+  "locked_for_all_scenes": true,
+  "shared_across_hooks": true,
+  "owner_approved": false,
+  "activation_rule": "owner_approved должен быть явно переключён владельцем в true ПОСЛЕ просмотра contact sheets, и ровно один из Set A/B/C должен быть выбран как финальный `appearance` блок, прежде чем этот файл сможет заменить campaign_visual_lock.json для любого запуска генерации.",
+
+  "review_artifacts": {
+    "appearance_contact_sheet": "content/autopilot/coating-protect-2026-07/generated/campaign-visual-lock-review/appearance-candidates-contact-sheet.png",
+    "mechanics_contact_sheet": "content/autopilot/coating-protect-2026-07/generated/campaign-visual-lock-review/mechanics-references-contact-sheet.png",
+    "audit_json": "content/autopilot/coating-protect-2026-07/generated/campaign-visual-lock-review/visual-lock-audit.json",
+    "note": "все три — untracked/ignored (content/autopilot/*/generated/), созданы только локально для ручного просмотра"
+  },
+
+  "cross_campaign_rule": "visual_set_id этой кампании (coating-protect-visual-set-01) не переносится автоматически в следующий ролик/кампанию — новая кампания выбирает свой набор."
+}

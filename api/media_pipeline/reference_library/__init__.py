@@ -7,8 +7,10 @@ asset_id, относительный приватный путь, SHA256, опи
 Фактический абсолютный путь собирается только локально из переменной
 окружения REFERENCE_LIBRARY_ROOT — она никогда не коммитится.
 """
+from .activation import VisualSetNotApprovedError, require_owner_approval
 from .models import ReferenceLibraryError, ResolvedAsset
 from .resolver import ROOT_ENV_VAR, load_index, resolve_asset
 
 __all__ = ["ReferenceLibraryError", "ResolvedAsset", "ROOT_ENV_VAR",
-          "load_index", "resolve_asset"]
+          "load_index", "resolve_asset", "VisualSetNotApprovedError",
+          "require_owner_approval"]
