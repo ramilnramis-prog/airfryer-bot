@@ -1,0 +1,94 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "cost_model": "free/local only — 0 OpenAI calls, 0 Higgsfield calls, всё через api/media_pipeline/compositor",
+  "approved_baseplate": {
+    "variant": "B",
+    "path": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-B.png",
+    "selection_record": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-selection.json",
+    "product_transform_locked": {"scale": 0.56, "rotation_deg": -1.0,
+                                 "translate": [137.24, 20.48], "perspective": 0.0},
+    "rule": "transform продукта НЕ меняется на этом и следующем этапах; A/C не перегенерируются"
+  },
+  "zones_reference": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/approved-B/zones-manifest.json",
+
+  "pipeline_steps": [
+    {
+      "step": 1,
+      "name": "rebuild_from_layers_not_flat_png",
+      "description": "Пересобрать сцену из исходных RGBA-слоёв (SceneLayers), используя ТОЧНО тот же product_transform, что зафиксирован в baseplate-B, вместо правки уже сплющенного PNG — так back_hand корректно окажется ПОД формой по порядку компоновки.",
+      "tooling": "api/media_pipeline/compositor/layer_compositor.py (SceneLayers, compose)",
+      "cost_usd": 0,
+      "status": "ready (transform уже известен и зафиксирован)"
+    },
+    {
+      "step": 2,
+      "name": "back_hand_layer",
+      "description": "Подготовить back-hand слой (женские руки, без украшений) в зонах back_hand_left/back_hand_right; либо реальный фотосет (предпочтительно), либо локальная маска-заглушка для технического теста композиции.",
+      "zones": ["back_hand_left", "back_hand_right"],
+      "requires": "REAL_PRODUCT_REFERENCE_SHOOT.md (кадры 12-13) или отдельное решение владельца об AI-генерации",
+      "cost_usd": "0 (локально) / по решению владельца, если AI-генерация",
+      "status": "blocked_on_real_photo_or_owner_decision"
+    },
+    {
+      "step": 3,
+      "name": "front_hand_layer",
+      "description": "Пальцы поверх ручек (occlusion mask), перекрытие каждой ручки <= 60% (product_lock.json).",
+      "zones": ["front_hand_left", "front_hand_right"],
+      "requires": "тот же источник рук, что и back_hand_layer",
+      "cost_usd": "0 (локально) / по решению владельца, если AI-генерация",
+      "status": "blocked_on_real_photo_or_owner_decision"
+    },
+    {
+      "step": 4,
+      "name": "food_layer",
+      "description": "3 куриных бёдрышка + дольки картофеля внутри зоны food_layer, поверх product mask, без редактирования пикселей формы.",
+      "zones": ["food_layer"],
+      "requires": "реальное фото формы с едой ИЛИ локальная/AI генерация еды отдельным слоем",
+      "cost_usd": "0 (локально) / по решению владельца, если AI-генерация",
+      "status": "blocked_on_real_photo_or_generation_decision"
+    },
+    {
+      "step": 5,
+      "name": "contact_shadow",
+      "description": "Уже реализовано в baseplate-B (_shadow_overlay, центр 360/386). Действие не требуется — переносится как есть.",
+      "zones": ["contact_shadow"],
+      "tooling": "api/media_pipeline/compositor/cli.py:_shadow_overlay",
+      "cost_usd": 0,
+      "status": "done"
+    },
+    {
+      "step": 6,
+      "name": "light_steam",
+      "description": "Процедурный overlay (as in rigid_animation._steam_overlay), интенсивность подобрать в зоне steam_zone.",
+      "zones": ["steam_zone"],
+      "tooling": "api/media_pipeline/compositor/rigid_animation.py:_steam_overlay (адаптировать позицию под steam_zone)",
+      "cost_usd": 0,
+      "status": "ready (процедурная реализация уже существует)"
+    },
+    {
+      "step": 7,
+      "name": "product_lock_revalidation",
+      "description": "После добавления каждого слоя — повторный прогон product_lock_validator.validate_composite, чтобы форма/ручки остались неизменны, а occlusion не превысила лимиты.",
+      "tooling": "api/media_pipeline/compositor/product_lock_validator.py",
+      "cost_usd": 0,
+      "status": "mandatory_before_any_further_step"
+    },
+    {
+      "step": 8,
+      "name": "rigid_animation_preview",
+      "description": "Только после утверждения статичного композита со всеми слоями — локальный rigid-animation preview (без Higgsfield), используя ТОТ ЖЕ product_transform как один из keyframes.",
+      "tooling": "api/media_pipeline/compositor/rigid_animation.py",
+      "cost_usd": 0,
+      "status": "not_started (следующий этап после слоёв)"
+    }
+  ],
+
+  "explicit_prohibitions": [
+    "не генерировать новый baseplate (A/B/C зафиксированы)",
+    "не менять product_transform",
+    "не запускать Higgsfield ни на одном шаге",
+    "не редактировать пиксели/альфу product mask ни одним из новых слоёв",
+    "не push, не deploy, не production"
+  ]
+}

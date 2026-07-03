@@ -11,6 +11,9 @@
   baseplate     — статичный технический base plate scene-05 (реальный фон
                   DE'MIAND + реальный product layer, 3 варианта положения
                   A/B/C, без рук/еды/пара/анимации)
+  layer-debug   — debug preview слоёв (back/front hand, food, occluder,
+                  shadow, steam) поверх ЗАФИКСИРОВАННОГО approved
+                  baseplate-B + проверка совпадения пересборки с эталоном
   validate <frame.png> — проверить кадр против канона (нужны transform-параметры)
 """
 from __future__ import annotations
@@ -25,6 +28,10 @@ from .product_assets import DEFAULT_VIEW, build_asset_pack, load_view
 from .real_product_assets import build_real_asset_pack, build_real_master_crops
 from .layer_compositor import SceneLayers, compose
 from .rigid_animation import RigidAnimationPlan, render_preview
+from .scene05_baseplate import (BASEPLATE_VARIANTS, BASKET_CENTER_X,
+                                REAL_BACKGROUND, load_real_image,
+                                shadow_overlay, variant_transform)
+from .scene05_debug_preview import build_debug_preview
 
 
 def _placeholder_background(size: tuple):
@@ -64,53 +71,10 @@ def _steam_overlay(size: tuple, seed_step: int = 0):
 
 
 # -- scene-05 real base plate (ШАГ 3-5 задачи) ------------------------------
-
-REAL_BACKGROUND = ("assets/product-lock/airfryer-silicone-form/references/"
-                   "real-v1/airfryer/clean_basket_master.png")
-
-# Basket opening geometry в REAL_BACKGROUND (720x1280, размечено вручную по
-# сетке): задняя кромка корзины ~y=400, центр по x ~360, ширина проёма ~530px.
-BASKET_CENTER_X = 360
-BASKET_RIM_Y = 400
-
-# Три варианта положения формы (ШАГ 4): только translation/scale/rotation,
-# один и тот же real-product-v1 product layer.
-BASEPLATE_VARIANTS = {
-    "A": {"label": "форма ближе к корзине, начало подъёма",
-          "scale": 0.60, "bottom_y": 440, "rotation_deg": 0.0, "dx": 0},
-    "B": {"label": "форма на средней высоте, корзина хорошо видна",
-          "scale": 0.56, "bottom_y": 380, "rotation_deg": -1.0, "dx": 6},
-    "C": {"label": "форма выше и немного отведена назад, корзина видна почти полностью",
-          "scale": 0.50, "bottom_y": 330, "rotation_deg": -2.0, "dx": 10},
-}
-
-
-def _load_real_image(path: str):
-    from PIL import Image
-    return Image.open(path).convert("RGBA")
-
-
-def _shadow_overlay(size: tuple, center_x: float, rim_y: float, strength: float = 60):
-    """Мягкая тень формы на корзине — отдельный полупрозрачный overlay,
-    product mask не затрагивает."""
-    from PIL import Image, ImageDraw, ImageFilter
-
-    fx = Image.new("RGBA", size, (0, 0, 0, 0))
-    d = ImageDraw.Draw(fx)
-    rx, ry = 150, 26
-    d.ellipse((center_x - rx, rim_y - ry, center_x + rx, rim_y + ry),
-             fill=(0, 0, 0, int(strength)))
-    return fx.filter(ImageFilter.GaussianBlur(14))
-
-
-def _variant_transform(spec: dict, product_size: tuple) -> "RigidTransform":
-    w, h = product_size
-    scale = spec["scale"]
-    disp_w, disp_h = w * scale, h * scale
-    x0 = BASKET_CENTER_X - disp_w / 2 + spec["dx"]
-    y0 = spec["bottom_y"] - disp_h
-    return RigidTransform(scale=scale, rotation_deg=spec["rotation_deg"],
-                          translate=(x0, y0))
+# Константы (REAL_BACKGROUND, BASKET_CENTER_X, BASEPLATE_VARIANTS) и хелперы
+# (load_real_image, shadow_overlay, variant_transform) перенесены в
+# scene05_baseplate.py — единый источник истины, чтобы transform B нельзя
+# было случайно пересчитать иначе в другом модуле.
 
 
 def _watermark_baseplate(img):
@@ -128,7 +92,7 @@ def _watermark_baseplate(img):
 
 def cmd_baseplate(args) -> int:
     product, _mask, handles = load_view(args.view, args.repo_root)
-    background = _load_real_image(REAL_BACKGROUND)
+    background = load_real_image(REAL_BACKGROUND)
     canvas_size = background.size
 
     out = Path(args.out)
@@ -137,9 +101,9 @@ def cmd_baseplate(args) -> int:
     variants_report = {}
     frame_images = []
     for key, spec in BASEPLATE_VARIANTS.items():
-        transform = _variant_transform(spec, product.size)
-        shadow = _shadow_overlay(canvas_size, BASKET_CENTER_X,
-                                 spec["bottom_y"] + 6)
+        transform = variant_transform(spec, product.size)
+        shadow = shadow_overlay(canvas_size, BASKET_CENTER_X,
+                                spec["bottom_y"] + 6)
         layers = SceneLayers(background=background, product=product,
                              product_transform=transform,
                              effects=[shadow], handle_masks=handles)
@@ -214,6 +178,18 @@ def cmd_baseplate(args) -> int:
                                   for k, v in variants_report.items()}},
                      ensure_ascii=False, indent=2))
     return 0 if all_passed else 2
+
+
+def cmd_layer_debug(args) -> int:
+    report = build_debug_preview(args.out, view=args.view, repo_root=args.repo_root)
+    print(json.dumps({
+        "preview": report["preview_path"],
+        "contact_sheet": report["contact_sheet_path"],
+        "layered_rebuild_matches_baseplate_b": report["layered_rebuild_matches_baseplate_b"],
+        "product_lock_passed": report["product_lock_validation"]["passed"],
+    }, ensure_ascii=False, indent=2))
+    return 0 if (report["layered_rebuild_matches_baseplate_b"]["match"]
+                and report["product_lock_validation"]["passed"]) else 2
 
 
 def cmd_extract(args) -> int:
@@ -296,6 +272,13 @@ def main(argv=None) -> int:
     bp.add_argument("--view", default=DEFAULT_VIEW)
     bp.add_argument("--out", required=True)
     bp.set_defaults(fn=cmd_baseplate)
+
+    ld = sub.add_parser("layer-debug",
+                        help="debug preview слоёв поверх approved baseplate-B")
+    ld.add_argument("--repo-root", default=".")
+    ld.add_argument("--view", default=DEFAULT_VIEW)
+    ld.add_argument("--out", required=True)
+    ld.set_defaults(fn=cmd_layer_debug)
 
     args = p.parse_args(argv)
     return args.fn(args)

@@ -9,9 +9,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from api.media_pipeline.compositor.cli import (
-    BASEPLATE_VARIANTS, REAL_BACKGROUND, _load_real_image, _shadow_overlay,
-    _variant_transform)
+from api.media_pipeline.compositor.scene05_baseplate import (
+    BASEPLATE_VARIANTS, REAL_BACKGROUND, load_real_image, shadow_overlay,
+    variant_transform)
 from api.media_pipeline.compositor.layer_compositor import SceneLayers, compose
 from api.media_pipeline.compositor.product_assets import DEFAULT_VIEW, load_view
 
@@ -23,7 +23,7 @@ class TestBaseplateVariants(unittest.TestCase):
     def test_variant_transforms_within_product_lock_limits(self):
         product, _mask, _handles = load_view(DEFAULT_VIEW)
         for key, spec in BASEPLATE_VARIANTS.items():
-            t = _variant_transform(spec, product.size)
+            t = variant_transform(spec, product.size)
             t.validated()  # бросит ProductLockError при нарушении лимитов
             self.assertGreaterEqual(t.translate[0], 0)
             self.assertGreaterEqual(t.translate[1], 0,
@@ -32,7 +32,7 @@ class TestBaseplateVariants(unittest.TestCase):
 
     def test_variants_differ_only_by_position_not_by_product_source(self):
         product, _, _ = load_view(DEFAULT_VIEW)
-        transforms = {k: _variant_transform(s, product.size)
+        transforms = {k: variant_transform(s, product.size)
                      for k, s in BASEPLATE_VARIANTS.items()}
         # A -> C: форма поднимается (translate.y уменьшается) и немного
         # отдаляется (scale уменьшается) — монотонный тренд подъёма
@@ -44,17 +44,17 @@ class TestBaseplateVariants(unittest.TestCase):
 
 class TestBaseplateComposition(unittest.TestCase):
     def test_real_background_is_not_placeholder(self):
-        bg = _load_real_image(REAL_BACKGROUND)
+        bg = load_real_image(REAL_BACKGROUND)
         self.assertEqual(bg.mode, "RGBA")
         self.assertTrue(Path(REAL_BACKGROUND).is_file())
         self.assertIn("real-v1", REAL_BACKGROUND)
 
     def test_each_variant_passes_product_lock_validation(self):
         product, _mask, handles = load_view(DEFAULT_VIEW)
-        background = _load_real_image(REAL_BACKGROUND)
+        background = load_real_image(REAL_BACKGROUND)
         for key, spec in BASEPLATE_VARIANTS.items():
-            transform = _variant_transform(spec, product.size)
-            shadow = _shadow_overlay(background.size, 360, spec["bottom_y"] + 6)
+            transform = variant_transform(spec, product.size)
+            shadow = shadow_overlay(background.size, 360, spec["bottom_y"] + 6)
             layers = SceneLayers(background=background, product=product,
                                  product_transform=transform,
                                  effects=[shadow], handle_masks=handles)
@@ -69,12 +69,12 @@ class TestBaseplateComposition(unittest.TestCase):
         # на этом этапе SceneLayers не получает back_hand/front_hand —
         # только background + product + shadow effect
         product, _mask, handles = load_view(DEFAULT_VIEW)
-        background = _load_real_image(REAL_BACKGROUND)
+        background = load_real_image(REAL_BACKGROUND)
         spec = BASEPLATE_VARIANTS["B"]
-        transform = _variant_transform(spec, product.size)
+        transform = variant_transform(spec, product.size)
         layers = SceneLayers(background=background, product=product,
                              product_transform=transform,
-                             effects=[_shadow_overlay(background.size, 360, 386)],
+                             effects=[shadow_overlay(background.size, 360, 386)],
                              handle_masks=handles)
         self.assertIsNone(layers.back_hand)
         self.assertIsNone(layers.front_hand)
@@ -86,8 +86,8 @@ class TestNoPaidCalls(unittest.TestCase):
         with mock.patch("urllib.request.urlopen",
                         side_effect=AssertionError("network call!")):
             product, _mask, handles = load_view(DEFAULT_VIEW)
-            background = _load_real_image(REAL_BACKGROUND)
-            transform = _variant_transform(BASEPLATE_VARIANTS["A"], product.size)
+            background = load_real_image(REAL_BACKGROUND)
+            transform = variant_transform(BASEPLATE_VARIANTS["A"], product.size)
             layers = SceneLayers(background=background, product=product,
                                  product_transform=transform, handle_masks=handles)
             result = compose(layers, validate=True)

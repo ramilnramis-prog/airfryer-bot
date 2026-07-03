@@ -12,7 +12,9 @@
       "animation_status": "rejected_by_owner_needs_regeneration",
       "animation_owner_override": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-animation-owner-override.json",
       "animation_reject_reason": "handle_geometry_mismatch — силуэт ручек не совпадает с каноническим референсом (см. visual bible handle_geometry)",
-      "updated_at": "2026-07-02"
+      "baseplate_status": "owner_approved_B",
+      "baseplate_selection_file": "content/autopilot/coating-protect-2026-07/scene-05-baseplate-selection.json",
+      "updated_at": "2026-07-03"
     }
   },
   "created_at": "2026-07-02T10:05:51Z",
