@@ -3,7 +3,8 @@
 Никакого image-to-video морфинга товара: каждый кадр — заново собранная
 композиция, где product layer получает интерполированный RigidTransform.
 Форма и ручки не меняют ни одного пикселя, кроме глобальной трансформации.
-Preview рендерится локально (Pillow + ffmpeg через imageio) без платных API.
+Preview рендерится локально (Pillow; mp4 — imageio + av, системный ffmpeg
+не нужен) без платных API. Зависимости объявлены в api/requirements.txt.
 """
 from __future__ import annotations
 
