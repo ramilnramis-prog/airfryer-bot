@@ -3,126 +3,16 @@
   "is_global_canon": false,
   "note": "Референсы блюд — food может быть сцено-специфичным даже внутри одной кампании.",
   "asset_count": 9,
-  "assets": [
-    {
-      "id": "food-salmon-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/food_salmon.png",
-      "description": "Стейк лосося с лимоном и зеленью в форме, пар, деревянный стол, боковой оконный свет.",
-      "sha256": "dcdd75337ad2d11a81bf15f7bc8b4793af06795bb8cd9b87a848330b8ad4bc8f",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "food_reference для сцен подачи рыбы",
-        "пример тёплого бокового света от окна"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "food-wings-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/food_wings.png",
-      "description": "Куриные крылья в глазури в чёрной корзине, белая столешница, плитка-кабанчик.",
-      "sha256": "1d9f87674e51f2ee8e8813adcd5a77ed47efffb4b0606e1674e3424b44add8d5",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "food_reference для сцен с крыльями"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "comp-raw-load-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot4_cooking.png",
-      "description": "Рука укладывает сырые куриные бёдра и болгарский перец в уже стоящую в аэрогриле корзину, вид сверху.",
-      "sha256": "98e7a7136cd2655cc0ee8b1dfba318bcd2e24ee86159a61c0cc658ee51f97bf8",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "композиция \"загрузка продуктов\" — руки + сырая еда + корзина"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "comp-clean-lift-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot5_clean.png",
-      "description": "Руки поднимают тёмную форму с готовой едой (курица/овощи) над корзиной аэрогриля, белая столешница.",
-      "sha256": "3c77a9e5d59507a0d2f36304c6c2432001c21db2fabee004c29731c44f7c3a68",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "grip_reference — двуручный хват за обе ручки",
-        "композиция \"результат/подача\""
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "comp-clean-lift-02",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot5_clean_v2.png",
-      "description": "Альтернативный кадр той же композиции (руки поднимают форму с готовой едой), другой свет/ракурс.",
-      "sha256": "83d6868ece4feae14639936f909a001980b1cb3c1a5e9f15de0e8b6a12079cb3",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "альтернативный вариант comp-clean-lift-01"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "v2-wings-basket-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b1_wings.png",
-      "description": "Тёмная форма с готовыми крыльями в корзине аэрогриля, деревянная столешница, кухонное окно на фоне (тёплый мягкий свет).",
-      "sha256": "dedb6cd930b0bf97ac10ce45b60b7f390716ee5446a8850cb243417864066576",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "food_reference (крылья)",
-        "пример тёплой деревянной кухни с мягким боковым светом"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "v2-casserole-lift-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png",
-      "description": "Руки поднимают тёмный противень с запечённым сыром/запеканкой из корзины аэрогриля, деревянная столешница, растение на фоне.",
-      "sha256": "2fdea8d791940172122642b12cb5a9869738e2d2014b63ce2c27bf8a07516baf",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "композиция + grip_reference — вариант A той же сцены, что b3b/b3c"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "v2-casserole-lift-02",
-      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3b.png",
-      "description": "Та же сцена (запеканка, подъём двумя руками), вариант B.",
-      "sha256": "d20270330693032b6ffbd9cc9d08c3dcb662bb959a8dc69f125b75615c61de58",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "альтернативный кадр v2-casserole-lift-01"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "v2-casserole-lift-03",
-      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3c.png",
-      "description": "Та же сцена (запеканка, подъём/установка), вариант C, более крупный план.",
-      "sha256": "ce857e0fcb8f6d3fc45750eed656776f330c6ce5dedbc0cbcd43563469989358",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "food-examples",
-      "suitable_uses": [
-        "альтернативный кадр v2-casserole-lift-01"
-      ],
-      "restrictions": []
-    }
-  ]
+  "asset_ids": [
+    "food-salmon-01",
+    "food-wings-01",
+    "comp-raw-load-01",
+    "comp-clean-lift-01",
+    "comp-clean-lift-02",
+    "v2-wings-basket-01",
+    "v2-casserole-lift-01",
+    "v2-casserole-lift-02",
+    "v2-casserole-lift-03"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
 }

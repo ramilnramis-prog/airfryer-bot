@@ -25,3 +25,8 @@ credentials/
 # Локальный файл владельца с реальными publication_code для ручного ввода метрик
 # (Числа заполняются владельцем перед запуском --apply, в git не попадает)
 metric_snapshots_video2.json
+
+# Эфемерные output'ы визуального конвейера кампаний (кандидаты кадров,
+# baseplate-варианты, resolved-campaign-visual-lock.json и т.п.) — никогда
+# не коммитятся, включая абсолютные локальные пути внутри resolved-снапшотов
+content/autopilot/*/generated/

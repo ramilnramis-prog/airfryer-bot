@@ -3,50 +3,180 @@
   "content_code": "coating-protect-ad",
   "product_canon": "real-product-v1",
   "product_canon_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
-  "product_canon_rule": "Единственный элемент, зафиксированный ГЛОБАЛЬНО на все кампании. Никогда не перерисовывается, не заменяется, не подгоняется под сцену. Всё остальное в этом файле — выбор ТОЛЬКО для данной кампании.",
-
-  "hands_reference": {
-    "description": "Женские руки канона кампании: короткие ногти без лака, без украшений.",
-    "library_assets": ["person-rinse-01", "v2-hand-hold-01"],
-    "grip_mechanics_only": ["real-grip-motion-01"],
-    "note": "real-grip-motion-01 — реальный кадр движения (мужская рука), используется ТОЛЬКО как референс механики хвата/подъёма, не как канон внешнего вида рук кампании."
-  },
-  "person_reference": {
-    "description": "Одна и та же женщина (пучок/распущены по сцене эмоции) во всех сценах кампании.",
-    "library_assets": ["person-b-exhausted-01", "person-c-frustrated-01", "person-pain-01", "person-rinse-01"]
-  },
-  "airfryer_reference": {
-    "description": "Реальный аэрогриль DE'MIAND — тот же чёрный корпус и корзина во всех сценах.",
-    "library_assets": ["real-airfryer-front-01"],
-    "placement_mechanics_only": ["v2-form-in-basket-01"],
-    "note": "v2-form-in-basket-01 (place.png) используется только как референс механики размещения формы в корзине; геометрия продукта на этом фото устаревшая и игнорируется."
-  },
-  "kitchen_reference": {
-    "description": "Style Anchor кухня: белая плитка-кабанчик, серо-бежевая столешница.",
-    "library_assets": ["person-b-exhausted-01", "person-c-frustrated-01", "person-pain-01"]
-  },
-  "clothing_reference": {
-    "description": "Серый кардиган / серый верх у персонажа во всех сценах.",
-    "library_assets": ["person-b-exhausted-01", "person-pain-01"]
-  },
-  "lighting_reference": {
-    "description": "Дневной свет слева, светлая кухня без тёплого/жёлтого оттенка.",
-    "library_assets": ["person-b-exhausted-01", "person-c-frustrated-01"]
-  },
-  "food_reference": {
-    "description": "3 куриных бедра + картофель вокруг — одно и то же блюдо во всех сценах готовки/подачи этой кампании.",
-    "library_assets": ["food-wings-01"],
-    "note": "food-wings-01 использован только как пример стиля подачи (глазурь/цвет), точный food count (3 бедра + картофель) зафиксирован в scene-specs, а не в референс-библиотеке.",
-    "scene_specific_allowed": true
-  },
+  "product_canon_resolution": "repository_only",
+  "product_canon_rule": "Единственный элемент, зафиксированный ГЛОБАЛЬНО на все кампании. Резолвится ИСКЛЮЧИТЕЛЬНО из репозитория (product_asset_manifest.json) — НИКОГДА через reference library/asset_id/REFERENCE_LIBRARY_ROOT. Никогда не перерисовывается, не заменяется, не подгоняется под сцену.",
+  "locked_elements": [
+    {
+      "role": "hands",
+      "asset_id": "person-rinse-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "hands",
+      "asset_id": "v2-hand-hold-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
+      "reference_only": true,
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "role": "hands_grip_mechanics_reference",
+      "asset_id": "real-grip-motion-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
+      "reference_only": true,
+      "restrictions": [
+        "Мужская рука в этом кадре — референс ТОЛЬКО по механике движения/хвата, НЕ финальный hands_reference кампании (пол/образ модели выбираются отдельно на кампанию)."
+      ],
+      "note": "механика хвата/подъёма, НЕ финальный внешний вид рук кампании"
+    },
+    {
+      "role": "person",
+      "asset_id": "person-b-exhausted-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "person",
+      "asset_id": "person-c-frustrated-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "person",
+      "asset_id": "person-pain-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "person",
+      "asset_id": "person-rinse-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "airfryer",
+      "asset_id": "real-airfryer-front-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78",
+      "reference_only": true,
+      "restrictions": [
+        "Это РЕАЛЬНЫЙ кадр устройства (не AI) — приоритетный airfryer_reference, но airfryer всё равно не глобальный канон: для другой кампании можно выбрать другой аэрогриль."
+      ]
+    },
+    {
+      "role": "airfryer_placement_mechanics_reference",
+      "asset_id": "v2-form-in-basket-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "1defaf9ed841654454eaaadf25890e5c4158b4b23a21620703273a059fd51835",
+      "reference_only": true,
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ],
+      "note": "механика размещения формы в корзине, геометрия формы на фото игнорируется"
+    },
+    {
+      "role": "kitchen",
+      "asset_id": "person-b-exhausted-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "kitchen",
+      "asset_id": "person-c-frustrated-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "kitchen",
+      "asset_id": "person-pain-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "clothing",
+      "asset_id": "person-b-exhausted-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "clothing",
+      "asset_id": "person-pain-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "lighting",
+      "asset_id": "person-b-exhausted-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "lighting",
+      "asset_id": "person-c-frustrated-01",
+      "locked_for_all_scenes": true,
+      "shared_across_hooks": true,
+      "expected_sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
+      "reference_only": true,
+      "restrictions": []
+    },
+    {
+      "role": "food",
+      "asset_id": "food-wings-01",
+      "locked_for_all_scenes": false,
+      "shared_across_hooks": true,
+      "expected_sha256": "1d9f87674e51f2ee8e8813adcd5a77ed47efffb4b0606e1674e3424b44add8d5",
+      "reference_only": true,
+      "restrictions": [],
+      "note": "food НЕ обязан быть одинаковым во всех сценах (может отсутствовать/быть сырым/готовым по сценарию), но одна и та же кампания не подставляет разные блюда без причины — см. scene-specs"
+    }
+  ],
   "camera_style": {
     "description": "45-градусный верхний ракурс над корзиной для сцен продукта, средний план для hook-сцен рук, вертикальный 9:16, статика с лёгким handheld на hook-кадрах.",
-    "library_assets": []
+    "asset_id": null
   },
-
   "locked_for_all_scenes": true,
   "shared_across_hooks": true,
-
   "allowed_scene_changes": [
     "угол наклона формы в момент опускания/подъёма",
     "количество пены и положение губки",
@@ -64,21 +194,25 @@
     "смена схемы освещения между сценами одной кампании",
     "любое изменение геометрии/пропорций/цвета real-product-v1 — запрещено всегда, вне зависимости от кампании"
   ],
-
   "hooks": {
     "content_code": "coating-protect-ad",
     "shared_main_body": true,
     "shared_storyboard": "content/autopilot/coating-protect-2026-07/storyboard.md",
     "shared_visual_lock": "content/autopilot/coating-protect-2026-07/campaign_visual_lock.json",
-    "variants": ["A", "B", "C"],
+    "variants": [
+      "A",
+      "B",
+      "C"
+    ],
     "variant_file": "content/autopilot/coating-protect-2026-07/hooks.json",
-    "rule": "Хуки A/B/C отличаются ТОЛЬКО первыми 1-3 секундами (первый кадр, первая фраза, caption, voice-over hook). Основное тело ролика, product_canon и весь этот campaign_visual_lock — общие для всех трёх хуков."
+    "rule": "Хуки A/B/C отличаются ТОЛЬКО первыми 1-3 секундами (первый кадр, первая фраза, caption, voice-over hook). Основное тело ролика, product_canon и весь этот campaign_visual_lock (тот же resolved-набор asset_id) — общие для всех трёх хуков."
   },
-
-  "cross_campaign_rule": "Другая (будущая) кампания может выбрать другой набор hands/person/airfryer/kitchen/clothing/lighting/food_reference — это РАЗРЕШЕНО и ожидаемо. Единственное, что не меняется НИКОГДА и ни в одной кампании — product_canon: real-product-v1.",
-
-  "reference_library_root": "assets/reference-library/",
+  "cross_campaign_rule": "Другая (будущая) кампания может выбрать другой набор asset_id для hands/person/airfryer/kitchen/clothing/lighting/food_reference — это РАЗРЕШЕНО и ожидаемо. Единственное, что не меняется НИКОГДА и ни в одной кампании — product_canon: real-product-v1, и он никогда не резолвится через reference library.",
+  "reference_library_root_env_var": "REFERENCE_LIBRARY_ROOT",
   "reference_library_index": "assets/reference-library/reference_library_index.json",
+  "resolver_module": "api/media_pipeline/reference_library",
+  "resolve_cli": "python -m api.media_pipeline.reference_library.cli resolve-campaign content/autopilot/coating-protect-2026-07/campaign_visual_lock.json",
   "created_at": "2026-07-03",
+  "updated_at": "2026-07-03",
   "status": "active"
 }

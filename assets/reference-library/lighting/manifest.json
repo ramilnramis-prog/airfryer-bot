@@ -3,34 +3,9 @@
   "is_global_canon": false,
   "note": "Референсы схемы освещения — НЕ канон, выбираются заново на кампанию.",
   "asset_count": 2,
-  "assets": [
-    {
-      "id": "food-salmon-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/food_salmon.png",
-      "description": "Стейк лосося с лимоном и зеленью в форме, пар, деревянный стол, боковой оконный свет.",
-      "sha256": "dcdd75337ad2d11a81bf15f7bc8b4793af06795bb8cd9b87a848330b8ad4bc8f",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "lighting",
-      "suitable_uses": [
-        "food_reference для сцен подачи рыбы",
-        "пример тёплого бокового света от окна"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "v2-wings-basket-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b1_wings.png",
-      "description": "Тёмная форма с готовыми крыльями в корзине аэрогриля, деревянная столешница, кухонное окно на фоне (тёплый мягкий свет).",
-      "sha256": "dedb6cd930b0bf97ac10ce45b60b7f390716ee5446a8850cb243417864066576",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "lighting",
-      "suitable_uses": [
-        "food_reference (крылья)",
-        "пример тёплой деревянной кухни с мягким боковым светом"
-      ],
-      "restrictions": []
-    }
-  ]
+  "asset_ids": [
+    "food-salmon-01",
+    "v2-wings-basket-01"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
 }

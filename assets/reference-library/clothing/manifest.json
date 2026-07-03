@@ -3,61 +3,11 @@
   "is_global_canon": false,
   "note": "Референсы одежды персонажа — НЕ канон, выбираются заново на кампанию.",
   "asset_count": 4,
-  "assets": [
-    {
-      "id": "person-b-exhausted-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/hookB_exhausted.png",
-      "description": "Женщина (пучок, серый кардиган) моет тёмную корзину в раковине, светлая кухня с кабанчиком.",
-      "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "clothing",
-      "suitable_uses": [
-        "person_reference + clothing_reference (серый кардиган) для кампании с сюжетом \"усталость от мытья\""
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "person-pain-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot1_pain.png",
-      "description": "Женщина (пучок, серый кардиган) у раковины с грязной корзиной, растения на подоконнике.",
-      "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "clothing",
-      "suitable_uses": [
-        "тот же person/clothing сет, что и person-b-exhausted-01 (тот же кардиган и причёска — вероятно один персонаж)"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "person-rinse-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot6_rinse.png",
-      "description": "Женщина (серый верх) ополаскивает форму под краном, растения и свет из окна.",
-      "sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "clothing",
-      "suitable_uses": [
-        "person/hands_reference для сцены \"лёгкая мойка\""
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "v2-hand-hold-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png",
-      "description": "Одна рука (рукав светлого свитера) держит форму (устаревшая геометрия) на весу, кухня с окном и растениями.",
-      "sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "clothing",
-      "suitable_uses": [
-        "grip_reference — однорукий хват",
-        "clothing_reference (светлый свитер)"
-      ],
-      "restrictions": [
-        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
-      ]
-    }
-  ]
+  "asset_ids": [
+    "person-b-exhausted-01",
+    "person-pain-01",
+    "person-rinse-01",
+    "v2-hand-hold-01"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
 }

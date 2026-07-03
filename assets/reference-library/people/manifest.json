@@ -3,58 +3,11 @@
   "is_global_canon": false,
   "note": "Референсы персонажей/моделей — НЕ канон, выбираются заново на кампанию.",
   "asset_count": 4,
-  "assets": [
-    {
-      "id": "person-b-exhausted-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/hookB_exhausted.png",
-      "description": "Женщина (пучок, серый кардиган) моет тёмную корзину в раковине, светлая кухня с кабанчиком.",
-      "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "people",
-      "suitable_uses": [
-        "person_reference + clothing_reference (серый кардиган) для кампании с сюжетом \"усталость от мытья\""
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "person-c-frustrated-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/hookC_frustrated.png",
-      "description": "Женщина (тёмные волосы распущены), раздражённое выражение, держит грязную корзину и щётку, светлая кухня, окно.",
-      "sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "people",
-      "suitable_uses": [
-        "person_reference для эмоционального hook \"фрустрация\""
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "person-pain-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot1_pain.png",
-      "description": "Женщина (пучок, серый кардиган) у раковины с грязной корзиной, растения на подоконнике.",
-      "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "people",
-      "suitable_uses": [
-        "тот же person/clothing сет, что и person-b-exhausted-01 (тот же кардиган и причёска — вероятно один персонаж)"
-      ],
-      "restrictions": []
-    },
-    {
-      "id": "person-rinse-01",
-      "source_path": "D:/OzonGrowthProject/content/assets/shot6_rinse.png",
-      "description": "Женщина (серый верх) ополаскивает форму под краном, растения и свет из окна.",
-      "sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
-      "type": "AI reference",
-      "approved_for_reference_only": true,
-      "category": "people",
-      "suitable_uses": [
-        "person/hands_reference для сцены \"лёгкая мойка\""
-      ],
-      "restrictions": []
-    }
-  ]
+  "asset_ids": [
+    "person-b-exhausted-01",
+    "person-c-frustrated-01",
+    "person-pain-01",
+    "person-rinse-01"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
 }
