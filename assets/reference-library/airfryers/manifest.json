@@ -1,0 +1,12 @@
+{
+  "category": "airfryers",
+  "is_global_canon": false,
+  "note": "Референсы корпуса аэрогриля — НЕ канон, выбираются заново на кампанию.",
+  "asset_count": 3,
+  "asset_ids": [
+    "hand-glove-scrub-01",
+    "v2-form-in-basket-01",
+    "real-airfryer-front-01"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
+}

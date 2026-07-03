@@ -1,0 +1,53 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "selected_variant": "B",
+  "owner_approved": true,
+  "baseplate": {
+    "path": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-B.png",
+    "sha256": "65be9fc5c869a26abed23b852f484ad81b0558c34d3a3774115c40a6b62ab7e6",
+    "note": "используется ТОЛЬКО как визуальный эталон и SHA256-привязка решения; финальная сцена пересобирается из исходных слоёв (ШАГ 2), не редактируется поверх этого PNG"
+  },
+  "transform": {
+    "scale": 0.56,
+    "rotation_deg": -1.0,
+    "translate": [137.24, 20.48],
+    "perspective": 0.0,
+    "canvas_size": [720, 1280],
+    "locked_by": "api/media_pipeline/compositor/scene05_baseplate.py:APPROVED_TRANSFORM_B",
+    "rule": "изменять запрещено без нового явного решения владельца"
+  },
+  "product_canon": {
+    "canonical_version": "real-product-v1",
+    "view": "product_45deg",
+    "source_filename": "photo_7_2026-06-18_16-53-42.jpg",
+    "source_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+    "isolated_sha256": "a80dd1028c7219e39d93dae7294cf3ccd330c1afd190b6789deb0acdeaae0e0e",
+    "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json"
+  },
+  "background_source": {
+    "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/clean_basket_master.png",
+    "sha256": "57e474e35b91241189350ecbcefc2942a6978b408c2e12f26b1157670b5ac29b",
+    "provenance": "video-frame 998, IMG_5925.MOV, реальный аэрогриль DE'MIAND, чистый пустой выдвинутый лоток"
+  },
+  "rejected_alternatives": {
+    "A": {"status": "rejected_alternative", "deleted": false,
+          "path": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-A.png",
+          "reason": "начало подъёма — сохранён как возможный первый кадр последовательности, не используется дальше"},
+    "C": {"status": "rejected_alternative", "deleted": false,
+          "path": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-C.png",
+          "reason": "корзина и логотип раскрыты сильнее — сохранён как более драматичный вариант, не используется дальше"}
+  },
+  "selection_reasons": [
+    "лучший баланс между читаемостью чистой корзины (ключевое сообщение сцены) и уверенным размером формы в кадре",
+    "ближе всего к формулировке scene-05 spec (medium shot, gentle upward tilt)",
+    "все три варианта прошли product-lock validation идентично — выбор сделан не по авто-score, а по композиционной пригодности"
+  ],
+  "selected_at": "2026-07-03",
+  "next_stage": "deterministic_layer_skeleton",
+  "layer_plan_documents": [
+    "content/autopilot/coating-protect-2026-07/scene-05-layers-on-baseplate-B.md",
+    "content/autopilot/coating-protect-2026-07/scene-05-free-compositing-plan.json"
+  ],
+  "note_on_generated_duplicate": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-selection.json — untracked локальный исторический output того же решения; ЭТОТ файл (в корне content/autopilot/coating-protect-2026-07/) — версионируемый источник истины"
+}

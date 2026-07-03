@@ -1,0 +1,16 @@
+{
+  "category": "kitchens",
+  "is_global_canon": false,
+  "note": "Референсы кухонного сета (столешница, плитка, декор) — НЕ канон, выбираются заново на кампанию.",
+  "asset_count": 7,
+  "asset_ids": [
+    "kf-marble-kitchen-01",
+    "kf-marble-kitchen-02",
+    "person-b-exhausted-01",
+    "person-c-frustrated-01",
+    "person-pain-01",
+    "v2-empty-form-counter-01",
+    "v2-hand-hold-01"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
+}

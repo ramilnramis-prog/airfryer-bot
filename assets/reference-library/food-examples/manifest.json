@@ -1,0 +1,18 @@
+{
+  "category": "food-examples",
+  "is_global_canon": false,
+  "note": "Референсы блюд — food может быть сцено-специфичным даже внутри одной кампании.",
+  "asset_count": 9,
+  "asset_ids": [
+    "food-salmon-01",
+    "food-wings-01",
+    "comp-raw-load-01",
+    "comp-clean-lift-01",
+    "comp-clean-lift-02",
+    "v2-wings-basket-01",
+    "v2-casserole-lift-01",
+    "v2-casserole-lift-02",
+    "v2-casserole-lift-03"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
+}

@@ -8,6 +8,12 @@
   preview       — тестовый rigid-animation preview scene-05 (плейсхолдер-фон,
                   канонический product layer из real-product-v1 по
                   умолчанию, watermark TEST PREVIEW)
+  baseplate     — статичный технический base plate scene-05 (реальный фон
+                  DE'MIAND + реальный product layer, 3 варианта положения
+                  A/B/C, без рук/еды/пара/анимации)
+  layer-debug   — debug preview слоёв (back/front hand, food, occluder,
+                  shadow, steam) поверх ЗАФИКСИРОВАННОГО approved
+                  baseplate-B + проверка совпадения пересборки с эталоном
   validate <frame.png> — проверить кадр против канона (нужны transform-параметры)
 """
 from __future__ import annotations
@@ -15,12 +21,17 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from .perspective import RigidTransform
 from .product_assets import DEFAULT_VIEW, build_asset_pack, load_view
 from .real_product_assets import build_real_asset_pack, build_real_master_crops
-from .layer_compositor import SceneLayers
+from .layer_compositor import SceneLayers, compose
 from .rigid_animation import RigidAnimationPlan, render_preview
+from .scene05_baseplate import (BASEPLATE_VARIANTS, BASKET_CENTER_X,
+                                REAL_BACKGROUND, load_real_image,
+                                shadow_overlay, variant_transform)
+from .scene05_debug_preview import build_debug_preview
 
 
 def _placeholder_background(size: tuple):
@@ -57,6 +68,128 @@ def _steam_overlay(size: tuple, seed_step: int = 0):
         r = w // 12 + i * 3
         draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(255, 255, 255, 26))
     return fx.filter(ImageFilter.GaussianBlur(10))
+
+
+# -- scene-05 real base plate (ШАГ 3-5 задачи) ------------------------------
+# Константы (REAL_BACKGROUND, BASKET_CENTER_X, BASEPLATE_VARIANTS) и хелперы
+# (load_real_image, shadow_overlay, variant_transform) перенесены в
+# scene05_baseplate.py — единый источник истины, чтобы transform B нельзя
+# было случайно пересчитать иначе в другом модуле.
+
+
+def _watermark_baseplate(img):
+    from PIL import ImageDraw, ImageFont
+    img = img.copy()
+    draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("arial.ttf", max(18, img.width // 22))
+    except OSError:
+        font = ImageFont.load_default()
+    draw.text((14, img.height - max(34, img.width // 16)), "TEST PREVIEW",
+             fill=(255, 255, 255, 210), font=font)
+    return img
+
+
+def cmd_baseplate(args) -> int:
+    product, _mask, handles = load_view(args.view, args.repo_root)
+    background = load_real_image(REAL_BACKGROUND)
+    canvas_size = background.size
+
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+
+    variants_report = {}
+    frame_images = []
+    for key, spec in BASEPLATE_VARIANTS.items():
+        transform = variant_transform(spec, product.size)
+        shadow = shadow_overlay(canvas_size, BASKET_CENTER_X,
+                                spec["bottom_y"] + 6)
+        layers = SceneLayers(background=background, product=product,
+                             product_transform=transform,
+                             effects=[shadow], handle_masks=handles)
+        result = compose(layers, validate=True)
+        frame = result["image"].convert("RGB")
+        frame = _watermark_baseplate(frame)
+        path = out / f"baseplate-{key}.png"
+        frame.save(path)
+        frame_images.append((key, path))
+
+        handle_canvas = result["handle_masks_canvas"]
+        handle_screen_bbox = {}
+        for side, hm in handle_canvas.items():
+            bbox = hm.getbbox()
+            handle_screen_bbox[side] = list(bbox) if bbox else None
+
+        variants_report[key] = {
+            "label": spec["label"],
+            "path": str(path),
+            "transform": {"scale": transform.scale,
+                          "rotation_deg": transform.rotation_deg,
+                          "translate": list(transform.translate),
+                          "perspective": transform.perspective},
+            "validation": result["validation"],
+            "handle_screen_bbox": handle_screen_bbox,
+        }
+
+    # контактный лист A/B/C
+    from PIL import Image, ImageDraw, ImageFont
+    thumb_w = 360
+    pad, label_h = 20, 40
+    thumbs = []
+    for key, path in frame_images:
+        im = Image.open(path)
+        h = round(im.height * thumb_w / im.width)
+        thumbs.append((key, im.resize((thumb_w, h))))
+    max_h = max(t.height for _, t in thumbs)
+    sheet = Image.new("RGB", (pad + len(thumbs) * (thumb_w + pad),
+                              pad + label_h + max_h + pad), (24, 24, 24))
+    d = ImageDraw.Draw(sheet)
+    try:
+        font = ImageFont.truetype("arial.ttf", 28)
+    except OSError:
+        font = ImageFont.load_default()
+    x = pad
+    for key, im in thumbs:
+        d.text((x, pad), key, fill=(255, 200, 60), font=font)
+        sheet.paste(im, (x, pad + label_h))
+        x += thumb_w + pad
+    contact_sheet_path = out / "contact-sheet-ABC.png"
+    sheet.save(contact_sheet_path)
+
+    all_passed = all(v["validation"]["passed"] for v in variants_report.values())
+    report = {
+        "scene_id": "scene-05",
+        "stage": "real_baseplate",
+        "canonical_version": "real-product-v1",
+        "product_view": args.view,
+        "background_source": REAL_BACKGROUND,
+        "canvas_size": list(canvas_size),
+        "variants": variants_report,
+        "contact_sheet": str(contact_sheet_path),
+        "all_variants_passed_product_lock": all_passed,
+        "no_hands_no_food_no_steam_no_animation": True,
+        "images_api_calls": 0,
+        "animation_api_calls": 0,
+    }
+    (out / "baseplate-report.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"saved": str(out), "all_passed": all_passed,
+                      "variants": {k: v["validation"]["passed"]
+                                  for k, v in variants_report.items()}},
+                     ensure_ascii=False, indent=2))
+    return 0 if all_passed else 2
+
+
+def cmd_layer_debug(args) -> int:
+    report = build_debug_preview(args.out, view=args.view, repo_root=args.repo_root)
+    print(json.dumps({
+        "preview": report["preview_path"],
+        "contact_sheet": report["contact_sheet_path"],
+        "layered_rebuild_matches_baseplate_b": report["layered_rebuild_matches_baseplate_b"],
+        "product_lock_passed": report["product_lock_validation"]["passed"],
+    }, ensure_ascii=False, indent=2))
+    return 0 if (report["layered_rebuild_matches_baseplate_b"]["match"]
+                and report["product_lock_validation"]["passed"]) else 2
 
 
 def cmd_extract(args) -> int:
@@ -132,6 +265,20 @@ def main(argv=None) -> int:
     v.add_argument("--duration", type=float, default=4.5)
     v.add_argument("--fps", type=int, default=12)
     v.set_defaults(fn=cmd_preview)
+
+    bp = sub.add_parser("baseplate",
+                        help="статичный real base plate scene-05 (A/B/C)")
+    bp.add_argument("--repo-root", default=".")
+    bp.add_argument("--view", default=DEFAULT_VIEW)
+    bp.add_argument("--out", required=True)
+    bp.set_defaults(fn=cmd_baseplate)
+
+    ld = sub.add_parser("layer-debug",
+                        help="debug preview слоёв поверх approved baseplate-B")
+    ld.add_argument("--repo-root", default=".")
+    ld.add_argument("--view", default=DEFAULT_VIEW)
+    ld.add_argument("--out", required=True)
+    ld.set_defaults(fn=cmd_layer_debug)
 
     args = p.parse_args(argv)
     return args.fn(args)

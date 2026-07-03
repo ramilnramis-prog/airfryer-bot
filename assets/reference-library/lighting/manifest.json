@@ -1,0 +1,11 @@
+{
+  "category": "lighting",
+  "is_global_canon": false,
+  "note": "Референсы схемы освещения — НЕ канон, выбираются заново на кампанию.",
+  "asset_count": 2,
+  "asset_ids": [
+    "food-salmon-01",
+    "v2-wings-basket-01"
+  ],
+  "resolve_via": "api/media_pipeline/reference_library (asset_id -> REFERENCE_LIBRARY_ROOT + relative_private_path, SHA256-verified)"
+}

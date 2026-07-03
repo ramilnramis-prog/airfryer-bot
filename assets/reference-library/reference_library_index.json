@@ -1,0 +1,583 @@
+{
+  "schema_version": 2,
+  "global_immutable_canon": {
+    "product_canon": "real-product-v1",
+    "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+    "rule": "Единственный постоянный канон во всех кампаниях/роликах. Резолвится ТОЛЬКО из репозитория (product_asset_manifest.json), НИКОГДА не через reference library."
+  },
+  "reference_root_env_var": "REFERENCE_LIBRARY_ROOT",
+  "reference_root_note": "Абсолютный путь НЕ хранится в этом файле. Задаётся переменной окружения REFERENCE_LIBRARY_ROOT (см. .env.example). already_in_repo assets резолвятся напрямую из репозитория и не требуют REFERENCE_LIBRARY_ROOT.",
+  "categories": [
+    "hands",
+    "people",
+    "airfryers",
+    "kitchens",
+    "clothing",
+    "lighting",
+    "grip-examples",
+    "compositions",
+    "food-examples"
+  ],
+  "total_active_assets": 21,
+  "excluded_from_library": [
+    {
+      "asset_id": "legacy-turnaround-6angles",
+      "filename": "forma_6angles.png",
+      "categories": [],
+      "description": "Контрольный лист 6 ракурсов старой (некорректной) геометрии продукта — не сцена, а технический turnaround.",
+      "suitable_uses": [],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта.",
+        "Не подходит ни под один сценарный тип (не сцена, а product turnaround) — исключён из всех 9 категорий, оставлен только как исторический артефакт легаси-канона."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": true,
+      "already_in_repo": false,
+      "relative_private_path": "forma_6angles.png",
+      "repo_path": null,
+      "sha256": "d5cb6978b002301714e6b03a4e829ea4e84c778ac37150b17d6333444eba7499",
+      "width": 1342,
+      "height": 1172,
+      "file_size_bytes": 1269391
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "kf-marble-kitchen-01",
+      "filename": "01_master_keyframe.png",
+      "categories": [
+        "kitchens"
+      ],
+      "description": "Пустая форма (устаревшая геометрия) на мраморной столешнице, белая плитка-кабанчик, бутылка масла, разделочная доска, растение.",
+      "suitable_uses": [
+        "выбор кухонного сета (мрамор + кабанчик + дерево) для нового campaign_visual_lock.kitchen_reference"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": true,
+      "already_in_repo": false,
+      "relative_private_path": "01_master_keyframe.png",
+      "repo_path": null,
+      "sha256": "8f024e04d6ba876e7e8e065a4efa67246cdf9308de477fe325cd0c368806a0ed",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 1542435
+    },
+    {
+      "asset_id": "kf-marble-kitchen-02",
+      "filename": "02_master_keyframe_REAL.png",
+      "categories": [
+        "kitchens"
+      ],
+      "description": "Вариант той же мраморной кухни (кабанчик, масло, доска, растение), альтернативный ракурс/свет.",
+      "suitable_uses": [
+        "альтернативный кадр того же кухонного сета, что и kf-marble-kitchen-01"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": true,
+      "already_in_repo": false,
+      "relative_private_path": "02_master_keyframe_REAL.png",
+      "repo_path": null,
+      "sha256": "d3ece71915e873e39aee3c64835376e19d1b92e02f65f625d54b9e82838c0ccf",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 1530193
+    },
+    {
+      "asset_id": "food-salmon-01",
+      "filename": "food_salmon.png",
+      "categories": [
+        "food-examples",
+        "lighting"
+      ],
+      "description": "Стейк лосося с лимоном и зеленью в форме, пар, деревянный стол, боковой оконный свет.",
+      "suitable_uses": [
+        "food_reference для сцен подачи рыбы",
+        "пример тёплого бокового света от окна"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "food_salmon.png",
+      "repo_path": null,
+      "sha256": "dcdd75337ad2d11a81bf15f7bc8b4793af06795bb8cd9b87a848330b8ad4bc8f",
+      "width": 928,
+      "height": 1152,
+      "file_size_bytes": 1981722
+    },
+    {
+      "asset_id": "food-wings-01",
+      "filename": "food_wings.png",
+      "categories": [
+        "food-examples"
+      ],
+      "description": "Куриные крылья в глазури в чёрной корзине, белая столешница, плитка-кабанчик.",
+      "suitable_uses": [
+        "food_reference для сцен с крыльями"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "food_wings.png",
+      "repo_path": null,
+      "sha256": "1d9f87674e51f2ee8e8813adcd5a77ed47efffb4b0606e1674e3424b44add8d5",
+      "width": 928,
+      "height": 1152,
+      "file_size_bytes": 2012091
+    },
+    {
+      "asset_id": "hand-glove-scrub-01",
+      "filename": "hookA_grease.png",
+      "categories": [
+        "hands",
+        "grip-examples",
+        "airfryers"
+      ],
+      "description": "Рука в жёлтой резиновой перчатке оттирает пригар в чёрной корзине аэрогриля крупным планом.",
+      "suitable_uses": [
+        "hands_reference для hook-кадров \"проблема/жир\"",
+        "grip_reference — перчатка, а не голая рука"
+      ],
+      "restrictions": [
+        "Только рука в перчатке — не источник tone/geometry голой кожи."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "hookA_grease.png",
+      "repo_path": null,
+      "sha256": "8dd15e689039d3017bce55241285aaffbd3479bd26ea7b7015c2bbeced4e7e0d",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 2154488
+    },
+    {
+      "asset_id": "person-b-exhausted-01",
+      "filename": "hookB_exhausted.png",
+      "categories": [
+        "people",
+        "clothing",
+        "kitchens"
+      ],
+      "description": "Женщина (пучок, серый кардиган) моет тёмную корзину в раковине, светлая кухня с кабанчиком.",
+      "suitable_uses": [
+        "person_reference + clothing_reference (серый кардиган) для кампании с сюжетом \"усталость от мытья\""
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "hookB_exhausted.png",
+      "repo_path": null,
+      "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 1985621
+    },
+    {
+      "asset_id": "person-c-frustrated-01",
+      "filename": "hookC_frustrated.png",
+      "categories": [
+        "people",
+        "kitchens"
+      ],
+      "description": "Женщина (тёмные волосы распущены), раздражённое выражение, держит грязную корзину и щётку, светлая кухня, окно.",
+      "suitable_uses": [
+        "person_reference для эмоционального hook \"фрустрация\""
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "hookC_frustrated.png",
+      "repo_path": null,
+      "sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 2004956
+    },
+    {
+      "asset_id": "person-pain-01",
+      "filename": "shot1_pain.png",
+      "categories": [
+        "people",
+        "clothing",
+        "kitchens"
+      ],
+      "description": "Женщина (пучок, серый кардиган) у раковины с грязной корзиной, растения на подоконнике.",
+      "suitable_uses": [
+        "тот же person/clothing сет, что и person-b-exhausted-01 (тот же кардиган и причёска — вероятно один персонаж)"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "shot1_pain.png",
+      "repo_path": null,
+      "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 2265134
+    },
+    {
+      "asset_id": "comp-raw-load-01",
+      "filename": "shot4_cooking.png",
+      "categories": [
+        "compositions",
+        "food-examples",
+        "hands"
+      ],
+      "description": "Рука укладывает сырые куриные бёдра и болгарский перец в уже стоящую в аэрогриле корзину, вид сверху.",
+      "suitable_uses": [
+        "композиция \"загрузка продуктов\" — руки + сырая еда + корзина"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "shot4_cooking.png",
+      "repo_path": null,
+      "sha256": "98e7a7136cd2655cc0ee8b1dfba318bcd2e24ee86159a61c0cc658ee51f97bf8",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 1911321
+    },
+    {
+      "asset_id": "comp-clean-lift-01",
+      "filename": "shot5_clean.png",
+      "categories": [
+        "compositions",
+        "grip-examples",
+        "food-examples"
+      ],
+      "description": "Руки поднимают тёмную форму с готовой едой (курица/овощи) над корзиной аэрогриля, белая столешница.",
+      "suitable_uses": [
+        "grip_reference — двуручный хват за обе ручки",
+        "композиция \"результат/подача\""
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "shot5_clean.png",
+      "repo_path": null,
+      "sha256": "3c77a9e5d59507a0d2f36304c6c2432001c21db2fabee004c29731c44f7c3a68",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 2146209
+    },
+    {
+      "asset_id": "comp-clean-lift-02",
+      "filename": "shot5_clean_v2.png",
+      "categories": [
+        "compositions",
+        "grip-examples",
+        "food-examples"
+      ],
+      "description": "Альтернативный кадр той же композиции (руки поднимают форму с готовой едой), другой свет/ракурс.",
+      "suitable_uses": [
+        "альтернативный вариант comp-clean-lift-01"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "shot5_clean_v2.png",
+      "repo_path": null,
+      "sha256": "83d6868ece4feae14639936f909a001980b1cb3c1a5e9f15de0e8b6a12079cb3",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 1583167
+    },
+    {
+      "asset_id": "person-rinse-01",
+      "filename": "shot6_rinse.png",
+      "categories": [
+        "people",
+        "clothing",
+        "hands"
+      ],
+      "description": "Женщина (серый верх) ополаскивает форму под краном, растения и свет из окна.",
+      "suitable_uses": [
+        "person/hands_reference для сцены \"лёгкая мойка\""
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "shot6_rinse.png",
+      "repo_path": null,
+      "sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
+      "width": 768,
+      "height": 1376,
+      "file_size_bytes": 1917908
+    },
+    {
+      "asset_id": "v2-wings-basket-01",
+      "filename": "b1_wings.png",
+      "categories": [
+        "food-examples",
+        "compositions",
+        "lighting"
+      ],
+      "description": "Тёмная форма с готовыми крыльями в корзине аэрогриля, деревянная столешница, кухонное окно на фоне (тёплый мягкий свет).",
+      "suitable_uses": [
+        "food_reference (крылья)",
+        "пример тёплой деревянной кухни с мягким боковым светом"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/b1_wings.png",
+      "repo_path": null,
+      "sha256": "dedb6cd930b0bf97ac10ce45b60b7f390716ee5446a8850cb243417864066576",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 2305440
+    },
+    {
+      "asset_id": "v2-casserole-lift-01",
+      "filename": "b3a.png",
+      "categories": [
+        "compositions",
+        "grip-examples",
+        "food-examples"
+      ],
+      "description": "Руки поднимают тёмный противень с запечённым сыром/запеканкой из корзины аэрогриля, деревянная столешница, растение на фоне.",
+      "suitable_uses": [
+        "композиция + grip_reference — вариант A той же сцены, что b3b/b3c"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/b3a.png",
+      "repo_path": null,
+      "sha256": "2fdea8d791940172122642b12cb5a9869738e2d2014b63ce2c27bf8a07516baf",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 1853012
+    },
+    {
+      "asset_id": "v2-casserole-lift-02",
+      "filename": "b3b.png",
+      "categories": [
+        "compositions",
+        "grip-examples",
+        "food-examples"
+      ],
+      "description": "Та же сцена (запеканка, подъём двумя руками), вариант B.",
+      "suitable_uses": [
+        "альтернативный кадр v2-casserole-lift-01"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/b3b.png",
+      "repo_path": null,
+      "sha256": "d20270330693032b6ffbd9cc9d08c3dcb662bb959a8dc69f125b75615c61de58",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 1855334
+    },
+    {
+      "asset_id": "v2-casserole-lift-03",
+      "filename": "b3c.png",
+      "categories": [
+        "compositions",
+        "grip-examples",
+        "food-examples"
+      ],
+      "description": "Та же сцена (запеканка, подъём/установка), вариант C, более крупный план.",
+      "suitable_uses": [
+        "альтернативный кадр v2-casserole-lift-01"
+      ],
+      "restrictions": [],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/b3c.png",
+      "repo_path": null,
+      "sha256": "ce857e0fcb8f6d3fc45750eed656776f330c6ce5dedbc0cbcd43563469989358",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 1878001
+    },
+    {
+      "asset_id": "v2-empty-form-counter-01",
+      "filename": "cta.png",
+      "categories": [
+        "compositions",
+        "kitchens"
+      ],
+      "description": "Пустая форма (устаревшая геометрия) одна на деревянной столешнице, кухня с банками и разделочной доской на фоне.",
+      "suitable_uses": [
+        "композиция \"продукт крупным планом на столе\" (без продукта как источника геометрии)",
+        "кухонный сет (дерево + банки + доска)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": true,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/cta.png",
+      "repo_path": null,
+      "sha256": "70814a3eb80a9c035f0bb198bf6f63d22b904b7a8e3806fbd79eb56b9c289d69",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 2012220
+    },
+    {
+      "asset_id": "v2-hand-hold-01",
+      "filename": "h1.png",
+      "categories": [
+        "hands",
+        "grip-examples",
+        "kitchens",
+        "clothing"
+      ],
+      "description": "Одна рука (рукав светлого свитера) держит форму (устаревшая геометрия) на весу, кухня с окном и растениями.",
+      "suitable_uses": [
+        "grip_reference — однорукий хват",
+        "clothing_reference (светлый свитер)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": true,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/h1.png",
+      "repo_path": null,
+      "sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 1740984
+    },
+    {
+      "asset_id": "v2-form-in-basket-01",
+      "filename": "place.png",
+      "categories": [
+        "airfryers",
+        "compositions"
+      ],
+      "description": "Пустая форма (устаревшая геометрия) размещена в чёрной корзине аэрогриля, деревянная столешница, кухонная утварь на фоне.",
+      "suitable_uses": [
+        "композиция \"форма в корзине\" (только сцена/корзина, не геометрия формы)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ],
+      "source_type": "ai_reference",
+      "ownership_status": "generated_reference",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": true,
+      "already_in_repo": false,
+      "relative_private_path": "video2-formaad/place.png",
+      "repo_path": null,
+      "sha256": "1defaf9ed841654454eaaadf25890e5c4158b4b23a21620703273a059fd51835",
+      "width": 941,
+      "height": 1672,
+      "file_size_bytes": 1854533
+    },
+    {
+      "asset_id": "real-airfryer-front-01",
+      "filename": "airfryer_front_master.png",
+      "categories": [
+        "airfryers"
+      ],
+      "description": "Реальный аэрогриль DE'MIAND, вид спереди — кадр из исходного видео (IMG_5925.MOV), НЕ AI-референс.",
+      "suitable_uses": [
+        "airfryer_reference реального устройства для нового campaign_visual_lock"
+      ],
+      "restrictions": [
+        "Это РЕАЛЬНЫЙ кадр устройства (не AI) — приоритетный airfryer_reference, но airfryer всё равно не глобальный канон: для другой кампании можно выбрать другой аэрогриль."
+      ],
+      "source_type": "video_frame_real",
+      "ownership_status": "owner_created",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": true,
+      "relative_private_path": null,
+      "repo_path": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/airfryer_front_master.png",
+      "sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78",
+      "width": 720,
+      "height": 1280,
+      "file_size_bytes": 538763
+    },
+    {
+      "asset_id": "real-grip-motion-01",
+      "filename": "grip_motion_master.png",
+      "categories": [
+        "grip-examples",
+        "hands"
+      ],
+      "description": "Реальный кадр движения/хвата (мужская рука) из исходного видео — референс ТОЛЬКО по механике хвата, не финальный канон рук.",
+      "suitable_uses": [
+        "grip_reference — как двигается рука при хвате/подъёме реального продукта"
+      ],
+      "restrictions": [
+        "Мужская рука в этом кадре — референс ТОЛЬКО по механике движения/хвата, НЕ финальный hands_reference кампании (пол/образ модели выбираются отдельно на кампанию)."
+      ],
+      "source_type": "video_frame_real",
+      "ownership_status": "owner_created",
+      "approved_for_reference_only": true,
+      "prohibited_as_product_geometry_source": false,
+      "already_in_repo": true,
+      "relative_private_path": null,
+      "repo_path": "assets/product-lock/airfryer-silicone-form/references/real-v1/motion/grip_motion_master.png",
+      "sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
+      "width": 720,
+      "height": 1280,
+      "file_size_bytes": 325402
+    }
+  ]
+}
