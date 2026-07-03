@@ -196,6 +196,29 @@ def steam_zone(full_mask_bbox: tuple, canvas_size: tuple) -> tuple:
     return (x0, round(top), x1, y0)
 
 
+def call1_edit_mask_zones(masks: dict) -> dict:
+    """Маска для CALL 1 сцены-05 как MASKED IMAGE EDIT приближённого
+    baseplate-B.png (не слоистая компоновка).
+
+    back_hand_zone спроектирована для СЛОИСТОГО рендера, где PRODUCT_BASE
+    рисуется поверх неё в более позднем z-order — в плоском edit такой
+    гарантии нет: если использовать её как есть, правая зона (без
+    обрезки) заходит в открытую корзину/рёбра корзины ниже формы (визуально
+    подтверждено сверкой с content/autopilot/coating-protect-2026-07/
+    generated/scene-05-real-baseplate/baseplate-B.png). Поэтому обе
+    forearm/hand зоны обрезаются по нижней границе product_full_bbox —
+    ниже неё начинается корзина/фон, которые нельзя редактировать."""
+    x0l, y0l, x1l, y1l = masks["back_hand_left_zone"]
+    x0r, y0r, x1r, y1r = masks["back_hand_right_zone"]
+    _, _, _, product_y1 = masks["product_full_bbox"]
+    return {
+        "left_forearm_hand": (x0l, y0l, x1l, min(y1l, product_y1)),
+        "right_forearm_hand": (x0r, y0r, x1r, min(y1r, product_y1)),
+        "left_fingers_over_handle": masks["front_fingers_left_zone"],
+        "right_fingers_over_handle": masks["front_fingers_right_zone"],
+    }
+
+
 def build_all_layer_masks(view: str, transform: RigidTransform,
                           canvas_size: tuple, repo_root: str | Path = "."):
     """Собирает ВСЕ детерминированные маски/зоны за один проход. Возвращает

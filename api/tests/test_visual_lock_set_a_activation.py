@@ -141,9 +141,8 @@ class TestPlacementReferenceNotPassedToScene05(unittest.TestCase):
 
     def test_dry_run_refs_for_scene_05_exclude_placement_reference(self):
         dry_run = load_json(CAMPAIGN_DIR / "scene-05-generation-dry-run.json")
-        all_refs = (dry_run["refs_passed_in_order"]["hands_layer_call_1"] +
-                   dry_run["refs_passed_in_order"]["food_layer_call_2"])
-        self.assertNotIn("v2-form-in-basket-01", all_refs)
+        all_asset_ids = {r["asset_id"] for r in dry_run["refs_passed_in_order"] if "asset_id" in r}
+        self.assertNotIn("v2-form-in-basket-01", all_asset_ids)
         excluded_ids = {e["asset_id"] for e in dry_run["excluded_from_refs"]}
         self.assertIn("v2-form-in-basket-01", excluded_ids)
 
@@ -162,9 +161,15 @@ class TestFoodWingsDoesNotDefineScene05(unittest.TestCase):
         self.assertEqual(scene05_food["item"], "chicken thigh")
         self.assertEqual(scene05_food["count"], 3)
 
-    def test_dry_run_food_layer_refs_are_empty_not_food_wings(self):
+    def test_dry_run_refs_never_include_food_wings(self):
         dry_run = load_json(CAMPAIGN_DIR / "scene-05-generation-dry-run.json")
-        self.assertEqual(dry_run["refs_passed_in_order"]["food_layer_call_2"], [])
+        all_asset_ids = {r["asset_id"] for r in dry_run["refs_passed_in_order"] if "asset_id" in r}
+        self.assertNotIn("food-wings-01", all_asset_ids)
+
+    def test_dry_run_pilot_call_food_status_is_blocked(self):
+        dry_run = load_json(CAMPAIGN_DIR / "scene-05-generation-dry-run.json")
+        self.assertEqual(dry_run["planned_generation"]["pilot_call"]["food_status"], "BLOCKED")
+        self.assertEqual(dry_run["planned_generation"]["pilot_call"]["scope"], "HANDS ONLY (masked image edit of baseplate B)")
 
 
 class TestProductCanonAlwaysRealProductV1(unittest.TestCase):
@@ -202,9 +207,9 @@ class TestGenerationBlockedWithoutSeparateApproval(unittest.TestCase):
         self.assertEqual(dry_run["execution_summary"]["higgsfield_api_calls_executed"], 0)
         self.assertEqual(dry_run["execution_summary"]["api_spend_usd_executed"], 0)
 
-    def test_hard_cap_is_at_most_one_dollar(self):
+    def test_hard_cap_is_at_most_fifty_cents_for_hands_pilot(self):
         dry_run = load_json(CAMPAIGN_DIR / "scene-05-generation-dry-run.json")
-        self.assertLessEqual(dry_run["hard_cap"]["max_spend_usd_this_stage"], 1.00)
+        self.assertLessEqual(dry_run["hard_cap"]["max_spend_usd_this_stage"], 0.50)
         self.assertEqual(dry_run["hard_cap"]["max_api_calls_executed_this_stage"], 0)
 
     def test_visual_lock_approval_is_a_separate_gate_from_spend_approval(self):
