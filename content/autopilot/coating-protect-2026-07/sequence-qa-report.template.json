@@ -1,0 +1,39 @@
+{
+  "_template": "Заполняет sequence-director после выбора победителей всех сцен. Проверить детерминированно: python -m api.media_pipeline.cli sequence-qa <этот-файл> (exit 0 = approved, exit 2 = есть скачки)",
+  "campaign_code": "coating-protect-2026-07",
+  "generated_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "winners": {
+    "scene-01": "scene-01-rR-cN.png",
+    "scene-02": "...",
+    "scene-03": "...",
+    "scene-04": "...",
+    "scene-05": "...",
+    "scene-06": "...",
+    "scene-07": "..."
+  },
+  "transitions": [
+    {
+      "pair": ["scene-01", "scene-02"],
+      "jumps": {
+        "form_jump": false,
+        "airfryer_jump": false,
+        "hands_jump": false,
+        "food_jump": false,
+        "kitchen_jump": false,
+        "light_jump": false,
+        "camera_jump": false,
+        "composition_jump": false
+      },
+      "details": {},
+      "regenerate": null
+    }
+  ],
+  "cross_checks": {
+    "same_liner_scenes_3_to_7": true,
+    "same_basket_scenes_1_2_5_6": true,
+    "food_identical_scenes_4_5": true
+  },
+  "result": {
+    "_note": "вывод cli sequence-qa: approved, scenes_to_regenerate"
+  }
+}

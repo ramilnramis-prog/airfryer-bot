@@ -1,0 +1,30 @@
+{
+  "scene_id": "scene-01",
+  "title": "HOOK: руки оттирают чашу аэрогриля губкой у раковины",
+  "prompt_action": "At the kitchen sink, the woman's hands scrub the removable black air fryer basket with a yellow-green kitchen sponge, soap foam on the sponge, greasy smears visible inside the basket, a tired slow scrubbing motion. The silicone liner is NOT in this shot. No text, no watermarks, no logos. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "medium close-up on the hands and basket, subtle handheld sway, eye-level",
+  "immutable_elements": [
+    "кухня Style Anchor (белый кабанчик, серо-бежевая столешница)",
+    "дневной свет слева",
+    "женские руки канона (короткие ногти без лака, без украшений)",
+    "чёрная корзина канонического аэрогриля"
+  ],
+  "allowed_changes": ["количество пены", "положение губки", "степень жирных следов"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png"
+  ],
+  "exact_food_count": null,
+  "hand_requirements": {"gender": "female", "in_frame": true, "jewelry": "none",
+                        "action": "трут корзину губкой, обе руки заняты"},
+  "camera_requirements": {"framing": "средний план рук и корзины", "angle": "уровень глаз",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "первый кадр ролика — точка входа",
+  "relationship_to_next": "scene-02 — макро-продолжение этого же действия: та же губка, та же корзина, тот же жир",
+  "animation_intent": "медленное движение губки по корзине, лёгкий handheld",
+  "hard_fail_conditions": [
+    "силиконовая форма в кадре (её здесь БЫТЬ НЕ ДОЛЖНО)",
+    "корзина не совпадает с канонической",
+    "губка другого цвета, чем в scene-02"
+  ]
+}

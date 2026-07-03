@@ -1,0 +1,455 @@
+{
+  "mode": "apply",
+  "command": "reevaluate",
+  "scene": "scene-05",
+  "candidates": [
+    "content\\autopilot\\coating-protect-2026-07\\generated\\scene-05\\scene-05-c1.png",
+    "content\\autopilot\\coating-protect-2026-07\\generated\\scene-05\\scene-05-c2.png",
+    "content\\autopilot\\coating-protect-2026-07\\generated\\scene-05\\scene-05-c3.png"
+  ],
+  "vision_model": "gpt-5.4-mini",
+  "arbiter": {
+    "enabled": false,
+    "model": "gpt-5.5",
+    "calls": 0
+  },
+  "images_api_calls": 0,
+  "generation_calls": 0,
+  "food_second_pass_calls": 0,
+  "vision_evaluations": [
+    {
+      "candidate_id": "scene-05-c1",
+      "mode": "apply",
+      "result": {
+        "detected_objects": [
+          "air fryer",
+          "basket/liner",
+          "female hands",
+          "chicken thighs",
+          "potato wedges",
+          "steam",
+          "kitchen counter"
+        ],
+        "handle_count": 2,
+        "product_match": true,
+        "airfryer_match": true,
+        "hand_gender_presentation": "female",
+        "hand_anatomy_issues": [],
+        "grip_correct": true,
+        "food_count": 3,
+        "food_count_detail": {
+          "visible_count": 3,
+          "partially_occluded_count": 0,
+          "uncertain_count": 0,
+          "expected_count": 3,
+          "confidence": 0.98,
+          "evidence": "Three distinct chicken thighs visible in the basket; potato wedges present as extras and not counted.",
+          "items": [
+            {
+              "label": "chicken thigh",
+              "location": "left side of basket"
+            },
+            {
+              "label": "chicken thigh",
+              "location": "center/top of basket"
+            },
+            {
+              "label": "chicken thigh",
+              "location": "right/front of basket"
+            }
+          ],
+          "region": {
+            "x0": 0.13,
+            "y0": 0.42,
+            "x1": 0.87,
+            "y1": 0.89
+          }
+        },
+        "text_or_watermark": false,
+        "physical_intersections": [],
+        "photorealism": true,
+        "animation_readiness": true,
+        "transition_possible": true,
+        "next_scene_state_not_yet_present": false,
+        "continuity_issues": [],
+        "hard_fail_codes": [],
+        "scores": {
+          "product_reference_match": 98,
+          "airfryer_reference_match": 98,
+          "human_continuity": 97,
+          "hand_anatomy": 98,
+          "food_continuity": 96,
+          "photorealism": 97,
+          "composition": 95,
+          "marketing_clarity": 94,
+          "animation_readiness": 96,
+          "adjacent_scene_continuity": 95
+        },
+        "confidence": 0.96,
+        "explanation": "Candidate matches the referenced basket/product and female two-hand grip. Three chicken thighs are visible with potato wedges as extras, consistent with the scene spec. No text or obvious anatomy issues."
+      },
+      "planned_request": {
+        "endpoint": "/responses",
+        "model": "gpt-5.4-mini",
+        "structured_output": "json_schema:vision_evaluation (strict)",
+        "candidate_image": "content\\autopilot\\coating-protect-2026-07\\generated\\scene-05\\scene-05-c1.png",
+        "reference_images": [
+          "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+          "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+          "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png"
+        ],
+        "image_count": 4,
+        "estimated_cost_usd": 0.05
+      },
+      "model": "gpt-5.4-mini",
+      "food_second_pass_check": {
+        "needed": false,
+        "reasons": []
+      },
+      "food_count_resolution": {
+        "status": "confirmed",
+        "final_count": 3,
+        "reasons": [
+          "первичный подсчёт уверен и совпал с ожиданием"
+        ]
+      }
+    },
+    {
+      "candidate_id": "scene-05-c2",
+      "mode": "apply",
+      "result": {
+        "detected_objects": [
+          "air fryer",
+          "basket/liner pan",
+          "female hands",
+          "chicken thighs",
+          "potato wedges",
+          "steam",
+          "kitchen counter"
+        ],
+        "handle_count": 2,
+        "product_match": true,
+        "airfryer_match": true,
+        "hand_gender_presentation": "female",
+        "hand_anatomy_issues": [],
+        "grip_correct": true,
+        "food_count": 3,
+        "food_count_detail": {
+          "visible_count": 3,
+          "partially_occluded_count": 0,
+          "uncertain_count": 0,
+          "expected_count": 3,
+          "confidence": 0.93,
+          "evidence": "Three chicken thighs are clearly visible in the basket, with potato wedges around them. No extra chicken piece is visible.",
+          "items": [
+            {
+              "label": "chicken thigh",
+              "location": "left side of basket"
+            },
+            {
+              "label": "chicken thigh",
+              "location": "center-back of basket"
+            },
+            {
+              "label": "chicken thigh",
+              "location": "right side of basket"
+            }
+          ],
+          "region": {
+            "x0": 0.09,
+            "y0": 0.39,
+            "x1": 0.86,
+            "y1": 0.83
+          }
+        },
+        "text_or_watermark": false,
+        "physical_intersections": [],
+        "photorealism": true,
+        "animation_readiness": true,
+        "transition_possible": true,
+        "next_scene_state_not_yet_present": true,
+        "continuity_issues": [],
+        "hard_fail_codes": [],
+        "scores": {
+          "product_reference_match": 98,
+          "airfryer_reference_match": 97,
+          "human_continuity": 96,
+          "hand_anatomy": 98,
+          "food_continuity": 95,
+          "photorealism": 96,
+          "composition": 93,
+          "marketing_clarity": 94,
+          "animation_readiness": 96,
+          "adjacent_scene_continuity": 92
+        },
+        "confidence": 0.96,
+        "explanation": "Candidate matches the reference basket and air fryer style, shows two female hands gripping both oval handles correctly, and contains exactly three chicken thighs with potato wedges. The scene is photorealistic and animatable into the next state where the basket is removed, so the next-scene state is not yet present as expected."
+      },
+      "planned_request": {
+        "endpoint": "/responses",
+        "model": "gpt-5.4-mini",
+        "structured_output": "json_schema:vision_evaluation (strict)",
+        "candidate_image": "content\\autopilot\\coating-protect-2026-07\\generated\\scene-05\\scene-05-c2.png",
+        "reference_images": [
+          "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+          "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+          "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png"
+        ],
+        "image_count": 4,
+        "estimated_cost_usd": 0.05
+      },
+      "model": "gpt-5.4-mini",
+      "food_second_pass_check": {
+        "needed": false,
+        "reasons": []
+      },
+      "food_count_resolution": {
+        "status": "confirmed",
+        "final_count": 3,
+        "reasons": [
+          "первичный подсчёт уверен и совпал с ожиданием"
+        ]
+      }
+    },
+    {
+      "candidate_id": "scene-05-c3",
+      "mode": "apply",
+      "result": {
+        "detected_objects": [
+          "air fryer basket",
+          "air fryer base",
+          "two hands",
+          "chicken thighs",
+          "potato wedges",
+          "steam",
+          "kitchen counter",
+          "window",
+          "plant",
+          "cutting board",
+          "jar",
+          "wooden utensils",
+          "candle"
+        ],
+        "handle_count": 2,
+        "product_match": true,
+        "airfryer_match": true,
+        "hand_gender_presentation": "female",
+        "hand_anatomy_issues": [],
+        "grip_correct": true,
+        "food_count": 3,
+        "food_count_detail": {
+          "visible_count": 3,
+          "partially_occluded_count": 0,
+          "uncertain_count": 0,
+          "expected_count": 3,
+          "confidence": 0.94,
+          "evidence": "Three distinct chicken thighs are visible in the basket; potato wedges are present as extras and not counted.",
+          "items": [
+            {
+              "label": "chicken thigh",
+              "location": "left side of basket"
+            },
+            {
+              "label": "chicken thigh",
+              "location": "center top of basket"
+            },
+            {
+              "label": "chicken thigh",
+              "location": "right side of basket"
+            }
+          ],
+          "region": {
+            "x0": 0.14,
+            "y0": 0.3,
+            "x1": 0.84,
+            "y1": 0.75
+          }
+        },
+        "text_or_watermark": false,
+        "physical_intersections": [],
+        "photorealism": true,
+        "animation_readiness": true,
+        "transition_possible": true,
+        "next_scene_state_not_yet_present": false,
+        "continuity_issues": [],
+        "hard_fail_codes": [],
+        "scores": {
+          "product_reference_match": 98,
+          "airfryer_reference_match": 97,
+          "human_continuity": 96,
+          "hand_anatomy": 96,
+          "food_continuity": 98,
+          "photorealism": 95,
+          "composition": 92,
+          "marketing_clarity": 94,
+          "animation_readiness": 96,
+          "adjacent_scene_continuity": 94
+        },
+        "confidence": 0.96,
+        "explanation": "Candidate matches the reference basket and fryer, shows two female hands gripping both oval handles correctly with thumbs on top, and contains exactly three chicken thighs with potato wedges as specified. No major anatomy or continuity issues detected; steam is present but not excessive."
+      },
+      "planned_request": {
+        "endpoint": "/responses",
+        "model": "gpt-5.4-mini",
+        "structured_output": "json_schema:vision_evaluation (strict)",
+        "candidate_image": "content\\autopilot\\coating-protect-2026-07\\generated\\scene-05\\scene-05-c3.png",
+        "reference_images": [
+          "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+          "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+          "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png"
+        ],
+        "image_count": 4,
+        "estimated_cost_usd": 0.05
+      },
+      "model": "gpt-5.4-mini",
+      "food_second_pass_check": {
+        "needed": false,
+        "reasons": []
+      },
+      "food_count_resolution": {
+        "status": "confirmed",
+        "final_count": 3,
+        "reasons": [
+          "первичный подсчёт уверен и совпал с ожиданием"
+        ]
+      }
+    }
+  ],
+  "decision": {
+    "scene_id": "scene-05",
+    "round": 1,
+    "winner_id": "scene-05-c1",
+    "verdicts": [
+      {
+        "candidate_id": "scene-05-c1",
+        "hard_fails": [],
+        "scores": {
+          "product_reference_match": 98,
+          "airfryer_reference_match": 98,
+          "human_continuity": 97,
+          "hand_anatomy": 98,
+          "food_continuity": 96,
+          "photorealism": 97,
+          "composition": 95,
+          "marketing_clarity": 94,
+          "animation_readiness": 96,
+          "adjacent_scene_continuity": 95
+        },
+        "total": 96.4,
+        "passed": true,
+        "reasons": []
+      },
+      {
+        "candidate_id": "scene-05-c2",
+        "hard_fails": [],
+        "scores": {
+          "product_reference_match": 98,
+          "airfryer_reference_match": 97,
+          "human_continuity": 96,
+          "hand_anatomy": 98,
+          "food_continuity": 95,
+          "photorealism": 96,
+          "composition": 93,
+          "marketing_clarity": 94,
+          "animation_readiness": 96,
+          "adjacent_scene_continuity": 92
+        },
+        "total": 95.5,
+        "passed": true,
+        "reasons": []
+      },
+      {
+        "candidate_id": "scene-05-c3",
+        "hard_fails": [],
+        "scores": {
+          "product_reference_match": 98,
+          "airfryer_reference_match": 97,
+          "human_continuity": 96,
+          "hand_anatomy": 96,
+          "food_continuity": 98,
+          "photorealism": 95,
+          "composition": 92,
+          "marketing_clarity": 94,
+          "animation_readiness": 96,
+          "adjacent_scene_continuity": 94
+        },
+        "total": 95.6,
+        "passed": true,
+        "reasons": []
+      }
+    ],
+    "rejection_reasons": {
+      "scene-05-c2": "проиграл по total (95.5 vs 96.4)",
+      "scene-05-c3": "проиграл по total (95.6 vs 96.4)"
+    },
+    "regeneration_brief": null,
+    "needs_owner": false
+  },
+  "budget": {
+    "cap_usd": 2.0,
+    "estimated_spend_usd": {
+      "image_generation": 0.0,
+      "vision_evaluation": 0.15,
+      "total": 0.15
+    },
+    "actual_spend_usd": {
+      "image_generation": 0.0,
+      "vision_evaluation": 0.0,
+      "total": 0.0,
+      "complete": false
+    },
+    "calls_logged": 3
+  },
+  "usage_log": [
+    {
+      "category": "vision_evaluation",
+      "estimate_usd": 0.05,
+      "usage": {
+        "input_tokens": 9153,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 377,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 9530
+      },
+      "actual_usd": null
+    },
+    {
+      "category": "vision_evaluation",
+      "estimate_usd": 0.05,
+      "usage": {
+        "input_tokens": 9153,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 410,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 9563
+      },
+      "actual_usd": null
+    },
+    {
+      "category": "vision_evaluation",
+      "estimate_usd": 0.05,
+      "usage": {
+        "input_tokens": 9153,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 410,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 9563
+      },
+      "actual_usd": null
+    }
+  ],
+  "higgsfield": "BLOCKED — reevaluate не открывает гейт higgsfield_gate",
+  "generated_at": "2026-07-02T15:41:34Z"
+}

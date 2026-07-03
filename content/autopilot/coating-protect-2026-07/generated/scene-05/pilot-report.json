@@ -1,0 +1,143 @@
+{
+  "mode": "apply",
+  "run_at_utc": "2026-07-02T15:08:14Z",
+  "pilot_scene": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "image_model": "gpt-image-2",
+  "vision_model": "gpt-5.4-mini",
+  "arbiter": {"enabled": false, "model": "gpt-5.5", "calls": 0},
+  "quality": "medium",
+  "size": "1024x1536 (portrait, ближайший к 9:16)",
+  "candidates": 3,
+  "regeneration_rounds": 0,
+  "contact_sheet": "content/autopilot/coating-protect-2026-07/generated/scene-05/contact-sheet-ABC.png",
+  "candidate_labels": {"A": "scene-05-c1", "B": "scene-05-c2", "C": "scene-05-c3"},
+  "generation_results": [
+    {
+      "candidate_id": "scene-05-c1",
+      "image_path": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-c1.png",
+      "model": "gpt-image-2",
+      "estimated_cost_usd": 0.3
+    },
+    {
+      "candidate_id": "scene-05-c2",
+      "image_path": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-c2.png",
+      "model": "gpt-image-2",
+      "estimated_cost_usd": 0.3
+    },
+    {
+      "candidate_id": "scene-05-c3",
+      "image_path": "content/autopilot/coating-protect-2026-07/generated/scene-05/scene-05-c3.png",
+      "model": "gpt-image-2",
+      "estimated_cost_usd": 0.3
+    }
+  ],
+  "vision_evaluations": [
+    {
+      "candidate_id": "scene-05-c1",
+      "model": "gpt-5.4-mini",
+      "result": {
+        "detected_objects": ["air fryer basket", "air fryer base", "two human hands", "chicken thighs", "potato wedges", "steam"],
+        "handle_count": 2,
+        "product_match": true,
+        "airfryer_match": true,
+        "hand_gender_presentation": "female",
+        "hand_anatomy_issues": [],
+        "grip_correct": true,
+        "food_count": 3,
+        "text_or_watermark": false,
+        "physical_intersections": [],
+        "photorealism": true,
+        "animation_readiness": true,
+        "continuity_issues": ["Food arrangement does not match required next-scene empty basket expectation; current frame still shows cooked food and steam."],
+        "hard_fail_codes": ["adjacent_scene_break"],
+        "scores": {"product_reference_match": 9, "airfryer_reference_match": 9, "human_continuity": 9, "hand_anatomy": 9, "food_continuity": 3, "photorealism": 9, "composition": 8, "marketing_clarity": 8, "animation_readiness": 8, "adjacent_scene_continuity": 2},
+        "confidence": 0.94,
+        "explanation": "The candidate matches the referenced basket, air fryer, and female two-hand grip on both oval handles with thumbs on top. Food count appears to be three chicken thighs with potato wedges, and the scene is photorealistic with no text or obvious anatomy issues. However, for the next-scene requirement, this frame is not a clean transition to an empty basket, so it breaks adjacent-scene continuity."
+      }
+    },
+    {
+      "candidate_id": "scene-05-c2",
+      "model": "gpt-5.4-mini",
+      "result": {
+        "detected_objects": ["air fryer", "air fryer basket/tray", "two hands", "food: chicken thighs", "food: potato wedges", "steam"],
+        "handle_count": 2,
+        "product_match": true,
+        "airfryer_match": true,
+        "hand_gender_presentation": "female",
+        "hand_anatomy_issues": ["left hand partially cropped", "right hand partially cropped", "fingers not fully visible for exact finger count"],
+        "grip_correct": true,
+        "food_count": 3,
+        "text_or_watermark": false,
+        "physical_intersections": ["basket appears supported within fryer opening as expected"],
+        "photorealism": true,
+        "animation_readiness": false,
+        "continuity_issues": ["Scene does not match next-scene requirement of empty clean basket", "Steam partially obscures food but not excessively"],
+        "hard_fail_codes": ["adjacent_scene_break"],
+        "scores": {"product_reference_match": 9, "airfryer_reference_match": 9, "human_continuity": 8, "hand_anatomy": 7, "food_continuity": 9, "photorealism": 9, "composition": 8, "marketing_clarity": 8, "animation_readiness": 4, "adjacent_scene_continuity": 0},
+        "confidence": 0.98,
+        "explanation": "The candidate matches the referenced basket and air fryer well. Two female hands are present and the grip is on both oval handles with thumbs on top, consistent with the spec. Food count appears to be exactly 3 chicken thighs with potato wedges, and no text/watermark is visible. Main issue is continuity: this frame still shows the loaded basket, while the next scene requirement says the form is already removed and the basket should be empty and clean, so this is a hard adjacent-scene break. Steam is present but not overly obscuring the product."
+      }
+    },
+    {
+      "candidate_id": "scene-05-c3",
+      "model": "gpt-5.4-mini",
+      "result": {
+        "detected_objects": ["air fryer", "air fryer basket", "removable baking form", "left hand", "right hand", "chicken thighs", "potato wedges", "steam"],
+        "handle_count": 2,
+        "product_match": true,
+        "airfryer_match": true,
+        "hand_gender_presentation": "female",
+        "hand_anatomy_issues": [],
+        "grip_correct": true,
+        "food_count": 3,
+        "text_or_watermark": false,
+        "physical_intersections": [],
+        "photorealism": true,
+        "animation_readiness": false,
+        "continuity_issues": ["Candidate shows the form being lifted with 3 chicken thighs and potatoes, but NEXT SCENE REQUIREMENT says the form should already be removed and the basket empty/clean.", "Steam is present but not excessively blocking the product."],
+        "hard_fail_codes": ["adjacent_scene_break"],
+        "scores": {"product_reference_match": 9, "airfryer_reference_match": 9, "human_continuity": 9, "hand_anatomy": 9, "food_continuity": 9, "photorealism": 9, "composition": 8, "marketing_clarity": 8, "animation_readiness": 3, "adjacent_scene_continuity": 2},
+        "confidence": 0.96,
+        "explanation": "The frame matches the referenced removable form and air fryer well, with two handles and two female hands gripping both handles correctly (thumbs on top). Food count appears to be exactly 3 chicken thighs with potato wedges. No text or watermark, and the image is photorealistic. However, for the required progression into scene-06, this frame conflicts with the next-scene state because the form is still in hand and the basket is not yet empty/clean, so it fails adjacent scene continuity."
+      }
+    }
+  ],
+  "decision": {
+    "scene_id": "scene-05",
+    "round": 1,
+    "winner_id": null,
+    "verdicts": [
+      {"candidate_id": "scene-05-c1", "hard_fails": ["adjacent_scene_break"], "passed": false, "reasons": ["hard fail: adjacent_scene_break"]},
+      {"candidate_id": "scene-05-c2", "hard_fails": ["hand_anatomy", "impossible_intersection", "not_animatable", "adjacent_scene_break"], "passed": false, "reasons": ["hard fail: hand_anatomy", "hard fail: impossible_intersection", "hard fail: not_animatable", "hard fail: adjacent_scene_break"]},
+      {"candidate_id": "scene-05-c3", "hard_fails": ["not_animatable", "adjacent_scene_break"], "passed": false, "reasons": ["hard fail: not_animatable", "hard fail: adjacent_scene_break"]}
+    ],
+    "rejection_reasons": {
+      "scene-05-c1": "hard fail: adjacent_scene_break",
+      "scene-05-c2": "hard fail: hand_anatomy; hard fail: impossible_intersection; hard fail: not_animatable; hard fail: adjacent_scene_break",
+      "scene-05-c3": "hard fail: not_animatable; hard fail: adjacent_scene_break"
+    },
+    "regeneration_brief": "REGENERATION BRIEF — все кандидаты отклонены:\n- scene-05-c1: hard fail: adjacent_scene_break\n- scene-05-c2: hard fail: hand_anatomy; hard fail: impossible_intersection; hard fail: not_animatable; hard fail: adjacent_scene_break\n- scene-05-c3: hard fail: not_animatable; hard fail: adjacent_scene_break\nИсправить в следующем раунде:\n* согласовать позу/положение с соседним кадром (relationship в spec)\n* 'natural hand anatomy, five fingers per hand', референсы рук b3a\n* исключить пересечения, чёткое разделение объектов\n* оставить пространство для движения по animation_intent, не обрезать объект",
+    "needs_owner": false,
+    "note_from_operator": "ВАЖНО: hard fail adjacent_scene_break у всех трёх кандидатов выглядит как артефакт оценки: gpt-5.4-mini истолковал relationship_to_next ('scene-06 — форма уже вынута, пустая чистая корзина') как требование к ТЕКУЩЕМУ кадру, хотя scene-05 по спеку и должна показывать подъём формы с блюдом. Continuity_issues всех кандидатов ссылаются именно на это. Перегенерация в пилоте запрещена (rounds=0); решение по интерпретации — за владельцем."
+  },
+  "budget": {
+    "cap_usd": 2.0,
+    "estimated_spend_usd": {"image_generation": 0.9, "vision_evaluation": 0.15, "total": 1.05},
+    "actual_spend_usd": {"image_generation": 0.0, "vision_evaluation": 0.0, "total": 0.0, "complete": false, "note": "API не вернул полные usage-данные; фактический учёт по тарифам недоступен — ориентир estimated_spend_usd"},
+    "calls_logged": 4
+  },
+  "higgsfield": "BLOCKED — независимо от результата пилота (гейт higgsfield_gate)",
+  "constraints_confirmed": {
+    "only_scene_05_generated": true,
+    "regeneration_rounds": 0,
+    "arbiter": "NO",
+    "higgsfield": "BLOCKED",
+    "production": "NO",
+    "git_push": "NO"
+  },
+  "recommended_before_full_campaign": [
+    "реальное фото аэрогриля владельца спереди",
+    "реальное фото выдвинутой корзины аэрогриля"
+  ]
+}

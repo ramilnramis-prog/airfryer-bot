@@ -1,0 +1,72 @@
+{
+  "plan_version": 1,
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "visual_bible": "assets/visual-bible/airfryer-silicone-form/visual_bible.json",
+  "continuity_rules": "assets/visual-bible/airfryer-silicone-form/continuity_rules.json",
+  "storyboard": "content/autopilot/coating-protect-2026-07/storyboard.md",
+  "scene_specs_dir": "content/autopilot/coating-protect-2026-07/scene-specs",
+
+  "generation": {
+    "provider": "openai",
+    "model": "gpt-image-2 (основная; OPENAI_IMAGE_MODEL для override; gpt-image-1 — legacy fallback, по умолчанию не используется)",
+    "size": "1024x1536",
+    "mode": "edit_with_references",
+    "input_fidelity": "не передаётся: gpt-image-2 обрабатывает image inputs с высокой fidelity автоматически (capability map)",
+    "candidates_per_scene": 3,
+    "max_rounds_per_scene": 3,
+    "budget": {
+      "note": "фиксированной сметы нет: estimate до вызова + hard cap + фактический usage после вызова (SpendTracker, раздельно image_generation / vision_evaluation)",
+      "hard_cap_full_campaign_usd": 10.0,
+      "retries": "отключены для первого пилота"
+    },
+    "cli": "python -m api.media_pipeline.cli generate content/autopilot/coating-protect-2026-07 --scene scene-NN [--apply]"
+  },
+
+  "vision_evaluation": {
+    "evaluator": "OpenAIVisionEvaluator (api/media_pipeline/openai_vision_evaluator.py)",
+    "model": "gpt-5.4-mini (OPENAI_VISION_MODEL)",
+    "arbiter": "gpt-5.5 (OPENAI_VISION_ARBITER_MODEL), ВЫКЛЮЧЕН по умолчанию, только спорные случаи",
+    "api": "Responses API, image inputs, structured output (json_schema strict) + validate_vision_result"
+  },
+
+  "pilot": {
+    "scope": "ТОЛЬКО scene-05; сцены 01-04 и 06-07 заблокированы в cmd_pilot",
+    "command": "python -m api.media_pipeline.cli pilot content/autopilot/coating-protect-2026-07 --scene scene-05 --apply",
+    "model": "gpt-image-2", "quality": "medium", "size": "1024x1536",
+    "candidates": 3, "regeneration_rounds": 0,
+    "hard_cap_usd": 2.0,
+    "after_generation": "автоматически реальный VisionEvaluator по каждому кандидату, победитель только при прохождении hard-fail и порогов 70/80",
+    "higgsfield": "остаётся заблокированным",
+    "status": "команда подготовлена, НЕ выполнялась (нет разрешения на траты)"
+  },
+
+  "qa": {
+    "visual_qa_agent": "visual-director",
+    "sequence_qa_agent": "sequence-director",
+    "report_templates": [
+      "visual-qa-report.template.json",
+      "sequence-qa-report.template.json"
+    ],
+    "thresholds": {"min_dimension_score": 70, "min_total_score": 80}
+  },
+
+  "scenes": [
+    {"scene_id": "scene-01", "status": "spec_ready"},
+    {"scene_id": "scene-02", "status": "spec_ready"},
+    {"scene_id": "scene-03", "status": "spec_ready"},
+    {"scene_id": "scene-04", "status": "spec_ready"},
+    {"scene_id": "scene-05", "status": "spec_ready"},
+    {"scene_id": "scene-06", "status": "spec_ready"},
+    {"scene_id": "scene-07", "status": "spec_ready"}
+  ],
+
+  "gates": {
+    "image_generation": "требует явного «да» владельца на траты OpenAI (--apply)",
+    "higgsfield_animation": "требует: победители всех сцен + sequence QA approved + явное «да» владельца (media_pipeline.pipeline.higgsfield_gate)",
+    "publication": "вне этого плана; отдельное подтверждение"
+  },
+
+  "status": "awaiting_owner_approval_for_scene05_pilot",
+  "api_spend_usd": 0
+}

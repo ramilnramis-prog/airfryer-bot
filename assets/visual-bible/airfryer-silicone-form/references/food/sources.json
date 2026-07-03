@@ -1,0 +1,22 @@
+{
+  "category": "food",
+  "canonical": null,
+  "notes": "Блюдо кампании coating-protect (3 куриных бёдрышка + дольки картофеля) референса НЕ имеет. Крылья из b1_wings.png — блюдо видео №2, для новой кампании НЕ использовать (анти-дубль).",
+  "sources": [
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/b1_wings.png",
+      "origin": "approved_generation (видео №2)",
+      "usable_for": ["style_reference"],
+      "caution": "только стиль подачи; само блюдо в новой кампании другое"
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/food_wings.png",
+      "origin": "generation (видео №1, тёмный стиль)",
+      "usable_for": [],
+      "caution": "тёмный премиум-стиль видео №1 — НЕ соответствует текущему Style Anchor, не использовать"
+    }
+  ],
+  "missing": [
+    "референс блюда: 3 куриных бёдрышка + дольки картофеля в форме (фото владельца ИЛИ первый утверждённый сгенерированный кадр фиксируется как канон)"
+  ]
+}

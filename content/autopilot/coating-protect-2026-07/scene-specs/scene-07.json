@@ -1,0 +1,30 @@
+{
+  "scene_id": "scene-07",
+  "title": "CTA: product shot формы рядом с аэрогрилем",
+  "prompt_action": "Clean product composition on the light greige countertop: the empty matte graphite-gray square silicone liner in front, both handles and ribbed bottom ridges clearly visible; the liner's two handles are straight elongated strap-like tabs with a narrow elongated oval cut-out, long sides straight and parallel, uniform thin silicone frame, left and right handles identical, NOT rounded, NOT puffy, NOT curved — exactly matching the product reference; the black air fryer slightly behind at camera-right, soft daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "static three-quarter product angle, gentle parallax drift, shallow depth of field",
+  "immutable_elements": [
+    "форма канон 1:1 (обе ручки и рёбра дна видны)",
+    "handle geometry must match the canonical product reference exactly (visual bible handle_geometry: прямой вытянутый силуэт, параллельные длинные стороны, вытянутый овальный вырез, симметрия)",
+    "тот же аэрогриль на заднем плане",
+    "кухня и дневной свет Style Anchor"
+  ],
+  "allowed_changes": ["лёгкая перестановка второстепенного реквизита кухни"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/cta.png"
+  ],
+  "exact_food_count": null,
+  "hand_requirements": {"gender": "female", "in_frame": false},
+  "camera_requirements": {"framing": "3/4 product shot", "movement": "лёгкий параллакс",
+                          "aspect": "9:16"},
+  "relationship_to_previous": "финал после scene-06: от чистой чаши к товару-герою",
+  "relationship_to_next": "последний кадр ролика; поверх на монтаже — плашка CTA",
+  "animation_intent": "лёгкий параллакс/дрейф камеры, объекты статичны",
+  "hard_fail_conditions": [
+    "еда в кадре",
+    "ручки или рёбра дна не видны (кадр = витрина товара)",
+    "геометрия ручек не по референсу (округлые/пухлые/изогнутые) — handle_geometry_mismatch",
+    "композиция не оставляет места под CTA-плашку внизу"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "scene_id": "scene-06",
+  "title": "КОНТРАСТ: пустая чистая чаша к камере",
+  "prompt_action": "The woman's hands tilt the empty black air fryer basket toward the camera: the dark non-stick interior is perfectly clean, smooth and evenly matte, no grease, no scratches, softly reflecting the window light. No liner in this shot. No text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_camera": "close-up, short slow push-in on the clean coating, eye-level",
+  "immutable_elements": [
+    "та же корзина, что в scene-01/02/05 (но чистая)",
+    "те же женские руки",
+    "кухня и дневной свет"
+  ],
+  "allowed_changes": ["угол наклона корзины"],
+  "required_references": [
+    "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+    "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png"
+  ],
+  "exact_food_count": null,
+  "hand_requirements": {"gender": "female", "in_frame": true, "jewelry": "none",
+                        "action": "держат корзину с двух сторон, наклоняют к камере"},
+  "camera_requirements": {"framing": "крупный план внутренности корзины",
+                          "movement": "короткий медленный наезд", "aspect": "9:16"},
+  "relationship_to_previous": "сразу после scene-05: форму вынули — показываем, что осталось (ничего)",
+  "relationship_to_next": "scene-07 — финальный product shot на столешнице",
+  "animation_intent": "медленный наезд на чистое покрытие",
+  "hard_fail_conditions": [
+    "форма в кадре",
+    "жир или еда в корзине",
+    "корзина не совпадает с предыдущими сценами"
+  ]
+}

@@ -1,3 +1,11 @@
 fastapi>=0.110
 uvicorn[standard]>=0.29
 fpdf2>=2.7.8
+# product-locked compositor (api/media_pipeline/compositor): слои товара,
+# трансформации и product_lock_validator
+pillow>=10.0
+numpy>=1.26
+# экспорт preview.mp4 (rigid_animation.render_preview, write_mp4=True);
+# системный ffmpeg НЕ требуется: библиотеки FFmpeg поставляются колесом av
+imageio>=2.34
+av>=12.0

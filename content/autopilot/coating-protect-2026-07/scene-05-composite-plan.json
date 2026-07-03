@@ -1,0 +1,63 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "approach": "product-locked compositing (full-frame generation товара запрещена после отрицательного теста scene-05-regeneration-01)",
+  "product_geometry_source": "assets/product-lock/airfryer-silicone-form/ (scene-05-c3.png источником геометрии товара НЕ является)",
+  "layers": [
+    {
+      "order": 1,
+      "name": "BACKGROUND",
+      "content": ["кухня Style Anchor", "стол", "аэрогриль", "выдвинутая чистая пустая корзина"],
+      "source": "AI-генерация или реальное фото аэрогриля владельца (предпочтительно); товар в этом слое ОТСУТСТВУЕТ",
+      "ai_allowed": true
+    },
+    {
+      "order": 2,
+      "name": "BACK_HAND",
+      "content": ["части кистей, расположенные ЗА формой (ладони под ручками)"],
+      "source": "реальное фото рук владельца (REAL_PRODUCT_REFERENCE_SHOOT.md, кадры 12-13) + back-hand mask",
+      "ai_allowed": "допустима AI-генерация рук, если реального фото нет, но маски отделяют их от товара",
+      "status": "requires_real_photo"
+    },
+    {
+      "order": 3,
+      "name": "PRODUCT",
+      "content": ["каноническая силиконовая форма", "точная геометрия обеих ручек", "еда внутри (3 бёдрышка + картофель)"],
+      "source": "product asset pack; вид three_quarter_45; вариант с едой — requires_real_photo (кадры 7-8 фотосета)",
+      "ai_allowed": false,
+      "transforms": "только RigidTransform (uniform scale, translation, rotation<=8°, perspective<=0.08)",
+      "lock": "product_lock.json; validator после каждой композиции"
+    },
+    {
+      "order": 4,
+      "name": "FRONT_HAND",
+      "content": ["пальцы, визуально лежащие ПОВЕРХ ручек"],
+      "source": "front-finger mask из реального фото рук",
+      "ai_allowed": false,
+      "rule": "перекрытие каждой ручки <= 60%, силуэт обеих ручек различим; пиксели товара не редактируются",
+      "status": "requires_real_photo"
+    },
+    {
+      "order": 5,
+      "name": "EFFECTS",
+      "content": ["лёгкий пар", "мягкая тень формы на корзине"],
+      "source": "процедурный overlay (compositor) или AI-слой с прозрачностью",
+      "ai_allowed": true,
+      "rule": "пар не закрывает продукт; учитывается в occlusion mask"
+    }
+  ],
+  "validation": {
+    "per_composite": ["silhouette", "handle_geometry", "aspect_ratio", "pixel_similarity", "no_local_warp"],
+    "hard_fail": "product_lock_violation"
+  },
+  "animation": {
+    "type": "rigid (без image-to-video морфинга товара)",
+    "plan": "см. compositor/rigid_animation.py; preview: python -m api.media_pipeline.compositor.cli preview --out <dir>",
+    "duration_s": 4.5,
+    "motion": "product+food как один rigid object: медленно вверх и немного назад, scale почти неизменный, rotation ~1.5°, руки синхронно, пар отдельным overlay, корзина и камера неподвижны"
+  },
+  "blockers": [
+    "requires_real_photo: форма с едой (product layer), руки для occlusion-масок, реальный аэрогриль для фона",
+    "до фотосета превью собираются с плейсхолдерами и водяным знаком TEST PREVIEW"
+  ]
+}

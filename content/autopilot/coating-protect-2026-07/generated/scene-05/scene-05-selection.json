@@ -1,0 +1,44 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "selected_candidate": "scene-05-c3.png",
+  "backup_candidate": "scene-05-c1.png",
+  "rejected_candidate": "scene-05-c2.png",
+  "owner_approved": true,
+  "selection_reason": "Ручной выбор владельца и визуального директора поверх автоматического QA v2: разница C с A по total всего 0.8 балла и находится внутри зоны неопределённости; в C чистая корзина видна лучше, товар и готовое блюдо показаны крупнее, сильнее читается рекламный результат, композиция лучше подходит для ключевого payoff-кадра.",
+  "visual_qa_v2_scores": {
+    "scene-05-c1": {
+      "product_reference_match": 98, "airfryer_reference_match": 98,
+      "human_continuity": 97, "hand_anatomy": 98, "food_continuity": 96,
+      "photorealism": 97, "composition": 95, "marketing_clarity": 94,
+      "animation_readiness": 96, "adjacent_scene_continuity": 95,
+      "total": 96.4, "hard_fails": [], "food_count_confirmed": 3
+    },
+    "scene-05-c2": {
+      "product_reference_match": 98, "airfryer_reference_match": 97,
+      "human_continuity": 96, "hand_anatomy": 98, "food_continuity": 95,
+      "photorealism": 96, "composition": 93, "marketing_clarity": 94,
+      "animation_readiness": 96, "adjacent_scene_continuity": 92,
+      "total": 95.5, "hard_fails": [], "food_count_confirmed": 3
+    },
+    "scene-05-c3": {
+      "product_reference_match": 98, "airfryer_reference_match": 97,
+      "human_continuity": 96, "hand_anatomy": 96, "food_continuity": 98,
+      "photorealism": 95, "composition": 92, "marketing_clarity": 94,
+      "animation_readiness": 96, "adjacent_scene_continuity": 94,
+      "total": 95.6, "hard_fails": [], "food_count_confirmed": 3
+    }
+  },
+  "source_files_sha256": {
+    "scene-05-c1.png": "15DE4546D08D612B82C0D61F112C6124E7A95325BD9ED6EAC576E01D99CD6B13",
+    "scene-05-c2.png": "C060E2488D4EB4B297DD1907717A01A8270AECB8FE62E3C471236DDE2ED1409F",
+    "scene-05-c3.png": "139964F0B506938E00CEF604F948647AEE565396B72CDF80BB7671CC82B2AB10"
+  },
+  "qa_reports": {
+    "v1": "pilot-report.json (не изменялся, backup: pilot-report.json.bak)",
+    "v2": "pilot-report-v2.json",
+    "comparison": "qa-comparison-v1-v2.md"
+  },
+  "selected_at": "2026-07-02T16:05:00Z",
+  "next_action": "higgsfield_single_animation_test"
+}

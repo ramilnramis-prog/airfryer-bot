@@ -1,0 +1,17 @@
+{
+  "category": "airfryer",
+  "canonical": "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+  "notes": "Канон прибора пока держится на утверждённом AI-кадре видео №2 (форма ставится в корзину)",
+  "sources": [
+    {
+      "path": "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+      "origin": "approved_generation (видео №2)",
+      "usable_for": ["reference_image", "style_reference"]
+    }
+  ],
+  "missing": [
+    "фото реального аэрогриля владельца: фронтально с окном, дневной свет",
+    "фото с выдвинутой корзиной (вид корзины отдельно)",
+    "фото корзины изнутри: чистой и с жиром после готовки (сцены 1-2 coating-protect)"
+  ]
+}
