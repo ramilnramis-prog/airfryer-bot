@@ -3,6 +3,18 @@
   "campaign": "coating-protect-2026-07",
   "approach": "product-locked compositing (full-frame generation товара запрещена после отрицательного теста scene-05-regeneration-01)",
   "product_geometry_source": "assets/product-lock/airfryer-silicone-form/ (scene-05-c3.png источником геометрии товара НЕ является)",
+  "real_reference_audit": {
+    "path": "assets/product-lock/airfryer-silicone-form/validation/real-reference-audit.md",
+    "date": "2026-07-03",
+    "headline": "КРИТИЧЕСКАЯ НАХОДКА: текущий канон forma_6angles.png сам не совпадает с геометрией ручек реального товара (высокая ручка-петля с вертикальным овальным вырезом в каноне vs плоский угловой язычок с горизонтальной прямоугольной прорезью в реальности). Пиксели НЕ извлекались, product-lock пакет НЕ пересобирался — решение о замене канона за владельцем.",
+    "master_reference_candidates": {
+      "product_and_handles": "raw/photo_7_2026-06-18_16-53-42.jpg (основной), + photo_1/2/3 (доп. ракурсы)",
+      "bottom_loop": "raw/photo_5_2026-06-18_16-53-42.jpg, raw/photo_6_2026-06-18_16-53-42.jpg (кадрировать без мужской руки)",
+      "airfryer": "IMG_5925.MOV кадры ~0865 (фронт целиком, бренд DE'MIAND) и ~0998 (чистый пустой родной лоток) — ещё не сохранены как versioned assets",
+      "grip_mechanics_reference_only": "IMG_5925.MOV кадры с рукой на ручке — НЕ финальный hands-канон (рука мужская)"
+    },
+    "still_missing": ["форма с едой", "женские руки без украшений", "фронтальный medium-shot ракурс формы", "решение по кухне/аэрогрилю (реальный DE'MIAND vs текущий AI place.png)"]
+  },
   "layers": [
     {
       "order": 1,
@@ -57,7 +69,9 @@
     "motion": "product+food как один rigid object: медленно вверх и немного назад, scale почти неизменный, rotation ~1.5°, руки синхронно, пар отдельным overlay, корзина и камера неподвижны"
   },
   "blockers": [
-    "requires_real_photo: форма с едой (product layer), руки для occlusion-масок, реальный аэрогриль для фона",
-    "до фотосета превью собираются с плейсхолдерами и водяным знаком TEST PREVIEW"
+    "requires_real_photo: форма с едой (product layer), женские руки для occlusion-масок (реальный сет 2026-07 показал только мужскую руку — не подходит), фронтальный medium-shot ракурс формы",
+    "решение владельца: пересобрать product asset pack из raw/photo_7 (и др.) вместо forma_6angles.png — текущий канон геометрически не совпадает с реальным товаром (см. real_reference_audit)",
+    "решение владельца: использовать ли реальный аэрогриль DE'MIAND (кадры IMG_5925.MOV) вместо AI place.png",
+    "до этих решений и пересборки пакета превью собираются с плейсхолдерами и водяным знаком TEST PREVIEW"
   ]
 }

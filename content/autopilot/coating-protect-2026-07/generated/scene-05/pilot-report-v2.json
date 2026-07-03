@@ -451,5 +451,7 @@
     }
   ],
   "higgsfield": "BLOCKED — reevaluate не открывает гейт higgsfield_gate",
-  "generated_at": "2026-07-02T15:41:34Z"
+  "generated_at": "2026-07-02T15:41:34Z",
+  "obsolete_due_to_incorrect_canonical_reference": true,
+  "obsolete_note": "Оценка проводилась против устаревшего AI-канона геометрии ручек (forma_6angles.png / handles_reference_crop.png), который НЕ соответствует реальному товару (решение владельца 2026-07-03, см. assets/product-lock/airfryer-silicone-form/product_asset_manifest.json). Этот отчёт сохранён как исторический и НЕ пересматривается для будущего выбора победителя."
 }

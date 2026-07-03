@@ -192,14 +192,46 @@ def load_manifest(repo_root: str | Path = ".") -> dict:
                        "product_asset_manifest.json").read_text(encoding="utf-8"))
 
 
-def load_view(view: str, repo_root: str | Path = ".", verify: bool = True):
+class LegacyReferenceError(RuntimeError):
+    """Запрошен вид, помеченный как legacy_incorrect_product_geometry.
+
+    Система НЕ откатывается на AI/legacy-канон автоматически при наличии
+    real-product-v1: вызывающий код обязан явно передать allow_legacy=True,
+    осознанно принимая устаревшую геометрию (например, для исторического
+    сравнения в аудите)."""
+
+
+# Вид по умолчанию для нового кода (real-product-v1). Старые виды
+# (three_quarter_45 и т.д., производные forma_6angles.png) считаются legacy.
+DEFAULT_VIEW = "product_45deg"
+
+
+def load_view(view: str, repo_root: str | Path = ".", verify: bool = True,
+             allow_legacy: bool = False):
     """Возвращает (rgba, mask, handle_masks: {side: Image}) канонического вида.
-    verify=True сверяет SHA256 с манифестом (защита от подмены ассета)."""
+    verify=True сверяет SHA256 с манифестом (защита от подмены ассета).
+
+    Если запрошенный view находится только в legacy_assets (устаревшая,
+    несовпадающая с реальным товаром геометрия), по умолчанию бросает
+    LegacyReferenceError — НИКАКОГО автоматического отката на AI-канон.
+    allow_legacy=True — осознанный обход для исторического сравнения."""
     _require_pil()
     from PIL import Image
 
     root = Path(repo_root)
-    entry = load_manifest(root)["assets"][view]
+    manifest = load_manifest(root)
+    active = manifest.get("assets", {})
+    legacy = manifest.get("legacy_assets", {})
+    if view not in active and view in legacy:
+        if not allow_legacy:
+            raise LegacyReferenceError(
+                f"view {view!r} помечен legacy_incorrect_product_geometry "
+                f"(canonical_version активен: "
+                f"{manifest.get('canonical_version', 'unknown')}) — "
+                "используйте real-product-v1 view или явно allow_legacy=True")
+        entry = legacy[view]
+    else:
+        entry = active[view]
     iso, msk = root / entry["isolated"], root / entry["mask"]
     if verify:
         if sha256_file(iso) != entry["sha256_isolated"]:

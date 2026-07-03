@@ -1,9 +1,13 @@
 """CLI product-locked compositing (всё локально, сети нет вообще).
 
 Команды:
-  extract  — построить/перестроить product asset pack из forma_6angles.png
-  preview  — тестовый rigid-animation preview scene-05 (плейсхолдер-фон,
-             канонический product layer, watermark TEST PREVIEW)
+  extract       — построить/перестроить LEGACY product asset pack из
+                  forma_6angles.png (устарело — см. extract-real)
+  extract-real  — построить real-product-v1 master crops + пересобрать
+                  product_asset_manifest.json ТОЛЬКО из реальных фото/видео
+  preview       — тестовый rigid-animation preview scene-05 (плейсхолдер-фон,
+                  канонический product layer из real-product-v1 по
+                  умолчанию, watermark TEST PREVIEW)
   validate <frame.png> — проверить кадр против канона (нужны transform-параметры)
 """
 from __future__ import annotations
@@ -13,7 +17,8 @@ import json
 import sys
 
 from .perspective import RigidTransform
-from .product_assets import build_asset_pack, load_view
+from .product_assets import DEFAULT_VIEW, build_asset_pack, load_view
+from .real_product_assets import build_real_asset_pack, build_real_master_crops
 from .layer_compositor import SceneLayers
 from .rigid_animation import RigidAnimationPlan, render_preview
 
@@ -56,10 +61,24 @@ def _steam_overlay(size: tuple, seed_step: int = 0):
 
 def cmd_extract(args) -> int:
     manifest = build_asset_pack(args.repo_root)
-    print(json.dumps({"pack": "built",
+    print(json.dumps({"pack": "built (LEGACY forma_6angles.png — устарело)",
                       "views": sorted(manifest["assets"]),
                       "requires_real_photo": manifest["requires_real_photo"]},
                      ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_extract_real(args) -> int:
+    crops = build_real_master_crops(args.repo_root)
+    manifest = build_real_asset_pack(args.repo_root)
+    print(json.dumps({
+        "canonical_version": manifest["canonical_version"],
+        "canonical_status": manifest["canonical_status"],
+        "master_crops": [e["name"] for e in crops["entries"]],
+        "active_views": sorted(manifest["assets"]),
+        "legacy_views_blocked": sorted(manifest["legacy_assets"]),
+        "requires_real_photo": manifest["requires_real_photo"],
+    }, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -96,13 +115,18 @@ def main(argv=None) -> int:
                                 description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    e = sub.add_parser("extract", help="построить product asset pack")
+    e = sub.add_parser("extract", help="LEGACY: пересобрать пакет из forma_6angles.png")
     e.add_argument("--repo-root", default=".")
     e.set_defaults(fn=cmd_extract)
 
+    er = sub.add_parser("extract-real",
+                        help="пересобрать real-product-v1 (реальные фото/видео)")
+    er.add_argument("--repo-root", default=".")
+    er.set_defaults(fn=cmd_extract_real)
+
     v = sub.add_parser("preview", help="rigid animation preview (локально)")
     v.add_argument("--repo-root", default=".")
-    v.add_argument("--view", default="three_quarter_45")
+    v.add_argument("--view", default=DEFAULT_VIEW)
     v.add_argument("--out", required=True)
     v.add_argument("--width", type=int, default=540)
     v.add_argument("--duration", type=float, default=4.5)

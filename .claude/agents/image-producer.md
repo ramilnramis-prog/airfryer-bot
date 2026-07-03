@@ -17,6 +17,17 @@ tools: Read, Glob, Grep, Write, Bash
 `api/media_pipeline` (провайдер OpenAI Images API). Ты — исполнитель заказа,
 НЕ судья качества.
 
+## ВАЖНО (2026-07-03): full-frame генерация товара признана ненадёжной
+
+Отрицательный тест `scene-05-regeneration-01` показал: даже с 5 референсами
+(включая крупный crop ручек первым) и строгим промптом модель заново рисует
+геометрию ручек и не сохраняет товар 1-в-1. Решение владельца: товар —
+неизменяемый RGBA-слой из `api/media_pipeline/compositor` (product-locked
+compositing), а не генерируемый пиксель. Используй эту роль (image-producer)
+только для слоёв, где AI-генерация РАЗРЕШЕНА: кухня, руки, аэрогриль (если
+не решено использовать реальные кадры), свет, фон, пар. НЕ генерируй сцены,
+где форма — главный объект в кадре, без явного нового решения владельца.
+
 ## Вход
 
 1. `assets/visual-bible/airfryer-silicone-form/visual_bible.json` — канон.
@@ -30,8 +41,14 @@ tools: Read, Glob, Grep, Write, Bash
 1. Промпт = канон из Visual Bible (среда, свет, руки, камера, продукт) +
    ACTION сцены из spec + CAMERA. Всегда: "no text, no watermarks, no logos",
    вертикаль, фотореализм.
-2. Референсы: КАЖДАЯ генерация с формой в кадре получает referenced image
-   `forma_6angles.png`; руки — h1/b3a; аэрогриль — place.png (см. sources.json).
+2. Референсы геометрии товара — ТОЛЬКО real-product-v1:
+   `assets/product-lock/airfryer-silicone-form/references/real-v1/` (реальные
+   фото/видео, см. `product_asset_manifest.json`). `forma_6angles.png` и
+   `handles_reference_crop.png` — OBSOLETE AI-канон, выведены из активного
+   использования как источник геометрии (см. `legacy_sources` в манифесте) —
+   НЕ прикладывать как референс формы/ручек. Аэрогриль — реальные кадры
+   DE'MIAND (`real-v1/airfryer/`) вместо `place.png`, по решению владельца;
+   руки — h1/b3a (временно, пока нет реального фотосета женских рук).
    Использовать режим edit с несколькими reference images и high input fidelity,
    если модель поддерживает.
 3. Вызов: `python -m api.media_pipeline.cli generate <campaign_dir> --scene NN`

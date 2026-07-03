@@ -45,10 +45,14 @@ PILOT_QUALITY = "medium"
 PILOT_CANDIDATES = 3
 PILOT_REGENERATION_ROUNDS = 0
 
-# Канонический крупный crop ручек (visual bible): silhouette-сравнение,
-# handle_count == 2 сам по себе недостаточен
-HANDLE_REFERENCE_CROP = ("assets/visual-bible/airfryer-silicone-form/"
-                         "references/handles_reference_crop.png")
+# Канонический крупный crop ручек: silhouette-сравнение, handle_count == 2
+# сам по себе недостаточен. Источник — real-product-v1 (реальные фото),
+# см. product_asset_manifest.json.canonical_version. Прежний
+# assets/visual-bible/.../references/handles_reference_crop.png (AI-канон,
+# производный от forma_6angles.png) выведен из активного QA геометрии —
+# allowed_for_product_geometry_qa=false в legacy_sources.
+HANDLE_REFERENCE_CROP = ("assets/product-lock/airfryer-silicone-form/"
+                         "references/real-v1/handles/both_handles_master.png")
 
 
 def handle_reference_crop_path() -> str | None:

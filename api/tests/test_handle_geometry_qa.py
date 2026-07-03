@@ -198,10 +198,14 @@ class TestUncertainGeometry(unittest.TestCase):
         self.assertFalse(recon["geometry_ok"])
 
     def test_second_pass_instructions_are_specific(self):
+        # 2026-07-03: канон геометрии заменён на real-product-v1 (реальные
+        # фото) — плоский угловой язычок с горизонтальной прорезью, вместо
+        # прежнего OBSOLETE "прямого вытянутого язычка с вертикальным овалом"
         text = _handle_check_instructions()
-        self.assertIn("STRAIGHT ELONGATED", text)
-        self.assertIn("PARALLEL", text)
+        self.assertIn("FLAT CORNER TAB", text)
+        self.assertIn("HORIZONTAL", text)
         self.assertIn("rounded", text)
+        self.assertIn("OBSOLETE", text)
 
 
 class TestOwnerOverrideAndHistory(unittest.TestCase):

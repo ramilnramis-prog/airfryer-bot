@@ -4,15 +4,16 @@
   "prompt_action": "Front view of the closed modern black air fryer working on the countertop; through its front viewing window the graphite-gray square silicone liner is visible holding exactly 3 golden chicken thighs and potato wedges, warm cooking glow inside, subtle heat shimmer. No steam outside, no text, no watermarks. Photographic, realistic, vertical 9:16.",
   "prompt_camera": "frontal close crop on the viewing window, static with a very subtle push-in",
   "immutable_elements": [
-    "тот же аэрогриль (корпус, окно)",
-    "форма канон внутри",
-    "handle geometry must match the canonical product reference exactly (если ручки видны через окно: прямой вытянутый силуэт, параллельные стороны, вытянутый овальный вырез)",
+    "тот же аэрогриль (корпус, окно) — предпочтительно реальный DE'MIAND (real-v1/airfryer/)",
+    "форма канон внутри — источник real-product-v1, НЕ генерировать форму full-frame",
+    "handle geometry must match real-product-v1 exactly (если ручки видны через окно: плоский угловой язычок почти вровень с кромкой, короткая горизонтальная прорезь — НЕ высокая ручка-петля, НЕ вертикальный овал)",
     "блюдо кампании: ровно 3 куриных бёдрышка + дольки картофеля",
     "кухня и дневной свет"
   ],
   "allowed_changes": ["интенсивность тёплого свечения внутри"],
   "required_references": [
-    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/airfryer_front_master.png",
     "D:/OzonGrowthProject/content/assets/video2-formaad/place.png"
   ],
   "exact_food_count": {"item": "chicken thigh", "count": 3,

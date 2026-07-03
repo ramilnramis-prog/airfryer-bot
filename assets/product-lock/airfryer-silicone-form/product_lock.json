@@ -1,9 +1,11 @@
 {
   "product_code": "airfryer-silicone-form",
-  "lock_version": 1,
-  "principle": "AI генерирует кухню, руки, аэрогриль, свет, фон и пар; пиксели товара берутся ТОЛЬКО из product asset pack и не перерисовываются никогда",
+  "lock_version": 2,
+  "canonical_version": "real-product-v1",
+  "canonical_change_note": "2026-07-03: product_asset_manifest.json.assets теперь содержит ТОЛЬКО real-product-v1 (реальные фото). Старые виды (forma_6angles.png-производные) перенесены в manifest.legacy_assets с allowed_for_product_lock_source=false; load_view() бросает LegacyReferenceError при попытке использовать их без явного allow_legacy=True — автоматического отката на AI-канон нет.",
+  "principle": "AI генерирует кухню, руки, аэрогриль, свет, фон и пар; пиксели товара берутся ТОЛЬКО из product asset pack (real-product-v1) и не перерисовываются никогда",
   "immutable": {
-    "product_pixels": "пиксели внутри product mask неизменяемы; единственный источник — assets из product_asset_manifest.json (SHA256 сверяется при загрузке)",
+    "product_pixels": "пиксели внутри product mask неизменяемы; единственный источник — active assets из product_asset_manifest.json, canonical_version=real-product-v1 (SHA256 сверяется при загрузке)",
     "handle_masks": "маски левой и правой ручки неизменяемы; ручки — часть исходного product layer и не существуют отдельно от него"
   },
   "forbidden": {
