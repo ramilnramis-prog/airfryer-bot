@@ -3,15 +3,18 @@
   "content_code": "coating-protect-ad",
   "scene_id": "scene-05",
   "scene_title": "ДОСТАВАНИЕ: форма с блюдом за две ручки, чаша чистая (\"денежный\" кадр)",
-  "prepared_at": "2026-07-04",
+  "prepared_at": "2026-07-06",
   "status": "dry_run_only_no_generation",
+  "visual_set_id": "coating-protect-visual-set-01",
+  "selected_set": "A",
+  "owner_approved": true,
 
   "product_canon": {
     "value": "real-product-v1",
     "resolution": "repository_only",
     "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
     "view": "product_45deg",
-    "rule": "Никогда не резолвится через reference library/asset_id. Форма, ручки не перегенерируются."
+    "rule": "Никогда не резолвится через reference library/asset_id. Форма, ручки не перегенерируются. Никакие appearance/mechanics references не могут изменять товар."
   },
 
   "baseplate": {
@@ -29,66 +32,39 @@
     "background": {
       "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/clean_basket_master.png",
       "sha256": "57e474e35b91241189350ecbcefc2942a6978b408c2e12f26b1157670b5ac29b",
-      "provenance": "реальный аэрогриль DE'MIAND, чистая пустая выдвинутая корзина (video-frame 998, IMG_5925.MOV)"
+      "provenance": "реальный аэрогриль DE'MIAND, чистая пустая выдвинутая корзина (video-frame 998, IMG_5925.MOV) — не меняется"
     }
   },
 
   "resolved_visual_lock": {
     "resolved_via": "python -m api.media_pipeline.reference_library.cli resolve-campaign content/autopilot/coating-protect-2026-07/campaign_visual_lock.json",
     "reference_library_root_env_var": "REFERENCE_LIBRARY_ROOT",
-    "resolved_element_count": 17,
+    "resolved_element_count": 9,
     "all_sha256_verified": true,
     "hooks_share_one_resolved_set": true,
 
-    "hands_reference": [
-      {"asset_id": "person-rinse-01", "sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763"},
-      {"asset_id": "v2-hand-hold-01", "sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6"}
-    ],
-    "grip_reference": [
-      {"asset_id": "real-grip-motion-01", "sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
-       "note": "механика хвата/подъёма (реальный кадр, мужская рука) — только траектория движения, НЕ финальный внешний вид рук"}
-    ],
-    "person_reference": [
-      {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
-      {"asset_id": "person-c-frustrated-01", "sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6"},
-      {"asset_id": "person-pain-01", "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1"},
-      {"asset_id": "person-rinse-01", "sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763"}
-    ],
-    "airfryer_reference": [
-      {"asset_id": "real-airfryer-front-01", "sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78",
-       "already_in_repo": true, "note": "реальный DE'MIAND — приоритетный источник для scene-05 (не AI)"}
-    ],
-    "airfryer_placement_mechanics_reference": [
-      {"asset_id": "v2-form-in-basket-01", "sha256": "1defaf9ed841654454eaaadf25890e5c4158b4b23a21620703273a059fd51835",
-       "note": "механика размещения формы в корзине — геометрия формы на этом фото игнорируется (устаревшая)"}
-    ],
-    "kitchen_reference": [
-      {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
-      {"asset_id": "person-c-frustrated-01", "sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6"},
-      {"asset_id": "person-pain-01", "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1"}
-    ],
-    "clothing_reference": [
-      {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
-      {"asset_id": "person-pain-01", "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1"}
-    ],
-    "lighting_reference": [
-      {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
-      {"asset_id": "person-c-frustrated-01", "sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6"}
-    ],
-    "composition_reference": [
-      {"asset_id": "v2-form-in-basket-01", "sha256": "1defaf9ed841654454eaaadf25890e5c4158b4b23a21620703273a059fd51835",
-       "note": "единственный УЖЕ ЗАЛОЧЕННЫЙ (locked_elements) asset с категорией compositions"}
-    ],
-    "food_reference": [
-      {"asset_id": "food-wings-01", "sha256": "1d9f87674e51f2ee8e8813adcd5a77ed47efffb4b0606e1674e3424b44add8d5",
-       "note": "стилистический food_reference кампании (глазурь/цвет); точный состав scene-05 переопределён ниже exact_food_count из scene-specs/scene-05.json"}
-    ],
+    "appearance": {
+      "primary_person_asset_id": {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
+      "primary_hands_asset_id": {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
+      "primary_clothing_asset_id": {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
+      "primary_kitchen_asset_id": {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
+      "primary_lighting_asset_id": {"asset_id": "person-b-exhausted-01", "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac"},
+      "primary_airfryer_asset_id": {"asset_id": "real-airfryer-front-01", "sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78", "already_in_repo": true}
+    },
+    "grip_reference_mechanics_only": {
+      "asset_id": "real-grip-motion-01", "sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
+      "note": "механика хвата/подъёма (реальный кадр, мужская рука) — только траектория движения, НЕ внешний вид рук"
+    },
 
-    "gap_noted_not_added": [
-      {"asset_id": "comp-clean-lift-01", "categories": ["compositions", "grip-examples", "food-examples"],
-       "reason_not_used": "лучше подходит под двуручный подъём формы с едой, но НЕ входит в текущий campaign_visual_lock.locked_elements — по инструкции новые/другие asset_id в locked lock не добавлялись, зафиксирован только как наблюдение"},
-      {"asset_id": "comp-clean-lift-02", "categories": ["compositions", "grip-examples", "food-examples"],
-       "reason_not_used": "то же самое — не в locked_elements, не добавлялся"}
+    "excluded_from_scene_05_generation": [
+      {"asset_id": "v2-form-in-basket-01", "role": "airfryer_placement_mechanics (v1)",
+       "reason": "положение формы уже зафиксировано approved baseplate B; аэрогриль/товар на фото не соответствуют активным канонам"},
+      {"asset_id": "food-wings-01", "role": "food style (v1)",
+       "reason": "крылья могут загрязнить состав сцены — scene-05 использует только scene-spec (3 бедра + картофель)"},
+      {"asset_id": "person-c-frustrated-01", "reason": "не входит в Set A (не подтверждена та же причёска/одежда)"},
+      {"asset_id": "person-pain-01", "reason": "rejected alternative (Set B) — не используется одновременно с Set A"},
+      {"asset_id": "person-rinse-01", "reason": "rejected alternative (Set C) — не используется одновременно с Set A"},
+      {"asset_id": "v2-hand-hold-01", "reason": "не входит в Set A (другая кухня, устаревшая геометрия продукта в кадре)"}
     ]
   },
 
@@ -98,10 +74,11 @@
     "same_clothing": true,
     "same_airfryer": true,
     "same_kitchen": true,
-    "same_light_direction": "дневной свет слева (Style Anchor, см. scene-specs/scene-01.json immutable_elements)",
+    "same_light_direction": "дневной свет слева (Style Anchor, из person-b-exhausted-01)",
     "hooks_A_B_C_share_one_body_and_one_lock": true,
+    "hooks_A_B_C_share_one_visual_set_id": "coating-protect-visual-set-01",
     "product_is_always_real_product_v1": true,
-    "basis": "campaign_visual_lock.json: locked_for_all_scenes=true и shared_across_hooks=true на каждом non-food элементе; food role — shared_across_hooks=true, locked_for_all_scenes=false (сцено-специфично по exact_food_count)"
+    "basis": "campaign_visual_lock.json (active): locked_for_all_scenes=true, shared_across_hooks=true; appearance целиком из ОДНОГО источника (person-b-exhausted-01) + фиксированный real-airfryer-front-01"
   },
   "this_visual_lock_is_campaign_specific": "Не переносится автоматически в следующий ролик/кампанию (см. campaign_visual_lock.json.cross_campaign_rule)",
 
@@ -109,7 +86,8 @@
     "item": "chicken thigh", "count": 3,
     "extras": "дольки картофеля как в scene-04, та же степень готовности",
     "source": "content/autopilot/coating-protect-2026-07/scene-specs/scene-05.json",
-    "scene_specific_not_global_canon": true
+    "scene_specific_not_global_canon": true,
+    "food_wings_01_excluded": true
   },
 
   "do_not_regenerate": ["форма (real-product-v1)", "ручки (real-product-v1)",
@@ -117,10 +95,12 @@
                        "кухня/фон (baseplate B background)"],
 
   "missing_layers_to_build": [
-    {"layer": "HANDS (back_hand + front_fingers)", "status": "requires_generation",
+    {"layer": "HANDS (unified back_hand + front_fingers)", "status": "requires_generation",
+     "appearance_source": "person-b-exhausted-01", "pose_source": "real-grip-motion-01",
      "zones": {"back_hand_left_zone": [80, 36, 266, 268], "back_hand_right_zone": [554, 152, 655, 538],
               "front_fingers_left_zone": [190, 44, 275, 72], "front_fingers_right_zone": [549, 166, 595, 212]}},
     {"layer": "FOOD", "status": "requires_generation",
+     "spec_source": "scene-specs/scene-05.json exact_food_count (food-wings-01 NOT used)",
      "zone": {"product_interior_food_mask_bbox": [200, 79, 539, 329]}},
     {"layer": "CAST_SHADOW", "status": "already_deterministic_procedural",
      "source": "api/media_pipeline/compositor/scene05_baseplate.py:shadow_overlay",

@@ -1,8 +1,11 @@
 {
   "status": "dry_run_only",
-  "generated_at": "2026-07-04",
+  "generated_at": "2026-07-06",
   "scene_id": "scene-05",
   "campaign_code": "coating-protect-2026-07",
+  "visual_set_id": "coating-protect-visual-set-01",
+  "selected_set": "A",
+  "owner_approved": true,
 
   "execution_summary": {
     "openai_images_api_calls_executed": 0,
@@ -12,15 +15,18 @@
   },
 
   "planned_generation": {
-    "recommended_plan": {
+    "plan": {
       "call_count": 2,
-      "layers": ["HANDS (unified back+front, split deterministically in code)", "FOOD"],
+      "retries": false,
+      "arbiter": "OFF",
+      "layers": [
+        {"call": 1, "layer": "HANDS (unified back+front, split deterministically in code post-generation)",
+         "appearance_source": "person-b-exhausted-01",
+         "pose_source_mechanics_only": "real-grip-motion-01"},
+        {"call": 2, "layer": "FOOD",
+         "spec_source": "scene-specs/scene-05.json exact_food_count (no reference image — food-wings-01 excluded)"}
+      ],
       "note": "минимизирует число вызовов: back_hand и front_fingers получаются из ОДНОГО изображения рук через маски scene05_layer_masks, без второго вызова API"
-    },
-    "fallback_plan": {
-      "call_count": 3,
-      "layers": ["BACK_HAND", "FRONT_FINGERS", "FOOD"],
-      "trigger": "используется, только если QA отклонит unified-hands-слой (например, пальцы нечитаемы после обрезки по front zone)"
     },
     "not_requiring_generation": [
       "CAST_SHADOW — процедурный (api/media_pipeline/compositor/scene05_baseplate.py:shadow_overlay)",
@@ -33,45 +39,65 @@
   "model": {
     "provider": "OpenAI Images",
     "name": "gpt-image-2",
+    "endpoint": "/v1/images",
     "config_source": "api/media_pipeline/openai_images_client.py:PRIMARY_MODEL",
     "override_env_var": "OPENAI_IMAGE_MODEL",
-    "animation_model": "Higgsfield — НЕ запускается на этом этапе (только после sequence approval и явного подтверждения владельца)"
+    "animation_model": "Higgsfield — BLOCKED на этом этапе (только после sequence approval и явного подтверждения владельца)"
   },
 
   "estimated_spend": {
     "price_per_image_usd_estimate": 0.30,
     "price_source": "api/media_pipeline/openai_images_client.py:DEFAULT_PRICE_ESTIMATE_USD",
-    "recommended_plan_estimate_usd": 0.60,
-    "fallback_plan_estimate_usd": 0.90,
+    "plan_estimate_usd": 0.60,
     "candidates_per_layer_assumed": 1,
     "note": "оценка ориентировочная (реальная стоимость зависит от usage/quality-параметров API), фактические вызовы НЕ выполнялись"
   },
   "hard_cap": {
-    "max_api_calls_this_stage": 0,
-    "rule": "На этом этапе (dry-run plan) API-вызовы запрещены полностью. Любой последующий запуск требует отдельного явного подтверждения владельца перед --apply, как и во всех предыдущих раундах генерации этой кампании."
+    "max_spend_usd_this_stage": 1.00,
+    "max_api_calls_executed_this_stage": 0,
+    "rule": "На этом этапе (dry-run plan) API-вызовы запрещены полностью. Любой последующий реальный запуск ограничен hard cap $1.00 и требует отдельного явного подтверждения владельца перед --apply."
   },
 
   "refs_passed_in_order": {
-    "hands_layer": ["person-rinse-01", "v2-hand-hold-01", "real-grip-motion-01", "person-b-exhausted-01"],
-    "food_layer": ["food-wings-01"]
+    "hands_layer_call_1": ["person-b-exhausted-01", "real-grip-motion-01"],
+    "food_layer_call_2": []
+  },
+  "excluded_from_refs": [
+    {"asset_id": "v2-form-in-basket-01", "reason": "положение формы уже зафиксировано approved baseplate B; аэрогриль/товар на фото не соответствуют активным канонам"},
+    {"asset_id": "food-wings-01", "reason": "крылья могут загрязнить состав сцены — используется только scene-spec"},
+    {"asset_id": "v2-hand-hold-01", "reason": "не входит в утверждённый Set A"},
+    {"asset_id": "person-c-frustrated-01", "reason": "rejected alternative, не Set A"},
+    {"asset_id": "person-pain-01", "reason": "rejected alternative (Set B), не используется одновременно с Set A"},
+    {"asset_id": "person-rinse-01", "reason": "rejected alternative (Set C), не используется одновременно с Set A"}
+  ],
+
+  "masks": {
+    "back_hand_left_zone": [80, 36, 266, 268],
+    "back_hand_right_zone": [554, 152, 655, 538],
+    "front_fingers_left_zone": [190, 44, 275, 72],
+    "front_fingers_right_zone": [549, 166, 595, 212],
+    "product_interior_food_mask_bbox": [200, 79, 539, 329],
+    "left_handle_bbox": [190, 44, 275, 100],
+    "right_handle_bbox": [549, 166, 595, 259],
+    "source": "api/media_pipeline/compositor/scene05_layer_masks.py:build_all_layer_masks"
   },
 
   "prompts_file": "content/autopilot/coating-protect-2026-07/scene-05-layer-prompts.md",
   "locked_assets_file": "content/autopilot/coating-protect-2026-07/scene-05-locked-assets-plan.json",
 
   "planned_output_paths": {
-    "back_hand_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/back-hand.png",
-    "front_fingers_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/front-fingers.png",
     "unified_hands_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/hands-unified.png",
+    "back_hand_layer_split": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/back-hand.png",
+    "front_fingers_layer_split": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/front-fingers.png",
     "food_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/food.png",
     "final_composite": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/scene-05-composite.png",
     "note": "все output_paths — под generated/, gitignored (content/autopilot/*/generated/), ничего из перечисленного пока не создано"
   },
 
   "qa_criteria_hard_fail": [
-    "другие руки между сценами этого ролика (несовпадение с asset_id person-rinse-01/v2-hand-hold-01)",
+    "другие руки между сценами этого ролика (несовпадение с person-b-exhausted-01)",
     "другой оттенок кожи между сценами",
-    "другая одежда между сценами (несовпадение с person-b-exhausted-01)",
+    "другая одежда между сценами (несовпадение с серым рубчатым кардиганом person-b-exhausted-01)",
     "другой аэрогриль или кухня между сценами",
     "изменение формы (геометрии/пропорций/цвета) real-product-v1",
     "изменение геометрии ручек (не FLAT CORNER TAB + SHORT HORIZONTAL cut-out)",
@@ -80,6 +106,7 @@
     "food закрывает или изменяет силикон (стенки/ручки/дно)",
     "неправильное количество пальцев (не 5 на видимую кисть)",
     "морфинг/слияние пальцев",
+    "часы/кольца/браслеты на руках (hand_requirements.jewelry: none)",
     "watermark или посторонний текст в кадре",
     "число бёдрышек не 3 или раскладка не как в scene-04 (scene-специфичный hard-fail из scene-05.json)"
   ],
@@ -87,7 +114,7 @@
                  "sequence-director (continuity across scenes 1-7)",
                  "animation-qa (после Higgsfield, отдельный этап)"],
 
-  "next_step_requires_owner_approval": true,
+  "next_step_requires_owner_approval": "требуется отдельное подтверждение непосредственно перед --apply (owner_approved у visual lock уже true, но это НЕ разрешение на трату — это отдельный шаг)",
   "push": "NO", "production": "NO",
   "openai_calls": 0, "higgsfield_calls": 0, "api_spend_usd": 0
 }

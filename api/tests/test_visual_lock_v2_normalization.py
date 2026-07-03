@@ -27,7 +27,10 @@ from api.media_pipeline.reference_library.activation import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CAMPAIGN_DIR = REPO_ROOT / "content" / "autopilot" / "coating-protect-2026-07"
-V1_LOCK_PATH = CAMPAIGN_DIR / "campaign_visual_lock.json"
+# ВНИМАНИЕ: campaign_visual_lock.json теперь АКТИВНЫЙ файл (Set A утверждён
+# владельцем) — reference-pool v1 сохранён отдельно как historical.
+ACTIVE_LOCK_PATH = CAMPAIGN_DIR / "campaign_visual_lock.json"
+V1_LOCK_PATH = CAMPAIGN_DIR / "campaign_visual_lock_v1.historical.json"
 V2_LOCK_PATH = CAMPAIGN_DIR / "campaign_visual_lock_v2.proposed.json"
 AUDIT_PATH = (CAMPAIGN_DIR / "generated" / "campaign-visual-lock-review" /
              "visual-lock-audit.json")

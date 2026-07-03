@@ -22,17 +22,9 @@ from .models import ReferenceLibraryError
 from .resolver import ROOT_ENV_VAR, load_index, resolve_asset
 
 
-def resolve_campaign(campaign_lock_path: str, index: dict | None = None,
-                     root: str | None = None) -> dict:
-    lock = json.loads(Path(campaign_lock_path).read_text(encoding="utf-8"))
-    index = index if index is not None else load_index()
-
-    if lock["product_canon_resolution"] != "repository_only":
-        raise ReferenceLibraryError(
-            "REFERENCE_ASSET_AMBIGUOUS",
-            "product_canon_resolution должен быть 'repository_only' — "
-            "product_canon никогда не резолвится через reference library")
-
+def _resolve_v1_locked_elements(lock: dict, index: dict, root: str | None) -> list:
+    """Схема v1 (reference pool): lock['locked_elements'] — список ролей,
+    может держать НЕСКОЛЬКО asset_id на одну роль одновременно."""
     resolved = []
     for element in lock["locked_elements"]:
         ra = resolve_asset(element["asset_id"], root=root, index=index)
@@ -55,6 +47,92 @@ def resolve_campaign(campaign_lock_path: str, index: dict | None = None,
             "reference_only": element["reference_only"],
             "restrictions": element["restrictions"],
         })
+    return resolved
+
+
+def _resolve_v2_appearance_schema(lock: dict, index: dict, root: str | None) -> list:
+    """Схема v2/active (один visual set): lock['appearance'] — РОВНО один
+    primary asset_id на роль; lock['mechanics_only']/['style_only'] — вспомогательные,
+    не определяющие внешность."""
+    resolved = []
+    appearance = lock["appearance"]
+    for field, asset_id in appearance.items():
+        if not field.startswith("primary_") or not isinstance(asset_id, str):
+            continue
+        ra = resolve_asset(asset_id, root=root, index=index)
+        resolved.append({
+            "role": field,
+            "asset_id": asset_id,
+            "category": "appearance",
+            "continuity_group_id": appearance.get("continuity_group_id"),
+            "locked_for_all_scenes": lock["locked_for_all_scenes"],
+            "shared_across_hooks": lock["shared_across_hooks"],
+            "resolved_path": str(ra.path),
+            "sha256": ra.sha256,
+            "width": ra.width,
+            "height": ra.height,
+            "file_size_bytes": ra.file_size_bytes,
+            "already_in_repo": ra.already_in_repo,
+        })
+
+    for m in lock.get("mechanics_only", []):
+        ra = resolve_asset(m["asset_id"], root=root, index=index)
+        resolved.append({
+            "role": "mechanics_only",
+            "asset_id": m["asset_id"],
+            "category": "mechanics_only",
+            "influence_scope": m.get("influence_scope"),
+            "must_not_influence_hand_appearance": m.get("must_not_influence_hand_appearance", False),
+            "must_not_influence_airfryer_appearance": m.get("must_not_influence_airfryer_appearance", False),
+            "must_not_influence_product_geometry": m.get("must_not_influence_product_geometry", False),
+            "do_not_pass_to_scene_05_generation": m.get("do_not_pass_to_scene_05_generation", False),
+            "locked_for_all_scenes": lock["locked_for_all_scenes"],
+            "shared_across_hooks": lock["shared_across_hooks"],
+            "resolved_path": str(ra.path),
+            "sha256": ra.sha256,
+            "width": ra.width,
+            "height": ra.height,
+            "file_size_bytes": ra.file_size_bytes,
+            "already_in_repo": ra.already_in_repo,
+        })
+
+    for s in lock.get("style_only", []):
+        ra = resolve_asset(s["asset_id"], root=root, index=index)
+        resolved.append({
+            "role": "style_only",
+            "asset_id": s["asset_id"],
+            "category": "style_only",
+            "influence_scope": s.get("influence_scope"),
+            "must_not_define_recipe": s.get("must_not_define_recipe", False),
+            "must_not_define_food_count": s.get("must_not_define_food_count", False),
+            "do_not_pass_to_scene_05_generation": s.get("do_not_pass_to_scene_05_generation", False),
+            "locked_for_all_scenes": False,
+            "shared_across_hooks": lock["shared_across_hooks"],
+            "resolved_path": str(ra.path),
+            "sha256": ra.sha256,
+            "width": ra.width,
+            "height": ra.height,
+            "file_size_bytes": ra.file_size_bytes,
+            "already_in_repo": ra.already_in_repo,
+        })
+    return resolved
+
+
+def resolve_campaign(campaign_lock_path: str, index: dict | None = None,
+                     root: str | None = None) -> dict:
+    lock = json.loads(Path(campaign_lock_path).read_text(encoding="utf-8"))
+    index = index if index is not None else load_index()
+
+    if lock["product_canon_resolution"] != "repository_only":
+        raise ReferenceLibraryError(
+            "REFERENCE_ASSET_AMBIGUOUS",
+            "product_canon_resolution должен быть 'repository_only' — "
+            "product_canon никогда не резолвится через reference library")
+
+    if "locked_elements" in lock:
+        resolved = _resolve_v1_locked_elements(lock, index, root)
+    else:
+        resolved = _resolve_v2_appearance_schema(lock, index, root)
 
     hooks = lock["hooks"]
     all_shared = all(r["shared_across_hooks"] for r in resolved)
@@ -63,6 +141,8 @@ def resolve_campaign(campaign_lock_path: str, index: dict | None = None,
         "same_resolved_set_confirmed": all_shared and hooks["shared_main_body"],
         "shared_visual_lock_file": hooks["shared_visual_lock"],
     }
+    if "visual_set_id" in hooks:
+        same_for_all_hooks["visual_set_id"] = hooks["visual_set_id"]
 
     report = {
         "campaign_code": lock["campaign_code"],
@@ -78,6 +158,9 @@ def resolve_campaign(campaign_lock_path: str, index: dict | None = None,
         "animation_api_calls": 0,
         "network_calls": 0,
     }
+    if "visual_set_id" in lock:
+        report["visual_set_id"] = lock["visual_set_id"]
+        report["owner_approved"] = lock.get("owner_approved", False)
     return report
 
 

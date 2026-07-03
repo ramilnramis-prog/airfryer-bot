@@ -48,12 +48,17 @@ def write_test_png(path, size=(3, 2)):
 
 
 class TestCampaignLockUsesAssetIdNotAbsolutePath(unittest.TestCase):
-    def test_locked_elements_only_carry_asset_id_not_paths(self):
+    def test_appearance_and_mechanics_only_carry_asset_id_not_paths(self):
         lock = load_json(CAMPAIGN_LOCK_PATH)
-        for e in lock["locked_elements"]:
-            self.assertIn("asset_id", e)
-            self.assertNotIn("source_path", e)
-            self.assertNotIn("path", e)
+        appearance = lock["appearance"]
+        for field, value in appearance.items():
+            if field.startswith("primary_"):
+                self.assertIsInstance(value, str)  # asset_id, не путь/объект
+        for group in ("mechanics_only", "style_only"):
+            for e in lock.get(group, []):
+                self.assertIn("asset_id", e)
+                self.assertNotIn("source_path", e)
+                self.assertNotIn("path", e)
 
     def test_no_absolute_windows_path_anywhere_in_campaign_lock(self):
         src = CAMPAIGN_LOCK_PATH.read_text(encoding="utf-8")
