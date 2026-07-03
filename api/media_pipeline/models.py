@@ -131,6 +131,10 @@ class ImageRequest:
     # legacy-параметр gpt-image-1; gpt-image-2 обрабатывает image inputs с высокой
     # fidelity автоматически — capability map не даст отправить его не туда
     input_fidelity: str | None = None
+    # PNG с alpha-каналом: alpha=0 -> editable, alpha=255 -> protected.
+    # Разрешён ТОЛЬКО при mode="edit"; применяется к reference_images[0].
+    mask_path: str | None = None
+    output_format: str | None = None      # например "png"
 
 
 @dataclass

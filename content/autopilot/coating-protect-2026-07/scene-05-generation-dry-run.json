@@ -19,6 +19,10 @@
       "call_count": 1,
       "scope": "HANDS ONLY (masked image edit of baseplate B)",
       "mode": "edit",
+      "model": "gpt-image-2",
+      "size": "720x1280",
+      "n": 1,
+      "output_format": "png",
       "retries": 0,
       "arbiter": "OFF",
       "food_status": "BLOCKED",
@@ -68,6 +72,15 @@
 
   "edit_mask": {
     "function": "api/media_pipeline/compositor/scene05_layer_masks.py:call1_edit_mask_zones",
+    "mask_image_builder": "api/media_pipeline/compositor/scene05_edit_mask.py:build_call1_edit_mask_image",
+    "mask_file": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask.png",
+    "mask_sha256": "85c0dfe30d3050c38d6362ab8815628460d4818682111b27745d2107382caf23",
+    "mask_dimensions": [720, 1280],
+    "mask_file_size_bytes": 6393,
+    "mask_alpha_semantics": "alpha=0 -> EDIT, alpha=255 -> PROTECT",
+    "mask_transparent_pixel_count": 67425,
+    "mask_opaque_pixel_count": 854175,
+    "mask_editable_fraction": 0.073161,
     "zones": {
       "left_forearm_hand": [80, 36, 266, 268],
       "right_forearm_hand": [554, 152, 655, 380],
@@ -78,15 +91,41 @@
       "right_forearm_hand": {"original_y1": 538, "clipped_y1": 380,
                              "reason": "back_hand_right_zone спроектирована для слоистой компоновки; в плоском edit заходила бы в открытую корзину — подтверждено визуальной сверкой"}
     },
-    "protected_outside_mask": ["real-product-v1 (форма, ручки)", "DE'MIAND", "корзина", "фон", "кухня"]
+    "protected_outside_mask": ["real-product-v1 (форма, ручки)", "DE'MIAND", "корзина", "фон", "кухня"],
+    "no_feathering": true,
+    "zones_not_auto_expanded": true
+  },
+
+  "request_contract": {
+    "endpoint": "/v1/images/edits",
+    "model": "gpt-image-2",
+    "size": "720x1280",
+    "n": 1,
+    "output_format": "png",
+    "retries": 0,
+    "input_fidelity": "не передаётся явно для gpt-image-2 (capability map)",
+    "background": "не запрашивается для gpt-image-2",
+    "multipart_fields": ["image[]", "image[]", "image[]", "image[]", "image[]", "mask",
+                        "model", "prompt", "size", "n", "output_format"],
+    "mask_field_name": "mask",
+    "mask_applies_to": "images[0] (primary image) ТОЛЬКО",
+    "images": [
+      {"index": 0, "ref": "clean rebuild of baseplate-B (primary image, edit target)", "role": "primary_image"},
+      {"index": 1, "asset_id": "person-b-exhausted-01", "role": "appearance_only"},
+      {"index": 2, "asset_id": "real-grip-motion-01", "role": "pose_mechanics_only"},
+      {"index": 3, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png", "role": "geometry_contact_only"},
+      {"index": 4, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/right_handle_master.png", "role": "geometry_contact_only"}
+    ]
   },
 
   "refs_passed_in_order": [
     {"order": 1, "ref": "clean rebuild of baseplate-B (primary input, edit target)"},
     {"order": 2, "asset_id": "person-b-exhausted-01", "role": "appearance: кожа, ногти, серый кардиган"},
     {"order": 3, "asset_id": "real-grip-motion-01", "role": "mechanics_only: только поза/траектория"},
-    {"order": 4, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png + right_handle_master.png",
-     "role": "только геометрия ручек и точки контакта, не источник рук/кожи"}
+    {"order": 4, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png",
+     "role": "только геометрия левой ручки и точки контакта, не источник рук/кожи"},
+    {"order": 5, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/right_handle_master.png",
+     "role": "только геометрия правой ручки и точки контакта, не источник рук/кожи"}
   ],
   "excluded_from_refs": [
     {"asset_id": "v2-form-in-basket-01", "reason": "положение формы уже зафиксировано approved baseplate B; аэрогриль/товар на фото не соответствуют активным канонам"},
@@ -101,8 +140,16 @@
   "locked_assets_file": "content/autopilot/coating-protect-2026-07/scene-05-locked-assets-plan.json",
 
   "planned_output_paths": {
-    "hands_edit_pilot_output": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/hands-edit-pilot.png",
-    "note": "output_path — под generated/, gitignored (content/autopilot/*/generated/), ничего из перечисленного пока не создано"
+    "edit_mask": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask.png",
+    "edit_mask_preview": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask-preview.png",
+    "edit_mask_overlay": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask-overlay.png",
+    "edit_mask_audit": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask-audit.json",
+    "hands_raw_edit_output": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-hands-raw-edit.png",
+    "outside_mask_diff": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-outside-mask-diff.png",
+    "hands_extracted": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-hands-extracted.png",
+    "candidate_composite": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-candidate-composite.png",
+    "qa_report": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-qa-report.json",
+    "note": "edit_mask/preview/overlay/audit уже созданы локально (детерминированно, без API); остальные пути — под generated/, gitignored, создаются только реальным pilot-вызовом (пока НЕ выполнялся)"
   },
 
   "qa_criteria_hard_fail": [

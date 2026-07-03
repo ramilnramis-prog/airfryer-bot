@@ -116,23 +116,41 @@ real-product-v1 (форма, ручки), DE'MIAND, корзина, фон, ку
 > DE'MIAND air fryer body, background, or kitchen in any way, inside or
 > outside the mask. No text, no watermark, no logo.
 
-### Порядок inputs (точный)
+### Порядок inputs (точный, 5 images + отдельное поле mask)
 
-1. `baseplate-B.png` — primary input, точная композиция для редактирования
-2. `person-b-exhausted-01` — внешность рук: кожа, ногти, серый кардиган
-3. `real-grip-motion-01` — ТОЛЬКО поза и механика хвата
-4. `assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png`
-   (sha256 `4c6603ed59a01ff4a200144cc89222dc332521915d07dd38fb63e3c8ef65b2b8`) +
-   `right_handle_master.png` (sha256 `9ca357bafd5f0a14041bbda8adfe6f398f8cafc3dc4493c609582efe57f2311e`)
-   — ТОЛЬКО геометрия и точки контакта ручек, не источник рук/кожи
+| images[i] | ref | роль |
+|---|---|---|
+| `images[0]` | чистая пересборка baseplate B (primary image) | edit target |
+| `images[1]` | `person-b-exhausted-01` | appearance only |
+| `images[2]` | `real-grip-motion-01` | pose mechanics only |
+| `images[3]` | `left_handle_master.png` (sha256 `4c6603ed59a01ff4a200144cc89222dc332521915d07dd38fb63e3c8ef65b2b8`) | geometry/contact only |
+| `images[4]` | `right_handle_master.png` (sha256 `9ca357bafd5f0a14041bbda8adfe6f398f8cafc3dc4493c609582efe57f2311e`) | geometry/contact only |
+| `mask` | `call1-edit-mask.png` (sha256 `85c0dfe30d3050c38d6362ab8815628460d4818682111b27745d2107382caf23`, 720×1280, 6393 bytes) | применяется ТОЛЬКО к `images[0]` |
+
+**Request contract**: `model=gpt-image-2`, `size=720x1280`, `n=1`,
+`output_format=png`, `retries=0`. `input_fidelity` для gpt-image-2 явно не
+передаётся (capability map). `background` не запрашивается. Multipart
+fields: `image[]` ×5 (в указанном порядке) + отдельное поле `mask` (не
+пятый `image[]`, не reference) + `model`/`prompt`/`size`/`n`/`output_format`.
+
+`mask` — PNG с alpha-каналом: **alpha=0 = EDIT**, **alpha=255 = PROTECT**.
+Построена детерминированно
+`api/media_pipeline/compositor/scene05_edit_mask.py:build_call1_edit_mask_image`
+из тех же 4 зон (без feathering, без автоматического расширения):
+67425 editable пикселей (7.3% кадра), 854175 protected.
 
 ### Expected output
 
-Один PNG 720×1280, пиксель-в-пиксель идентичный `baseplate-B.png` везде
-**вне** 4 edit-зон; внутри зон — две женские руки (Set A appearance),
-держащие обе реальные плоские ручки, короткие горизонтальные прорези
-частично видны, пять пальцев на кисть, без часов/колец/браслетов, без
-watermark/текста.
+Один PNG 720×1280 (raw edit result — DONOR FRAME, не final frame напрямую),
+пиксель-в-пиксель идентичный чистой пересборке `baseplate-B.png` везде
+**вне** 4 edit-зон (гарантируется самим mask-механизмом API); внутри зон —
+две женские руки (Set A appearance), держащие обе реальные плоские ручки,
+короткие горизонтальные прорези частично видны, пять пальцев на кисть, без
+часов/колец/браслетов, без watermark/текста. Из raw edit result в
+финальный candidate composite берутся ТОЛЬКО пиксели рук/рукавов из
+разрешённых зон — BACKGROUND/DE'MIAND/basket берутся из исходного
+baseplate B, PRODUCT/handles — из real-product-v1 (см. ШАГ 4 детерминированной
+сборки в `scene-05-generation-dry-run.json`).
 
 ---
 
