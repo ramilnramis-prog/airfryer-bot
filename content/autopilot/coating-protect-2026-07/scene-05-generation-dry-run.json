@@ -1,0 +1,93 @@
+{
+  "status": "dry_run_only",
+  "generated_at": "2026-07-04",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+
+  "execution_summary": {
+    "openai_images_api_calls_executed": 0,
+    "higgsfield_api_calls_executed": 0,
+    "any_network_call_executed": 0,
+    "api_spend_usd_executed": 0
+  },
+
+  "planned_generation": {
+    "recommended_plan": {
+      "call_count": 2,
+      "layers": ["HANDS (unified back+front, split deterministically in code)", "FOOD"],
+      "note": "минимизирует число вызовов: back_hand и front_fingers получаются из ОДНОГО изображения рук через маски scene05_layer_masks, без второго вызова API"
+    },
+    "fallback_plan": {
+      "call_count": 3,
+      "layers": ["BACK_HAND", "FRONT_FINGERS", "FOOD"],
+      "trigger": "используется, только если QA отклонит unified-hands-слой (например, пальцы нечитаемы после обрезки по front zone)"
+    },
+    "not_requiring_generation": [
+      "CAST_SHADOW — процедурный (api/media_pipeline/compositor/scene05_baseplate.py:shadow_overlay)",
+      "STEAM_EFFECTS — процедурный (api/media_pipeline/compositor/cli.py:_steam_overlay)",
+      "PRODUCT_BASE / handles — real-product-v1, только компоновка (без генерации)",
+      "BACKGROUND (аэрогриль/корзина/кухня) — реальный кадр baseplate B, без генерации"
+    ]
+  },
+
+  "model": {
+    "provider": "OpenAI Images",
+    "name": "gpt-image-2",
+    "config_source": "api/media_pipeline/openai_images_client.py:PRIMARY_MODEL",
+    "override_env_var": "OPENAI_IMAGE_MODEL",
+    "animation_model": "Higgsfield — НЕ запускается на этом этапе (только после sequence approval и явного подтверждения владельца)"
+  },
+
+  "estimated_spend": {
+    "price_per_image_usd_estimate": 0.30,
+    "price_source": "api/media_pipeline/openai_images_client.py:DEFAULT_PRICE_ESTIMATE_USD",
+    "recommended_plan_estimate_usd": 0.60,
+    "fallback_plan_estimate_usd": 0.90,
+    "candidates_per_layer_assumed": 1,
+    "note": "оценка ориентировочная (реальная стоимость зависит от usage/quality-параметров API), фактические вызовы НЕ выполнялись"
+  },
+  "hard_cap": {
+    "max_api_calls_this_stage": 0,
+    "rule": "На этом этапе (dry-run plan) API-вызовы запрещены полностью. Любой последующий запуск требует отдельного явного подтверждения владельца перед --apply, как и во всех предыдущих раундах генерации этой кампании."
+  },
+
+  "refs_passed_in_order": {
+    "hands_layer": ["person-rinse-01", "v2-hand-hold-01", "real-grip-motion-01", "person-b-exhausted-01"],
+    "food_layer": ["food-wings-01"]
+  },
+
+  "prompts_file": "content/autopilot/coating-protect-2026-07/scene-05-layer-prompts.md",
+  "locked_assets_file": "content/autopilot/coating-protect-2026-07/scene-05-locked-assets-plan.json",
+
+  "planned_output_paths": {
+    "back_hand_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/back-hand.png",
+    "front_fingers_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/front-fingers.png",
+    "unified_hands_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/hands-unified.png",
+    "food_layer": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/food.png",
+    "final_composite": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/scene-05-composite.png",
+    "note": "все output_paths — под generated/, gitignored (content/autopilot/*/generated/), ничего из перечисленного пока не создано"
+  },
+
+  "qa_criteria_hard_fail": [
+    "другие руки между сценами этого ролика (несовпадение с asset_id person-rinse-01/v2-hand-hold-01)",
+    "другой оттенок кожи между сценами",
+    "другая одежда между сценами (несовпадение с person-b-exhausted-01)",
+    "другой аэрогриль или кухня между сценами",
+    "изменение формы (геометрии/пропорций/цвета) real-product-v1",
+    "изменение геометрии ручек (не FLAT CORNER TAB + SHORT HORIZONTAL cut-out)",
+    "пальцы проходят сквозь пиксели товара",
+    "рука держит верхний борт формы/корзины вместо реальной плоской ручки",
+    "food закрывает или изменяет силикон (стенки/ручки/дно)",
+    "неправильное количество пальцев (не 5 на видимую кисть)",
+    "морфинг/слияние пальцев",
+    "watermark или посторонний текст в кадре",
+    "число бёдрышек не 3 или раскладка не как в scene-04 (scene-специфичный hard-fail из scene-05.json)"
+  ],
+  "qa_pipeline": ["visual-director (per-scene candidate judge)",
+                 "sequence-director (continuity across scenes 1-7)",
+                 "animation-qa (после Higgsfield, отдельный этап)"],
+
+  "next_step_requires_owner_approval": true,
+  "push": "NO", "production": "NO",
+  "openai_calls": 0, "higgsfield_calls": 0, "api_spend_usd": 0
+}
