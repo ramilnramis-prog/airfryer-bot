@@ -1,5 +1,8 @@
 {
-  "bible_version": 2,
+  "bible_version": 3,
+  "canonical_version": "real-product-v1",
+  "canonical_source_type": "real_photography",
+  "canonical_change_note": "2026-07-03: владелец подтвердил реальные фото/видео товара как безусловный источник истины для физической геометрии. Прежний AI-канон (forma_6angles.png, handles_reference_crop.png) содержал НЕВЕРНУЮ геометрию ручек и выведен из активного QA — см. product_asset_manifest.json.legacy_sources.",
   "product_code": "airfryer-silicone-form",
   "ozon_external_id": "1931921872",
   "source_of_truth": "Style Anchor: D:/OzonGrowthProject/.claude/skills/ozon-airfryer-growth/VISUAL_CONSISTENCY_SYSTEM.md (финализирован 2026-06-18)",
@@ -11,32 +14,35 @@
     "material_look": "матовый пищевой силикон, без глянца, лёгкая бархатистость",
     "handles": {
       "count_exact": 2,
-      "type": "овальные сквозные вырезы-ручки",
-      "position": "на двух ПРОТИВОПОЛОЖНЫХ стенках, по центру верхней кромки",
+      "type": "плоские угловые боковые язычки со сквозной прорезью",
+      "position": "на двух ПРОТИВОПОЛОЖНЫХ стенках, в верхнем углу, встроены в изгиб бортика",
       "note": "count == 2 НЕ достаточен — см. handle_geometry ниже"
     },
     "handle_geometry": {
+      "canonical_version": "real-product-v1",
       "reference_source": {
-        "full_product": "D:/OzonGrowthProject/content/assets/forma_6angles.png",
-        "handles_crop": "assets/visual-bible/airfryer-silicone-form/references/handles_reference_crop.png (крупные crop ручек из 5 ракурсов forma_6angles.png)"
+        "primary": "raw/photo_7_2026-06-18_16-53-42.jpg (PRIMARY — обе ручки видны целиком)",
+        "supplementary": ["raw/photo_1_2026-06-18_16-53-42.jpg", "raw/photo_2_2026-06-18_16-53-42.jpg", "raw/photo_3_2026-06-18_16-53-42.jpg"],
+        "raw_dir": "D:/OzonGrowthProject/content/assets/real-product-reference-shoot/airfryer-silicone-form/raw/",
+        "versioned_masters": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/ (left_handle_master.png, right_handle_master.png, both_handles_master.png)",
+        "note": "источник — РЕАЛЬНАЯ ФОТОГРАФИЯ товара, не AI-рендер; безусловный приоритет над любыми AI-референсами"
       },
-      "outer_silhouette": "прямой вытянутый плоский язычок-планка (strap/tab), выступающий над кромкой; НЕ дуга, НЕ петля-полукруг",
-      "long_sides": "длинные стороны ручки визуально прямые и ПАРАЛЛЕЛЬНЫЕ",
-      "cutout": "вытянутый овальный (капсульный) сквозной вырез, длина заметно больше высоты",
-      "frame_thickness": "одинаковая толщина силикона вокруг всего выреза",
-      "symmetry": "левая и правая ручки идентичны и симметричны друг другу",
-      "permitted_tolerance": "малые перспективные искажения ракурса и лёгкое перекрытие пальцами; толщина/скругление могут отклоняться в пределах, при которых силуэт читается как прямой вытянутый язычок с параллельными сторонами",
+      "outer_silhouette": "плоский угловой боковой язычок, почти ВРОВЕНЬ с верхней кромкой стенки; встроен в изгиб бортика на углу, НЕ поднимается над кромкой заметной дугой/петлёй",
+      "cutout": "короткая ГОРИЗОНТАЛЬНАЯ прямоугольная/слегка скруглённая прорезь (длина по горизонтали, НЕ вертикальный вытянутый овал)",
+      "symmetry": "левая и правая ручки определяются ТОЛЬКО реальными фото (photo_7); должны быть согласованы друг с другом в пределах естественной перспективы съёмки",
+      "permitted_tolerance": "малые перспективные искажения ракурса и частичное перекрытие пальцами; ручная сегментация референса имеет допуск ~10-15px — не путать с допуском для генерируемых кандидатов",
       "forbidden": [
-        "дугообразный, пухлый или чрезмерно скруглённый внешний контур",
-        "D-образная или круглая ручка",
-        "изгиб, морфинг, укорочение или изменение пропорций",
-        "утолщение рамки или неравная толщина силикона вокруг выреза",
-        "круглый/некапсульный вырез",
-        "асимметрия левой и правой ручки",
-        "ручка сливается с округлым бортом формы / становится частью борта"
+        "высокая вертикальная ручка-петля, поднимающаяся заметной дугой над кромкой — OBSOLETE AI-геометрия, не существует у реального товара",
+        "вытянутый вертикальный овальный вырез — OBSOLETE AI-геометрия",
+        "округлый крюк, каплевидное отверстие",
+        "пухлый или чрезмерно скруглённый внешний контур",
+        "изгиб, морфинг, укорочение или изменение пропорций между кадрами",
+        "асимметрия левой и правой ручки за пределами естественной перспективы",
+        "ручка сливается с округлым бортом формы так, что перестаёт читаться как отдельный язычок"
       ],
-      "forbidden_in_animation": "любой дрейф силуэта ручек между кадрами (округление, изгиб, утолщение) — hard fail handle_geometry_drift",
-      "qa_rule": "любое отличие геометрии ручек от референса = HARD FAIL handle_geometry_mismatch, даже при ровно двух ручках"
+      "forbidden_in_animation": "любой дрейф силуэта ручек между кадрами (округление, изгиб, утолщение, смена формы выреза) — hard fail handle_geometry_drift",
+      "qa_rule": "любое отличие геометрии ручек от real-product-v1 = HARD FAIL handle_geometry_mismatch, даже при ровно двух ручках",
+      "obsolete_reference_note": "forma_6angles.png и handles_reference_crop.png (прежний AI-канон: высокая ручка-петля с вертикальным овальным вырезом) выведены из активного QA геометрии — не соответствуют реальному товару. Не удалены, сохранены для истории аудита. См. product_asset_manifest.json.legacy_sources."
     },
     "bottom": "рифлёное: параллельные выступающие рёбра по всей площади дна",
     "proportions": {
@@ -44,17 +50,18 @@
       "wall_height": "~5 см",
       "wall_to_width_ratio": "высота стенки ≈ 27% ширины — форма низкая и широкая, НЕ глубокая кастрюля"
     },
-    "canonical_reference": "D:/OzonGrowthProject/content/assets/forma_6angles.png"
+    "canonical_reference": "assets/product-lock/airfryer-silicone-form/references/real-v1/ (real-product-v1); forma_6angles.png — OBSOLETE, см. handle_geometry.obsolete_reference_note"
   },
 
   "airfryer": {
-    "identity": "один и тот же прибор во ВСЕХ кадрах кампании",
-    "look": "современный чёрный аэрогриль с прозрачным смотровым окном спереди и ручкой корзины",
+    "identity": "один и тот же прибор во ВСЕХ кадрах кампании: реальный аэрогриль DE'MIAND (решение владельца 2026-07-03)",
+    "look": "чёрный выдвижной аэрогриль DE'MIAND с сенсорной панелью управления сверху (русские подписи: СВЕТ, ТЕМП/ВРЕМЯ, WIFI, СТЕЙК, РЫБА, ВЫПЕЧКА, ПИЦЦА и др.) и выдвижным ящиком-корзиной",
     "basket": {
       "count_exact": 1,
-      "look": "одна выдвижная чёрная корзина с тёмным антипригарным покрытием внутри"
+      "look": "одна выдвижная чёрная корзина со спиральным вентиляционным рисунком дна и круглой крышкой по центру"
     },
-    "canonical_reference": "D:/OzonGrowthProject/content/assets/video2-formaad/place.png (AI-кадр видео №2; реального фото прибора владельца пока нет)"
+    "brand_note": "бренд DE'MIAND не акцентируется в рекламных текстах; товар не заявляется как подходящий только для DE'MIAND",
+    "canonical_reference": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/airfryer_front_master.png (фронт, video-frame 865) и clean_basket_master.png (чистый лоток, video-frame 998); place.png — AI-референс прошлой кампании, заменён по решению владельца"
   },
 
   "hands": {

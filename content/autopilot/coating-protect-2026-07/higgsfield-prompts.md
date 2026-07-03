@@ -1,13 +1,25 @@
 # Higgsfield-промпты: coating-protect-ad
 
-⚠️ **Платная генерация — только после явного подтверждения владельца.**
+⚠️ **Платная генерация — только после явного подтверждения владельца. Higgsfield НЕ запускать.**
 Этот файл — заготовка промптов, ничего не генерировалось.
+
+⚠️ **2026-07-03: full-frame генерация товара признана ненадёжной** (отрицательный
+тест scene-05-regeneration-01: модель перерисовывает геометрию ручек даже с 5
+референсами). Решение владельца: товар — неизменяемый RGBA-слой из
+`api/media_pipeline/compositor` (product-locked compositing), см.
+`scene-05-real-v1-composite-plan.json`. Промпты ниже сохранены для слоёв, где
+AI-генерация остаётся допустимой (кухня, руки, аэрогриль, свет, пар), и как
+текстовый эталон корректной геометрии — но НЕ как план full-frame генерации формы.
 
 ## Технические требования (для всех кадров)
 
-- Reference image на ВСЕ генерации: фото товара `content/assets/forma_6angles.png`
-  (форма 1:1: матовая графитово-серая, квадратная со скруглёнными углами,
-  рифлёное дно, две овальные ручки-выреза).
+- Reference image геометрии товара — ТОЛЬКО real-product-v1:
+  `assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png`
+  + `references/real-v1/handles/both_handles_master.png` (реальные фото; форма 1:1:
+  матовая графитово-серая, квадратная со скруглёнными углами, рифлёное дно,
+  две боковые ручки-язычка). `content/assets/forma_6angles.png` — OBSOLETE
+  AI-канон, НЕ использовать как референс геометрии (см.
+  `product_asset_manifest.json.legacy_sources`).
 - Aspect ratio: 9:16 (вертикаль), один пресет стиля на все кадры.
 - Единый seed, если инструмент поддерживает.
 - Блюдо в кадрах 4–5 идентичное: 3 куриных бёдрышка + дольки картофеля.
@@ -29,19 +41,27 @@ CHARACTER: the same woman in every shot — early 30s, light-brown hair in a low
 natural friendly look, wearing an oatmeal/beige apron over a white tee. For brand
 match many shots may show only her hands.
 
-PRODUCT: the exact same matte graphite-gray SQUARE silicone air fryer liner —
+PRODUCT: PRODUCT-LOCKED COMPOSITING REQUIRED — do not redraw the liner from
+scratch; the exact same matte graphite-gray SQUARE silicone air fryer liner —
 rounded corners, ribbed/grooved bottom (parallel raised ridges), two cut-out
 handles on opposite walls, ~18.5×18.5 cm, 5 cm walls. HANDLE GEOMETRY (critical,
-hard fail if violated): the handles are straight elongated strap-like tabs with
-a narrow elongated oval cut-out; long sides visually straight and PARALLEL;
-uniform thin silicone frame around the cut-out; left and right handles identical
-and symmetric; NOT rounded, NOT puffy, NOT arched, NOT D-shaped, never merging
-into a rounded rim; the silhouette must match the product reference exactly and
-must NOT change during motion. Use the uploaded product photo as reference for
-fidelity.
+hard fail if violated, canonical source = real-product-v1 real photographs, NOT
+an AI rendering): the handles are FLAT CORNER TABS sitting almost FLUSH with the
+top rim (built into the wall's corner curve, NOT a tall loop/arch rising above
+the rim), with a SHORT HORIZONTAL rectangular/slightly rounded cut-out (NOT a
+tall vertical oval); left and right handles consistent with each other within
+natural perspective; NOT rounded, NOT puffy, NOT arched, NOT hook-shaped, never
+merging into a rounded rim. The OBSOLETE legacy shape (tall vertical loop handle
+with an elongated vertical oval cut-out) does NOT match the real product and
+must never be used. The silhouette must match real-product-v1 exactly and must
+NOT change during motion. Use the real-product-v1 master crops as reference for
+fidelity (see product_asset_manifest.json).
 
-AIR FRYER: the same modern black air fryer with a front viewing window and a handle,
-in every cooking shot.
+AIR FRYER: the real DE'MIAND air fryer (black, drawer-style, touch control panel
+on top with Russian labels; see real-v1/airfryer/airfryer_front_master.png) —
+replaces the previous generic AI air fryer design, per owner decision. Do not
+emphasize the DE'MIAND brand in marketing copy; do not claim the product only
+fits DE'MIAND.
 
 CAMERA / LENS: 35mm look, eye-level, shallow depth of field, subtle handheld feel.
 
@@ -85,9 +105,10 @@ CAMERA: macro shot, very slow lateral tracking following the sponge, shallow foc
 ACTION: the woman's hand lowers the empty matte graphite-gray square silicone liner
 (exact product from reference photo) into the clean black air fryer basket on the
 countertop; the liner settles in neatly, ribbed bottom visible, both handles
-visible — straight elongated strap-like tabs with a narrow elongated oval cut-out,
-long sides straight and parallel, identical left and right, exactly as in the
-product reference. No food yet. No text, no watermarks.
+visible — flat corner tabs almost flush with the top rim, with a short
+horizontal rectangular cut-out, identical left and right, exactly as in
+real-product-v1 (NOT the obsolete tall loop/vertical-oval shape). No food yet.
+No text, no watermarks.
 
 CAMERA: 45-degree high angle over the basket, static, shallow depth of field.
 ```
@@ -111,10 +132,10 @@ CAMERA: frontal close crop on the viewing window, static with a very subtle push
 [STYLE ANCHOR]
 
 ACTION: the woman lifts the graphite-gray square silicone liner out of the open air
-fryer basket by its two handles (straight elongated strap-like tabs with a narrow
-elongated oval cut-out, long sides straight and parallel, identical left and right,
-exactly as in the product reference, silhouette unchanged during motion); inside
-the liner exactly 3 roasted
+fryer basket by its two handles (flat corner tabs almost flush with the top rim,
+short horizontal rectangular cut-out, identical left and right, exactly as in
+real-product-v1 — NOT the obsolete tall loop/vertical-oval shape, silhouette
+unchanged during motion); inside the liner exactly 3 roasted
 golden chicken thighs and potato wedges, light steam rising; below, the inside of
 the black basket is visibly clean and dry, untouched by grease. No text, no watermarks.
 
@@ -140,9 +161,9 @@ CAMERA: close-up, short slow push-in on the clean coating, eye-level.
 [STYLE ANCHOR]
 
 ACTION: clean product composition on the light greige countertop: the empty matte
-graphite-gray square silicone liner in front, both handles (straight elongated
-strap-like tabs with a narrow elongated oval cut-out, long sides straight and
-parallel, identical left and right, exactly as in the product reference) and ribbed
+graphite-gray square silicone liner in front, both handles (flat corner tabs
+almost flush with the top rim, short horizontal rectangular cut-out, identical
+left and right, exactly as in real-product-v1) and ribbed
 bottom ridges clearly visible, the black air fryer slightly behind at camera-right,
 soft daylight. Styled like an e-commerce listing card. No text, no watermarks, no logos.
 

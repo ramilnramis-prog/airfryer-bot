@@ -1,23 +1,122 @@
 {
   "product_code": "airfryer-silicone-form",
-  "pack_version": 1,
+  "pack_version": 2,
+  "canonical_version": "real-product-v1",
+  "canonical_source_type": "real_photography",
+  "canonical_status": "active",
   "canonical_source": {
-    "path": "D:\\OzonGrowthProject\\content\\assets\\forma_6angles.png",
-    "sha256": "d5cb6978b002301714e6b03a4e829ea4e84c778ac37150b17d6333444eba7499",
-    "note": "единственный источник пикселей товара; ничего не дорисовано"
+    "primary": "photo_7_2026-06-18_16-53-42.jpg",
+    "primary_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+    "supplementary": [
+      "photo_1_2026-06-18_16-53-42.jpg",
+      "photo_2_2026-06-18_16-53-42.jpg",
+      "photo_3_2026-06-18_16-53-42.jpg"
+    ],
+    "bottom_center_loop": [
+      "photo_5_2026-06-18_16-53-42.jpg",
+      "photo_6_2026-06-18_16-53-42.jpg"
+    ],
+    "raw_dir": "D:\\OzonGrowthProject\\content\\assets\\real-product-reference-shoot\\airfryer-silicone-form\\raw",
+    "note": "Реальные фото имеют безусловный приоритет над любыми AI-рендерами. Полигоны сегментации — ручная разметка, сверенная визуальным наложением на фото (не ML, не генеративное восстановление); допуск ~10-15px."
   },
-  "secondary_source_candidate": {
-    "path": "D:\\OzonGrowthProject\\content\\assets\\02_master_keyframe_REAL.png",
-    "sha256": "d3ece71915e873e39aee3c64835376e19d1b92e02f65f625d54b9e82838c0ccf",
-    "status": "not_extracted",
-    "note": "кадр '02_master_keyframe_REAL' прошлой кампании: геометрия ручек совпадает с каноном, но происхождение (реальное фото или рендер) должен подтвердить владелец до использования"
+  "handle_geometry_real": {
+    "outer_silhouette": "плоский угловой боковой язычок, почти вровень с верхней кромкой стенки",
+    "cutout": "короткая горизонтальная прямоугольная/скруглённая прорезь",
+    "forbidden_legacy_shape": "высокая вертикальная ручка-петля с вытянутым вертикальным овальным вырезом — OBSOLETE, не соответствует реальному товару",
+    "source": "photo_7_2026-06-18_16-53-42.jpg (PRIMARY)"
   },
+  "legacy_sources": [
+    {
+      "path": "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false,
+      "allowed_for_style_reference": false,
+      "reason": "does not match the real sold product handle construction (tall vertical loop handle with elongated vertical oval cut-out vs real flat corner tab with short horizontal slot)"
+    },
+    {
+      "path": "assets/visual-bible/airfryer-silicone-form/references/handles_reference_crop.png",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false,
+      "allowed_for_style_reference": false,
+      "reason": "derived entirely from forma_6angles.png — same incorrect handle geometry"
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/real-product-reference-shoot/airfryer-silicone-form/raw/cta.png",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false,
+      "allowed_for_style_reference": "фон/свет кухни допустимо, если не утверждается как геометрия товара",
+      "reason": "AI-рендер прошлой кампании (byte-identical to video2-formaad/cta.png), not a real photo"
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/real-product-reference-shoot/airfryer-silicone-form/raw/shot2_reveal.png",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false,
+      "allowed_for_style_reference": false,
+      "reason": "AI-рендер прошлой кампании: та же неверная вытянуто-овальная геометрия ручек, которую отклонил владелец"
+    },
+    {
+      "path": "D:/OzonGrowthProject/content/assets/real-product-reference-shoot/airfryer-silicone-form/raw/shot3_place.png",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false,
+      "allowed_for_style_reference": false,
+      "reason": "AI-рендер прошлой кампании: неверная геометрия ручек + кольцо на руке (нарушает правило 'без украшений')"
+    }
+  ],
   "extraction": {
-    "threshold_luma": 200,
-    "tool": "api.media_pipeline.compositor.product_assets",
-    "reproduce": "python -m api.media_pipeline.compositor.cli extract"
+    "tool": "api.media_pipeline.compositor.real_product_assets",
+    "reproduce": "python -m api.media_pipeline.compositor.cli extract-real",
+    "method": "manual polygon annotation verified against source photo (overlay comparison), crop-only, no generative fill"
   },
   "assets": {
+    "product_45deg": {
+      "isolated": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_45deg_isolated.png",
+      "mask": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_45deg_mask.png",
+      "size": [
+        817,
+        642
+      ],
+      "sha256_isolated": "a80dd1028c7219e39d93dae7294cf3ccd330c1afd190b6789deb0acdeaae0e0e",
+      "sha256_mask": "b939870ea337ed800269be9ed49383e620424ee1b3db220b6a4ba2787a61255b",
+      "source_filename": "photo_7_2026-06-18_16-53-42.jpg",
+      "source_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+      "source_type": "photo",
+      "canonical_version": "real-product-v1",
+      "status": "active",
+      "allowed_for_product_geometry_qa": true,
+      "allowed_for_product_lock_source": true,
+      "handle_left_mask": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_45deg_handle_left_mask.png",
+      "sha256_handle_left_mask": "6a76af2cf6388f9cfb9bf2385e22edcbe728f38746d05338af0006916af9cfdc",
+      "handle_right_mask": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_45deg_handle_right_mask.png",
+      "sha256_handle_right_mask": "92dd494d76ae32a12d092d34c5789bcf5e685c087b4e756934b1317f1c52f655"
+    },
+    "product_top": {
+      "isolated": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_top_isolated.png",
+      "mask": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_top_mask.png",
+      "size": [
+        754,
+        707
+      ],
+      "sha256_isolated": "23319ad240c697d8c5c8ee62185b9c8880739e733c9845f80a3be58bb5789959",
+      "sha256_mask": "39ff75244bdace91179ea453ad0ce0328ddfbd9bf895accda86a925068c5d40d",
+      "source_filename": "photo_3_2026-06-18_16-53-42.jpg",
+      "source_sha256": "78adbfbb0302681dd6ce7b61468cfa41fd02071643f606feb713a958e181b2f2",
+      "source_type": "photo",
+      "canonical_version": "real-product-v1",
+      "status": "active",
+      "allowed_for_product_geometry_qa": true,
+      "allowed_for_product_lock_source": true,
+      "handle_left_mask": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_top_handle_left_mask.png",
+      "sha256_handle_left_mask": "35361831c24e2bdaf67e7abb70b5842cf321ff0867c2530f44d1367225dea42a",
+      "handle_right_mask": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/pack/product_top_handle_right_mask.png",
+      "sha256_handle_right_mask": "8d09874467737886689ae7ab1ffb6c023f2466ad0a10a5ada27f6f131f7d48f0"
+    }
+  },
+  "legacy_assets": {
     "three_quarter_high": {
       "isolated": "assets\\product-lock\\airfryer-silicone-form\\isolated\\form_three_quarter_high.png",
       "mask": "assets\\product-lock\\airfryer-silicone-form\\masks\\form_three_quarter_high_mask.png",
@@ -26,7 +125,10 @@
         355
       ],
       "sha256_isolated": "ab793e1e7d2e2724bf2cdc397b02a693c81e0bf977afbda0341e01596213e83f",
-      "sha256_mask": "437a60884b9823edf7cd29e2e718f4a388c11df1d2bbee76765a46a31ee87603"
+      "sha256_mask": "437a60884b9823edf7cd29e2e718f4a388c11df1d2bbee76765a46a31ee87603",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false
     },
     "top": {
       "isolated": "assets\\product-lock\\airfryer-silicone-form\\isolated\\form_top.png",
@@ -44,7 +146,10 @@
       "handle_right_mask": "assets\\product-lock\\airfryer-silicone-form\\masks\\form_top_handle_right_mask.png",
       "sha256_handle_right_mask": "c389f617b44df426b6fd934ab6f7b8ec7c80fa919c6979aff92b55cc841cbbd5",
       "handle_right_crop": "assets\\product-lock\\airfryer-silicone-form\\handles\\handle_top_right_x2.png",
-      "sha256_handle_right_crop": "e26bde884d5819d7412be822d943e3f57baec638b7b8b0c76a4aaaa722cd32de"
+      "sha256_handle_right_crop": "e26bde884d5819d7412be822d943e3f57baec638b7b8b0c76a4aaaa722cd32de",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false
     },
     "side": {
       "isolated": "assets\\product-lock\\airfryer-silicone-form\\isolated\\form_side.png",
@@ -54,7 +159,10 @@
         201
       ],
       "sha256_isolated": "de4b2d4355bcc7096c4a310662d5f7f15b57d88b4e264d263edf6e008e751176",
-      "sha256_mask": "f59245dbe7dfeb81d7003995458edbdc1f5ca2077592fe155955a0cb1eb5d863"
+      "sha256_mask": "f59245dbe7dfeb81d7003995458edbdc1f5ca2077592fe155955a0cb1eb5d863",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false
     },
     "bottom": {
       "isolated": "assets\\product-lock\\airfryer-silicone-form\\isolated\\form_bottom.png",
@@ -64,7 +172,10 @@
         367
       ],
       "sha256_isolated": "cf7905af7946e39e122e7e3153fc4e4783009b778879bf343ea0aad5b35c8fa6",
-      "sha256_mask": "398cc1a454aa583347fdf4f7201327c717edcbff4105b0946efce36b0752443c"
+      "sha256_mask": "398cc1a454aa583347fdf4f7201327c717edcbff4105b0946efce36b0752443c",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false
     },
     "three_quarter_45": {
       "isolated": "assets\\product-lock\\airfryer-silicone-form\\isolated\\form_three_quarter_45.png",
@@ -82,7 +193,10 @@
       "handle_right_mask": "assets\\product-lock\\airfryer-silicone-form\\masks\\form_three_quarter_45_handle_right_mask.png",
       "sha256_handle_right_mask": "3fdb35687519ad80ac3260c551bc570bd3ac7653967d2ab4a03d98eaa79d6f8c",
       "handle_right_crop": "assets\\product-lock\\airfryer-silicone-form\\handles\\handle_three_quarter_45_right_x2.png",
-      "sha256_handle_right_crop": "d1283cc45afe9c649130565382932d1d46683161895a3b7074799efdadde28e1"
+      "sha256_handle_right_crop": "d1283cc45afe9c649130565382932d1d46683161895a3b7074799efdadde28e1",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false
     },
     "three_quarter_45b": {
       "isolated": "assets\\product-lock\\airfryer-silicone-form\\isolated\\form_three_quarter_45b.png",
@@ -92,18 +206,15 @@
         350
       ],
       "sha256_isolated": "c62f393589a9009473a034dcf622fe43e0ac40abb1a4a7af314a80cd0a773ac6",
-      "sha256_mask": "076a0f6e8c0125a6d27e60417458b19607202b15447158967033ed07cb56c766"
+      "sha256_mask": "076a0f6e8c0125a6d27e60417458b19607202b15447158967033ed07cb56c766",
+      "status": "legacy_incorrect_product_geometry",
+      "allowed_for_product_geometry_qa": false,
+      "allowed_for_product_lock_source": false
     }
   },
-  "handles_reference_crop": {
-    "path": "assets/visual-bible/airfryer-silicone-form/references/handles_reference_crop.png",
-    "sha256": "90de2b1069a364f41b23e1f15885f3ce82a5d12bf442cfd040a4a4ed32faf654"
-  },
   "requires_real_photo": [
-    "форма с ЕДОЙ внутри (product layer сцен 4-5) — из forma_6angles не получить, не дорисовываем",
-    "фронтальный ракурс на уровне глаз (medium shot scene-05)",
-    "форма в корзине аэрогриля (scene-03/04)",
-    "реальный аэрогриль владельца: спереди и с выдвинутой корзиной",
-    "женские руки владельца, держащие форму за обе ручки"
+    "форма с ЕДОЙ внутри (product layer сцен 4-5)",
+    "женские руки без украшений, держащие форму за обе ручки (текущий видеосет содержит только мужскую руку)",
+    "фронтальный ракурс на уровне глаз (medium shot scene-05)"
   ]
 }

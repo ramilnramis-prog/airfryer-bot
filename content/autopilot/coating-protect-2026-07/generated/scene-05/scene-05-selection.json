@@ -8,25 +8,49 @@
   "selection_reason": "Ручной выбор владельца и визуального директора поверх автоматического QA v2: разница C с A по total всего 0.8 балла и находится внутри зоны неопределённости; в C чистая корзина видна лучше, товар и готовое блюдо показаны крупнее, сильнее читается рекламный результат, композиция лучше подходит для ключевого payoff-кадра.",
   "visual_qa_v2_scores": {
     "scene-05-c1": {
-      "product_reference_match": 98, "airfryer_reference_match": 98,
-      "human_continuity": 97, "hand_anatomy": 98, "food_continuity": 96,
-      "photorealism": 97, "composition": 95, "marketing_clarity": 94,
-      "animation_readiness": 96, "adjacent_scene_continuity": 95,
-      "total": 96.4, "hard_fails": [], "food_count_confirmed": 3
+      "product_reference_match": 98,
+      "airfryer_reference_match": 98,
+      "human_continuity": 97,
+      "hand_anatomy": 98,
+      "food_continuity": 96,
+      "photorealism": 97,
+      "composition": 95,
+      "marketing_clarity": 94,
+      "animation_readiness": 96,
+      "adjacent_scene_continuity": 95,
+      "total": 96.4,
+      "hard_fails": [],
+      "food_count_confirmed": 3
     },
     "scene-05-c2": {
-      "product_reference_match": 98, "airfryer_reference_match": 97,
-      "human_continuity": 96, "hand_anatomy": 98, "food_continuity": 95,
-      "photorealism": 96, "composition": 93, "marketing_clarity": 94,
-      "animation_readiness": 96, "adjacent_scene_continuity": 92,
-      "total": 95.5, "hard_fails": [], "food_count_confirmed": 3
+      "product_reference_match": 98,
+      "airfryer_reference_match": 97,
+      "human_continuity": 96,
+      "hand_anatomy": 98,
+      "food_continuity": 95,
+      "photorealism": 96,
+      "composition": 93,
+      "marketing_clarity": 94,
+      "animation_readiness": 96,
+      "adjacent_scene_continuity": 92,
+      "total": 95.5,
+      "hard_fails": [],
+      "food_count_confirmed": 3
     },
     "scene-05-c3": {
-      "product_reference_match": 98, "airfryer_reference_match": 97,
-      "human_continuity": 96, "hand_anatomy": 96, "food_continuity": 98,
-      "photorealism": 95, "composition": 92, "marketing_clarity": 94,
-      "animation_readiness": 96, "adjacent_scene_continuity": 94,
-      "total": 95.6, "hard_fails": [], "food_count_confirmed": 3
+      "product_reference_match": 98,
+      "airfryer_reference_match": 97,
+      "human_continuity": 96,
+      "hand_anatomy": 96,
+      "food_continuity": 98,
+      "photorealism": 95,
+      "composition": 92,
+      "marketing_clarity": 94,
+      "animation_readiness": 96,
+      "adjacent_scene_continuity": 94,
+      "total": 95.6,
+      "hard_fails": [],
+      "food_count_confirmed": 3
     }
   },
   "source_files_sha256": {
@@ -40,5 +64,7 @@
     "comparison": "qa-comparison-v1-v2.md"
   },
   "selected_at": "2026-07-02T16:05:00Z",
-  "next_action": "higgsfield_single_animation_test"
+  "next_action": "higgsfield_single_animation_test",
+  "obsolete_due_to_incorrect_canonical_reference": true,
+  "obsolete_note": "Выбор победителя опирался на visual QA v2, которая сравнивала кандидатов с устаревшим AI-каноном геометрии ручек. Решение владельца 2026-07-03: канон заменён на real-product-v1. Сохранено как исторический отчёт, не пересматривается."
 }

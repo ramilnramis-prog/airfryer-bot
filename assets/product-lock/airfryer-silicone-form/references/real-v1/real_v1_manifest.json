@@ -1,0 +1,190 @@
+{
+  "canonical_version": "real-product-v1",
+  "canonical_source_type": "real_photography",
+  "canonical_status": "active",
+  "video_fps": 29.97,
+  "entries": [
+    {
+      "name": "product_full_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_full_master.png",
+      "source_filename": "photo_2_2026-06-18_16-53-42.jpg",
+      "source_sha256": "692f852b884412427df48e1687e7ce91d01c4e379019c555224821157d39806a",
+      "derivative_sha256": "4b7c7e0bbf6f4eb5c2712b1abb15d3906bc053fbf9400babd75a447824e2a7c4",
+      "crop_coordinates": [
+        60,
+        300,
+        910,
+        1030
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "дополнительный полный вид формы, 3/4 спереди",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "product_45deg_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+      "source_filename": "photo_7_2026-06-18_16-53-42.jpg",
+      "source_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+      "derivative_sha256": "a58bedc46ba372ccb2173c77495f5e7c096d8904b55c3946796d0d70dca22b66",
+      "crop_coordinates": [
+        60,
+        330,
+        920,
+        1030
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "ОСНОВНОЙ 3/4 ракурс (PRIMARY): обе ручки видны целиком",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "product_top_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+      "source_filename": "photo_3_2026-06-18_16-53-42.jpg",
+      "source_sha256": "78adbfbb0302681dd6ce7b61468cfa41fd02071643f606feb713a958e181b2f2",
+      "derivative_sha256": "742f75fbcb81bb4621b052f11511975019e1a920635aed9a03c460929fa52ee2",
+      "crop_coordinates": [
+        60,
+        300,
+        850,
+        1040
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "вид строго сверху, обе ручки в профиль",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "left_handle_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png",
+      "source_filename": "photo_7_2026-06-18_16-53-42.jpg",
+      "source_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+      "derivative_sha256": "4c6603ed59a01ff4a200144cc89222dc332521915d07dd38fb63e3c8ef65b2b8",
+      "crop_coordinates": [
+        150,
+        360,
+        340,
+        500
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "левая ручка крупно (источник PRIMARY photo_7)",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "right_handle_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/right_handle_master.png",
+      "source_filename": "photo_7_2026-06-18_16-53-42.jpg",
+      "source_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+      "derivative_sha256": "9ca357bafd5f0a14041bbda8adfe6f398f8cafc3dc4493c609582efe57f2311e",
+      "crop_coordinates": [
+        790,
+        570,
+        920,
+        760
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "правая ручка крупно (источник PRIMARY photo_7)",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "both_handles_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+      "source_filename": "photo_7_2026-06-18_16-53-42.jpg",
+      "source_sha256": "2d3af3c1cf65c4027cf0a8085db8c2db82c9091a0bb73e4fa892c15773627e33",
+      "derivative_sha256": "a58bedc46ba372ccb2173c77495f5e7c096d8904b55c3946796d0d70dca22b66",
+      "crop_coordinates": [
+        60,
+        330,
+        920,
+        1030
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "обе ручки в одном кадре — геометрический контекст",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "bottom_loop_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png",
+      "source_filename": "photo_5_2026-06-18_16-53-42.jpg",
+      "source_sha256": "5d5426d36ff5fbc427c1b0c726e5c4d0994369729f51c3421ea4377b73763402",
+      "derivative_sha256": "de789a9f5b20a5d3d980de434f1794f9edd1b2222d56e5b944449d3b1f385a66",
+      "crop_coordinates": [
+        250,
+        370,
+        800,
+        820
+      ],
+      "source_type": "photo",
+      "timestamp": null,
+      "purpose": "круглая петля-держатель по центру дна",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "airfryer_front_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/airfryer_front_master.png",
+      "source_filename": "IMG_5925.MOV",
+      "source_sha256": "9699bee5509b2252cb22f3c21c7f9d2e8183f913c2bb68f2fb2e38fc8bb90128",
+      "derivative_sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78",
+      "crop_coordinates": null,
+      "source_type": "video_frame",
+      "frame_index": 865,
+      "timestamp": 28.862,
+      "purpose": "фронтальный канон реального аэрогриля DE'MIAND (панель управления и бренд читаются полностью) — замена AI place.png по решению владельца",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "clean_basket_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/clean_basket_master.png",
+      "source_filename": "IMG_5925.MOV",
+      "source_sha256": "9699bee5509b2252cb22f3c21c7f9d2e8183f913c2bb68f2fb2e38fc8bb90128",
+      "derivative_sha256": "57e474e35b91241189350ecbcefc2942a6978b408c2e12f26b1157670b5ac29b",
+      "crop_coordinates": null,
+      "source_type": "video_frame",
+      "frame_index": 998,
+      "timestamp": 33.3,
+      "purpose": "чистый пустой родной лоток аэрогриля — референс для scene-06",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "product_in_basket_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/motion/product_in_basket_master.png",
+      "source_filename": "IMG_5925.MOV",
+      "source_sha256": "9699bee5509b2252cb22f3c21c7f9d2e8183f913c2bb68f2fb2e38fc8bb90128",
+      "derivative_sha256": "baba91c6b30f7c4af05f63cf52d8d7c794cdf9269eeb09de2d41c6f069bb7374",
+      "crop_coordinates": null,
+      "source_type": "video_frame",
+      "frame_index": 931,
+      "timestamp": 31.064,
+      "purpose": "форма внутри родного лотка аэрогриля — референс для scene-03/04/05",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    },
+    {
+      "name": "grip_motion_master",
+      "path": "assets/product-lock/airfryer-silicone-form/references/real-v1/motion/grip_motion_master.png",
+      "source_filename": "IMG_5925.MOV",
+      "source_sha256": "9699bee5509b2252cb22f3c21c7f9d2e8183f913c2bb68f2fb2e38fc8bb90128",
+      "derivative_sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
+      "crop_coordinates": null,
+      "source_type": "video_frame",
+      "frame_index": 665,
+      "timestamp": 22.189,
+      "purpose": "механика захвата одной рукой сверху — ТОЛЬКО motion/grip reference; рука мужская, НЕ финальный hand canon кампании",
+      "approved": true,
+      "canonical_version": "real-product-v1"
+    }
+  ]
+}

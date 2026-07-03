@@ -1,18 +1,19 @@
 {
   "scene_id": "scene-03",
   "title": "РЕШЕНИЕ: рука опускает форму в чашу",
-  "prompt_action": "The woman's hand lowers the empty matte graphite-gray square silicone liner (exact product from reference photo) into the clean black air fryer basket on the countertop; the liner settles in neatly, ribbed bottom visible, both handles visible: the liner's two handles are straight elongated strap-like tabs with a narrow elongated oval cut-out, long sides straight and parallel, uniform thin silicone frame, left and right handles identical, NOT rounded, NOT puffy, NOT curved — exactly matching the product reference. No food yet. No text, no watermarks. Photographic, realistic, vertical 9:16.",
+  "prompt_action": "PRODUCT-LOCKED COMPOSITING REQUIRED (not full-frame generation): The woman's hand lowers the empty matte graphite-gray square silicone liner (real-product-v1 asset, composited as a locked RGBA layer, NOT generated) into the clean black air fryer basket on the countertop; the liner settles in neatly, ribbed bottom visible, both handles visible: the liner's two handles are FLAT CORNER TABS almost flush with the top rim, with a SHORT HORIZONTAL rectangular cut-out, left and right handles consistent with real-product-v1 — NOT a tall vertical loop handle, NOT a vertical oval cut-out (that legacy AI shape is OBSOLETE). No food yet. No text, no watermarks. Photographic, realistic, vertical 9:16.",
   "prompt_camera": "45-degree high angle over the basket, static, shallow depth of field",
   "immutable_elements": [
-    "форма канон 1:1 (тёмно-серый матовый квадрат, 2 овальные ручки, рифлёное дно)",
-    "handle geometry must match the canonical product reference exactly (visual bible handle_geometry: прямой вытянутый силуэт, параллельные длинные стороны, вытянутый овальный вырез, симметрия)",
+    "форма канон 1:1 (тёмно-серый матовый квадрат, 2 боковые ручки, рифлёное дно) — источник real-product-v1, НЕ генерировать форму full-frame",
+    "handle geometry must match real-product-v1 exactly (visual bible handle_geometry: плоский угловой язычок почти вровень с кромкой, короткая горизонтальная прорезь, согласованность левой/правой в пределах перспективы)",
     "тот же аэрогриль/корзина",
     "те же женские руки",
     "кухня и свет Style Anchor"
   ],
   "allowed_changes": ["угол наклона формы в момент опускания"],
   "required_references": [
-    "D:/OzonGrowthProject/content/assets/forma_6angles.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
     "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
     "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png"
   ],
@@ -26,8 +27,8 @@
   "animation_intent": "форма плавно опускается в корзину и садится на место",
   "hard_fail_conditions": [
     "еда в форме (её ещё нет)",
-    "ручек не две / не овальные",
-    "геометрия ручек не по референсу (округлые/пухлые/изогнутые) — handle_geometry_mismatch",
+    "ручек не две",
+    "геометрия ручек не по real-product-v1 (высокая ручка-петля, вертикальный овал, округлые/пухлые/изогнутые формы) — handle_geometry_mismatch",
     "форма глянцевая или не серая"
   ]
 }

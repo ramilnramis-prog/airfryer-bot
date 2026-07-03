@@ -1,0 +1,103 @@
+{
+  "scene_id": "scene-05",
+  "campaign": "coating-protect-2026-07",
+  "canonical_version": "real-product-v1",
+  "supersedes": "scene-05-composite-plan.json (описывал план ДО решения владельца о real-product-v1; тот файл не удалён, сохранён как история)",
+  "decision_context": "2026-07-03: владелец подтвердил реальные фото/видео товара как безусловный источник истины для физической геометрии. Прежний AI-канон (forma_6angles.png/handles_reference_crop.png) содержал неверную геометрию ручек и выведен из активного QA. Товар генеративно НЕ рисуется — только композитный неизменяемый RGBA-слой (api/media_pipeline/compositor).",
+
+  "layers": [
+    {
+      "order": 1,
+      "name": "BACKGROUND",
+      "content": ["реальный аэрогриль DE'MIAND", "чистая пустая родная корзина", "кухня/стол"],
+      "source_options": [
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/clean_basket_master.png (video-frame 998, чистый пустой лоток — готов)",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/airfryer_front_master.png (video-frame 865, фронт целиком — готов)",
+        "AI-догенерация окружения кухни вокруг реального аэрогриля, если потребуется background cleanup (убрать посторонние предметы фотосета: чашку, провода, лекарства на фоне)"
+      ],
+      "ai_allowed": true,
+      "status": "ready_with_cleanup_option",
+      "note": "реальные кадры имеют посторонние предметы обстановки (чашка, флаконы) — при необходимости чистой рекламной картинки допустима AI-дорисовка ФОНА вокруг аэрогриля (не самого товара/аэрогриля)"
+    },
+    {
+      "order": 2,
+      "name": "BACK_HAND",
+      "content": ["части женских кистей, расположенные ЗА формой (ладони под ручками)"],
+      "source": "требуется реальное фото женских рук (REAL_PRODUCT_REFERENCE_SHOOT.md, кадры 12-13) + back-hand mask",
+      "ai_allowed": "допустима AI-генерация женских рук, если реального фото нет, но маски обязаны отделять их от товара",
+      "status": "requires_real_photo_or_ai_generation",
+      "explicit_note": "мужская рука из IMG_5925.MOV (real-v1/motion/grip_motion_master.png) — ТОЛЬКО motion/grip mechanics reference, НЕ используется как финальный hand layer (нарушает правило 'женские руки без украшений')"
+    },
+    {
+      "order": 3,
+      "name": "PRODUCT",
+      "content": ["каноническая силиконовая форма (real-product-v1)", "точная геометрия обеих ручек"],
+      "source": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json -> assets.product_45deg (isolated + mask + handle_left_mask + handle_right_mask, из photo_7_2026-06-18_16-53-42.jpg)",
+      "ai_allowed": false,
+      "transforms": "только RigidTransform (uniform scale, translation, rotation<=8°, perspective<=0.08)",
+      "lock": "product_lock.json; product_lock_validator после каждой композиции; LegacyReferenceError блокирует случайный откат на legacy_assets",
+      "status": "ready",
+      "note": "ЕДА НЕ входит в этот слой (в real-v1 нет фото формы с едой) — еда добавляется отдельным слоем поверх/внутри product mask, не изменяя форму"
+    },
+    {
+      "order": "3b",
+      "name": "FOOD",
+      "content": ["3 куриных бёдрышка", "дольки картофеля"],
+      "source": "требуется генерация (AI) или реальное фото формы с едой (REAL_PRODUCT_REFERENCE_SHOOT.md, кадры 7-8)",
+      "ai_allowed": true,
+      "rule": "отдельный слой поверх PRODUCT, композится ВНУТРИ силуэта формы, но НЕ изменяет пиксели/маску самой формы (еда не может редактировать product mask); food_count_changed проверяется как обычно",
+      "status": "requires_generation_or_real_photo"
+    },
+    {
+      "order": 4,
+      "name": "FRONT_HAND",
+      "content": ["пальцы женских рук, визуально лежащие ПОВЕРХ ручек"],
+      "source": "front-finger mask из реального фото женских рук (или AI, см. BACK_HAND)",
+      "ai_allowed": "см. BACK_HAND",
+      "rule": "перекрытие каждой ручки <= 60%, силуэт обеих ручек различим для QA; пиксели товара не редактируются",
+      "status": "requires_real_photo_or_ai_generation"
+    },
+    {
+      "order": 5,
+      "name": "EFFECTS",
+      "content": ["лёгкий пар", "мягкая тень формы на корзине"],
+      "source": "процедурный overlay (compositor.cli preview уже умеет) или AI-слой с прозрачностью",
+      "ai_allowed": true,
+      "rule": "пар не закрывает продукт; учитывается в occlusion mask; тень — отдельный полупрозрачный слой под/на корзине, не затрагивает product mask",
+      "status": "ready (процедурный) / optional AI refinement"
+    }
+  ],
+
+  "validation": {
+    "per_composite": ["silhouette", "handle_geometry", "aspect_ratio", "pixel_similarity", "no_local_warp"],
+    "hard_fail": "product_lock_violation",
+    "canonical_source_check": "product_lock_validator сравнивает ТОЛЬКО с active assets (canonical_version=real-product-v1); load_view() блокирует legacy_assets без allow_legacy=True (LegacyReferenceError) — нет автоматического отката на AI-канон"
+  },
+
+  "animation": {
+    "type": "rigid (без image-to-video морфинга товара)",
+    "plan": "api/media_pipeline/compositor/rigid_animation.py; preview: python -m api.media_pipeline.compositor.cli preview --view product_45deg --out <dir>",
+    "duration_s": 4.5,
+    "motion": "product+food как один rigid object: медленно вверх и немного назад, scale почти неизменный, rotation ~1.5°, руки синхронно (когда появится hand layer), пар отдельным overlay, корзина и камера неподвижны"
+  },
+
+  "ready_for_missing_layer_generation": {
+    "answer": "ДА, частично — только для недостающих слоёв, товар НЕ генерировать",
+    "allowed_now": [
+      "female hands (BACK_HAND + FRONT_HAND) — реальный фотосет предпочтителен, AI-генерация допустима как временная замена",
+      "food (внутри product mask, отдельным слоем, форму не меняет)",
+      "background cleanup (уборка посторонних предметов фотосета вокруг РЕАЛЬНОГО аэрогриля/фона, не самого товара/аэрогриля)",
+      "steam (процедурный overlay уже готов; AI-уточнение — опционально)"
+    ],
+    "forbidden": [
+      "любая генеративная перерисовка/дорисовка/восстановление силиконовой формы или её ручек",
+      "full-frame генерация кадра, включающего форму как основной объект"
+    ]
+  },
+
+  "still_missing_before_final_composite": [
+    "женские руки без украшений, держащие форму за обе ручки (реальный видеосет содержит только мужскую руку)",
+    "форма с ЕДОЙ внутри (ни одного реального фото)",
+    "решение владельца: нужен ли background cleanup вокруг реального DE'MIAND, или использовать кадр как есть"
+  ]
+}

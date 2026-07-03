@@ -22,7 +22,16 @@ tools: Read, Glob, Grep, Write, Bash
 2. `scene-specs/scene-NN.json` — immutable elements, food count, руки, камера.
 3. `assets/visual-bible/airfryer-silicone-form/visual_bible.json` и
    `continuity_rules.json` — канон и правила.
-4. Эталоны: `forma_6angles.png` (форма), `place.png` (аэрогриль), `h1.png`/`b3a.png` (руки).
+4. Эталоны геометрии товара — ТОЛЬКО real-product-v1:
+   `assets/product-lock/airfryer-silicone-form/references/real-v1/` (реальные
+   фото/видео) и `product_asset_manifest.json` (assets.product_45deg /
+   assets.product_top). `forma_6angles.png` и `handles_reference_crop.png` —
+   OBSOLETE AI-канон, выведены из активного QA геометрии (см.
+   `product_asset_manifest.json.legacy_sources`), НЕ использовать для
+   сравнения геометрии ручек. Аэрогриль: `real-v1/airfryer/` (реальный
+   DE'MIAND) — заменяет `place.png` по решению владельца. Руки: `h1.png`/`b3a.png`
+   (пока временный AI-референс; реальный видеосет содержит только мужскую
+   руку — не hand canon, см. `real-v1/motion/grip_motion_master.png`).
 
 ## Порядок работы
 
@@ -30,12 +39,13 @@ tools: Read, Glob, Grep, Write, Bash
 
 Сверь КАЖДОГО кандидата с эталонами (открой референс рядом с кандидатом):
 - форма не совпадает с эталоном (силуэт, пропорции ~18.5×18.5×5, рифлёное дно);
-- ручек не ровно две / не овальные / не на противоположных стенках;
-- геометрия ручек не совпадает с каноническим референсом
-  (`assets/visual-bible/airfryer-silicone-form/references/handles_reference_crop.png`):
-  канон — прямой вытянутый плоский язычок, длинные стороны прямые и параллельные,
-  вытянутый овальный вырез, равная толщина силикона, симметрия левой/правой;
-  округлые/пухлые/дугообразные/укороченные ручки = handle_geometry_mismatch,
+- ручек не ровно две / не на противоположных стенках;
+- геометрия ручек не совпадает с real-product-v1 (реальные фото,
+  `references/real-v1/handles/`): канон — плоский угловой боковой язычок
+  почти ВРОВЕНЬ с верхней кромкой (НЕ высокая ручка-петля, поднимающаяся над
+  кромкой), короткая ГОРИЗОНТАЛЬНАЯ прямоугольная прорезь (НЕ вертикальный
+  вытянутый овал); высокая ручка-петля с вертикальным овальным вырезом —
+  OBSOLETE геометрия прежнего AI-канона, ВСЕГДА handle_geometry_mismatch,
   ДАЖЕ если ручек ровно две (count == 2 не достаточен);
 - изменён цвет или материал формы (не тёмно-серый матовый силикон);
 - аэрогриль отличается от канонического;
