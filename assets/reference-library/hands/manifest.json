@@ -1,0 +1,82 @@
+{
+  "category": "hands",
+  "is_global_canon": false,
+  "note": "Референсы рук (форма хвата, перчатки, поза) — НЕ канон, выбираются заново на кампанию.",
+  "asset_count": 5,
+  "assets": [
+    {
+      "id": "hand-glove-scrub-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/hookA_grease.png",
+      "description": "Рука в жёлтой резиновой перчатке оттирает пригар в чёрной корзине аэрогриля крупным планом.",
+      "sha256": "8dd15e689039d3017bce55241285aaffbd3479bd26ea7b7015c2bbeced4e7e0d",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "hands",
+      "suitable_uses": [
+        "hands_reference для hook-кадров \"проблема/жир\"",
+        "grip_reference — перчатка, а не голая рука"
+      ],
+      "restrictions": [
+        "Только рука в перчатке — не источник tone/geometry голой кожи."
+      ]
+    },
+    {
+      "id": "comp-raw-load-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/shot4_cooking.png",
+      "description": "Рука укладывает сырые куриные бёдра и болгарский перец в уже стоящую в аэрогриле корзину, вид сверху.",
+      "sha256": "98e7a7136cd2655cc0ee8b1dfba318bcd2e24ee86159a61c0cc658ee51f97bf8",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "hands",
+      "suitable_uses": [
+        "композиция \"загрузка продуктов\" — руки + сырая еда + корзина"
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "person-rinse-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/shot6_rinse.png",
+      "description": "Женщина (серый верх) ополаскивает форму под краном, растения и свет из окна.",
+      "sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "hands",
+      "suitable_uses": [
+        "person/hands_reference для сцены \"лёгкая мойка\""
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "v2-hand-hold-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png",
+      "description": "Одна рука (рукав светлого свитера) держит форму (устаревшая геометрия) на весу, кухня с окном и растениями.",
+      "sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "hands",
+      "suitable_uses": [
+        "grip_reference — однорукий хват",
+        "clothing_reference (светлый свитер)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "id": "real-grip-motion-01",
+      "source_path": "assets/product-lock/airfryer-silicone-form/references/real-v1/motion/grip_motion_master.png",
+      "description": "Реальный кадр движения/хвата (мужская рука) из исходного видео — референс ТОЛЬКО по механике хвата, не финальный канон рук.",
+      "sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
+      "type": "video frame (real)",
+      "approved_for_reference_only": true,
+      "category": "hands",
+      "suitable_uses": [
+        "grip_reference — как двигается рука при хвате/подъёме реального продукта"
+      ],
+      "restrictions": [
+        "Мужская рука в этом кадре — референс ТОЛЬКО по механике движения/хвата, НЕ финальный hands_reference кампании (пол/образ модели выбираются отдельно на кампанию)."
+      ],
+      "already_tracked_in_repo": true
+    }
+  ]
+}

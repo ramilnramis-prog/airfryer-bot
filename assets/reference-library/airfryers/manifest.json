@@ -1,0 +1,55 @@
+{
+  "category": "airfryers",
+  "is_global_canon": false,
+  "note": "Референсы корпуса аэрогриля — НЕ канон, выбираются заново на кампанию.",
+  "asset_count": 3,
+  "assets": [
+    {
+      "id": "hand-glove-scrub-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/hookA_grease.png",
+      "description": "Рука в жёлтой резиновой перчатке оттирает пригар в чёрной корзине аэрогриля крупным планом.",
+      "sha256": "8dd15e689039d3017bce55241285aaffbd3479bd26ea7b7015c2bbeced4e7e0d",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "airfryers",
+      "suitable_uses": [
+        "hands_reference для hook-кадров \"проблема/жир\"",
+        "grip_reference — перчатка, а не голая рука"
+      ],
+      "restrictions": [
+        "Только рука в перчатке — не источник tone/geometry голой кожи."
+      ]
+    },
+    {
+      "id": "v2-form-in-basket-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/place.png",
+      "description": "Пустая форма (устаревшая геометрия) размещена в чёрной корзине аэрогриля, деревянная столешница, кухонная утварь на фоне.",
+      "sha256": "1defaf9ed841654454eaaadf25890e5c4158b4b23a21620703273a059fd51835",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "airfryers",
+      "suitable_uses": [
+        "композиция \"форма в корзине\" (только сцена/корзина, не геометрия формы)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "id": "real-airfryer-front-01",
+      "source_path": "assets/product-lock/airfryer-silicone-form/references/real-v1/airfryer/airfryer_front_master.png",
+      "description": "Реальный аэрогриль DE'MIAND, вид спереди — кадр из исходного видео (IMG_5925.MOV), НЕ AI-референс.",
+      "sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78",
+      "type": "video frame (real)",
+      "approved_for_reference_only": true,
+      "category": "airfryers",
+      "suitable_uses": [
+        "airfryer_reference реального устройства для нового campaign_visual_lock"
+      ],
+      "restrictions": [
+        "Это РЕАЛЬНЫЙ кадр устройства (не AI) — приоритетный airfryer_reference, но airfryer всё равно не глобальный канон: для другой кампании можно выбрать другой аэрогриль."
+      ],
+      "already_tracked_in_repo": true
+    }
+  ]
+}

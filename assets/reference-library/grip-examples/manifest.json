@@ -1,0 +1,122 @@
+{
+  "category": "grip-examples",
+  "is_global_canon": false,
+  "note": "Референсы механики хвата/подъёма продукта руками — НЕ канон.",
+  "asset_count": 8,
+  "assets": [
+    {
+      "id": "hand-glove-scrub-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/hookA_grease.png",
+      "description": "Рука в жёлтой резиновой перчатке оттирает пригар в чёрной корзине аэрогриля крупным планом.",
+      "sha256": "8dd15e689039d3017bce55241285aaffbd3479bd26ea7b7015c2bbeced4e7e0d",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "hands_reference для hook-кадров \"проблема/жир\"",
+        "grip_reference — перчатка, а не голая рука"
+      ],
+      "restrictions": [
+        "Только рука в перчатке — не источник tone/geometry голой кожи."
+      ]
+    },
+    {
+      "id": "comp-clean-lift-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/shot5_clean.png",
+      "description": "Руки поднимают тёмную форму с готовой едой (курица/овощи) над корзиной аэрогриля, белая столешница.",
+      "sha256": "3c77a9e5d59507a0d2f36304c6c2432001c21db2fabee004c29731c44f7c3a68",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "grip_reference — двуручный хват за обе ручки",
+        "композиция \"результат/подача\""
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "comp-clean-lift-02",
+      "source_path": "D:/OzonGrowthProject/content/assets/shot5_clean_v2.png",
+      "description": "Альтернативный кадр той же композиции (руки поднимают форму с готовой едой), другой свет/ракурс.",
+      "sha256": "83d6868ece4feae14639936f909a001980b1cb3c1a5e9f15de0e8b6a12079cb3",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "альтернативный вариант comp-clean-lift-01"
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "v2-casserole-lift-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3a.png",
+      "description": "Руки поднимают тёмный противень с запечённым сыром/запеканкой из корзины аэрогриля, деревянная столешница, растение на фоне.",
+      "sha256": "2fdea8d791940172122642b12cb5a9869738e2d2014b63ce2c27bf8a07516baf",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "композиция + grip_reference — вариант A той же сцены, что b3b/b3c"
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "v2-casserole-lift-02",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3b.png",
+      "description": "Та же сцена (запеканка, подъём двумя руками), вариант B.",
+      "sha256": "d20270330693032b6ffbd9cc9d08c3dcb662bb959a8dc69f125b75615c61de58",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "альтернативный кадр v2-casserole-lift-01"
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "v2-casserole-lift-03",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/b3c.png",
+      "description": "Та же сцена (запеканка, подъём/установка), вариант C, более крупный план.",
+      "sha256": "ce857e0fcb8f6d3fc45750eed656776f330c6ce5dedbc0cbcd43563469989358",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "альтернативный кадр v2-casserole-lift-01"
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "v2-hand-hold-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png",
+      "description": "Одна рука (рукав светлого свитера) держит форму (устаревшая геометрия) на весу, кухня с окном и растениями.",
+      "sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "grip_reference — однорукий хват",
+        "clothing_reference (светлый свитер)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "id": "real-grip-motion-01",
+      "source_path": "assets/product-lock/airfryer-silicone-form/references/real-v1/motion/grip_motion_master.png",
+      "description": "Реальный кадр движения/хвата (мужская рука) из исходного видео — референс ТОЛЬКО по механике хвата, не финальный канон рук.",
+      "sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
+      "type": "video frame (real)",
+      "approved_for_reference_only": true,
+      "category": "grip-examples",
+      "suitable_uses": [
+        "grip_reference — как двигается рука при хвате/подъёме реального продукта"
+      ],
+      "restrictions": [
+        "Мужская рука в этом кадре — референс ТОЛЬКО по механике движения/хвата, НЕ финальный hands_reference кампании (пол/образ модели выбираются отдельно на кампанию)."
+      ],
+      "already_tracked_in_repo": true
+    }
+  ]
+}

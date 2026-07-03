@@ -1,0 +1,84 @@
+{
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "product_canon": "real-product-v1",
+  "product_canon_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+  "product_canon_rule": "Единственный элемент, зафиксированный ГЛОБАЛЬНО на все кампании. Никогда не перерисовывается, не заменяется, не подгоняется под сцену. Всё остальное в этом файле — выбор ТОЛЬКО для данной кампании.",
+
+  "hands_reference": {
+    "description": "Женские руки канона кампании: короткие ногти без лака, без украшений.",
+    "library_assets": ["person-rinse-01", "v2-hand-hold-01"],
+    "grip_mechanics_only": ["real-grip-motion-01"],
+    "note": "real-grip-motion-01 — реальный кадр движения (мужская рука), используется ТОЛЬКО как референс механики хвата/подъёма, не как канон внешнего вида рук кампании."
+  },
+  "person_reference": {
+    "description": "Одна и та же женщина (пучок/распущены по сцене эмоции) во всех сценах кампании.",
+    "library_assets": ["person-b-exhausted-01", "person-c-frustrated-01", "person-pain-01", "person-rinse-01"]
+  },
+  "airfryer_reference": {
+    "description": "Реальный аэрогриль DE'MIAND — тот же чёрный корпус и корзина во всех сценах.",
+    "library_assets": ["real-airfryer-front-01"],
+    "placement_mechanics_only": ["v2-form-in-basket-01"],
+    "note": "v2-form-in-basket-01 (place.png) используется только как референс механики размещения формы в корзине; геометрия продукта на этом фото устаревшая и игнорируется."
+  },
+  "kitchen_reference": {
+    "description": "Style Anchor кухня: белая плитка-кабанчик, серо-бежевая столешница.",
+    "library_assets": ["person-b-exhausted-01", "person-c-frustrated-01", "person-pain-01"]
+  },
+  "clothing_reference": {
+    "description": "Серый кардиган / серый верх у персонажа во всех сценах.",
+    "library_assets": ["person-b-exhausted-01", "person-pain-01"]
+  },
+  "lighting_reference": {
+    "description": "Дневной свет слева, светлая кухня без тёплого/жёлтого оттенка.",
+    "library_assets": ["person-b-exhausted-01", "person-c-frustrated-01"]
+  },
+  "food_reference": {
+    "description": "3 куриных бедра + картофель вокруг — одно и то же блюдо во всех сценах готовки/подачи этой кампании.",
+    "library_assets": ["food-wings-01"],
+    "note": "food-wings-01 использован только как пример стиля подачи (глазурь/цвет), точный food count (3 бедра + картофель) зафиксирован в scene-specs, а не в референс-библиотеке.",
+    "scene_specific_allowed": true
+  },
+  "camera_style": {
+    "description": "45-градусный верхний ракурс над корзиной для сцен продукта, средний план для hook-сцен рук, вертикальный 9:16, статика с лёгким handheld на hook-кадрах.",
+    "library_assets": []
+  },
+
+  "locked_for_all_scenes": true,
+  "shared_across_hooks": true,
+
+  "allowed_scene_changes": [
+    "угол наклона формы в момент опускания/подъёма",
+    "количество пены и положение губки",
+    "степень жирных следов в корзине",
+    "наличие/отсутствие еды в форме (по сюжету сцены)",
+    "эмоция/выражение лица персонажа между hook-вариантами A/B/C",
+    "первые 1-3 секунды, первый кадр, первая фраза, on-screen caption, voice-over hook — единственное, что отличается между хуками A/B/C"
+  ],
+  "forbidden_continuity_changes": [
+    "смена рук (форма кисти, ногти, украшения) между сценами одной кампании",
+    "смена персонажа/актрисы между сценами одной кампании",
+    "смена аэрогриля/корзины между сценами одной кампании",
+    "смена кухни (плитка, столешница, декор) между сценами одной кампании",
+    "смена одежды персонажа между сценами одной кампании",
+    "смена схемы освещения между сценами одной кампании",
+    "любое изменение геометрии/пропорций/цвета real-product-v1 — запрещено всегда, вне зависимости от кампании"
+  ],
+
+  "hooks": {
+    "content_code": "coating-protect-ad",
+    "shared_main_body": true,
+    "shared_storyboard": "content/autopilot/coating-protect-2026-07/storyboard.md",
+    "shared_visual_lock": "content/autopilot/coating-protect-2026-07/campaign_visual_lock.json",
+    "variants": ["A", "B", "C"],
+    "variant_file": "content/autopilot/coating-protect-2026-07/hooks.json",
+    "rule": "Хуки A/B/C отличаются ТОЛЬКО первыми 1-3 секундами (первый кадр, первая фраза, caption, voice-over hook). Основное тело ролика, product_canon и весь этот campaign_visual_lock — общие для всех трёх хуков."
+  },
+
+  "cross_campaign_rule": "Другая (будущая) кампания может выбрать другой набор hands/person/airfryer/kitchen/clothing/lighting/food_reference — это РАЗРЕШЕНО и ожидаемо. Единственное, что не меняется НИКОГДА и ни в одной кампании — product_canon: real-product-v1.",
+
+  "reference_library_root": "assets/reference-library/",
+  "reference_library_index": "assets/reference-library/reference_library_index.json",
+  "created_at": "2026-07-03",
+  "status": "active"
+}

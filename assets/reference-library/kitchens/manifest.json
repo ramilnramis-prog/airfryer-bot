@@ -1,0 +1,109 @@
+{
+  "category": "kitchens",
+  "is_global_canon": false,
+  "note": "Референсы кухонного сета (столешница, плитка, декор) — НЕ канон, выбираются заново на кампанию.",
+  "asset_count": 7,
+  "assets": [
+    {
+      "id": "kf-marble-kitchen-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/01_master_keyframe.png",
+      "description": "Пустая форма (устаревшая геометрия) на мраморной столешнице, белая плитка-кабанчик, бутылка масла, разделочная доска, растение.",
+      "sha256": "8f024e04d6ba876e7e8e065a4efa67246cdf9308de477fe325cd0c368806a0ed",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "выбор кухонного сета (мрамор + кабанчик + дерево) для нового campaign_visual_lock.kitchen_reference"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "id": "kf-marble-kitchen-02",
+      "source_path": "D:/OzonGrowthProject/content/assets/02_master_keyframe_REAL.png",
+      "description": "Вариант той же мраморной кухни (кабанчик, масло, доска, растение), альтернативный ракурс/свет.",
+      "sha256": "d3ece71915e873e39aee3c64835376e19d1b92e02f65f625d54b9e82838c0ccf",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "альтернативный кадр того же кухонного сета, что и kf-marble-kitchen-01"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "id": "person-b-exhausted-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/hookB_exhausted.png",
+      "description": "Женщина (пучок, серый кардиган) моет тёмную корзину в раковине, светлая кухня с кабанчиком.",
+      "sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "person_reference + clothing_reference (серый кардиган) для кампании с сюжетом \"усталость от мытья\""
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "person-c-frustrated-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/hookC_frustrated.png",
+      "description": "Женщина (тёмные волосы распущены), раздражённое выражение, держит грязную корзину и щётку, светлая кухня, окно.",
+      "sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "person_reference для эмоционального hook \"фрустрация\""
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "person-pain-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/shot1_pain.png",
+      "description": "Женщина (пучок, серый кардиган) у раковины с грязной корзиной, растения на подоконнике.",
+      "sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "тот же person/clothing сет, что и person-b-exhausted-01 (тот же кардиган и причёска — вероятно один персонаж)"
+      ],
+      "restrictions": []
+    },
+    {
+      "id": "v2-empty-form-counter-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/cta.png",
+      "description": "Пустая форма (устаревшая геометрия) одна на деревянной столешнице, кухня с банками и разделочной доской на фоне.",
+      "sha256": "70814a3eb80a9c035f0bb198bf6f63d22b904b7a8e3806fbd79eb56b9c289d69",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "композиция \"продукт крупным планом на столе\" (без продукта как источника геометрии)",
+        "кухонный сет (дерево + банки + доска)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    },
+    {
+      "id": "v2-hand-hold-01",
+      "source_path": "D:/OzonGrowthProject/content/assets/video2-formaad/h1.png",
+      "description": "Одна рука (рукав светлого свитера) держит форму (устаревшая геометрия) на весу, кухня с окном и растениями.",
+      "sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
+      "type": "AI reference",
+      "approved_for_reference_only": true,
+      "category": "kitchens",
+      "suitable_uses": [
+        "grip_reference — однорукий хват",
+        "clothing_reference (светлый свитер)"
+      ],
+      "restrictions": [
+        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
+      ]
+    }
+  ]
+}
