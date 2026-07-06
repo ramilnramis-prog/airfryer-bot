@@ -302,6 +302,45 @@ def _publishing_queue_html(campaign_dir: str, repo_root: str = ".") -> str:
     </div>"""
 
 
+def _performance_tracking_html(campaign_dir: str, repo_root: str = ".") -> str:
+    """Performance Tracking section -- read-only links into
+    performance-tracking/ (master tracker, 14 daily-input files, the
+    HOW_TO_TRACK_RESULTS instructions, and the performance summary). Status
+    reflects whether the owner has entered any real metrics yet -- this
+    dashboard never fetches or posts anything itself."""
+    base = Path(repo_root) / campaign_dir / "generated/content-factory/performance-tracking"
+    if not base.is_dir():
+        return ""
+
+    tracker_rel = "../performance-tracking/master-performance-tracker.csv"
+    howto_rel = "../performance-tracking/HOW_TO_TRACK_RESULTS.md"
+    summary_path = base / "reports/performance-summary.json"
+
+    status = "waiting_for_publication_data"
+    summary_note = "Метрики ещё не занесены -- отчёт появится после первых публикаций."
+    if summary_path.is_file():
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        if summary.get("has_data"):
+            status = "data_available"
+            summary_note = f"Данные есть: {summary.get('rows_with_data', 0)} строк с метриками."
+
+    daily_links = []
+    for day_num in range(1, 15):
+        rel = f"../performance-tracking/daily-input/day-{day_num:02d}-metrics.csv"
+        daily_links.append(f'<a href="{rel}">day-{day_num:02d}</a>')
+
+    return f"""
+    <div class="queue-section">
+      <h2>Performance Tracking</h2>
+      <p><b>status:</b> {status}</p>
+      <p style="color:#888; font-size:13px;">{summary_note}</p>
+      <p><a href="{tracker_rel}">master-performance-tracker.csv</a> &nbsp;|&nbsp;
+         <a href="{howto_rel}">HOW_TO_TRACK_RESULTS.md</a> &nbsp;|&nbsp;
+         <a href="../performance-tracking/reports/performance-summary.md">performance-summary.md</a></p>
+      <p>Daily input files: {' &nbsp;'.join(daily_links)}</p>
+    </div>"""
+
+
 def build_review_dashboard(campaign_dir: str, batches=None, repo_root: str = ".",
                            out_path=None) -> str:
     """Combined dashboard across ALL batches (or the given `batches` list),
@@ -335,6 +374,7 @@ def build_review_dashboard(campaign_dir: str, batches=None, repo_root: str = "."
 
     batch_links = " | ".join(f'<a href="{b}.html">{b}</a>' for b in batch_list)
     queue_section = _publishing_queue_html(campaign_dir, repo_root)
+    performance_section = _performance_tracking_html(campaign_dir, repo_root)
 
     html = f"""<!doctype html>
 <html><head><meta charset="utf-8">
@@ -367,6 +407,7 @@ def build_review_dashboard(campaign_dir: str, batches=None, repo_root: str = "."
 {''.join(all_cards)}
 </div>
 {queue_section}
+{performance_section}
 <script>{_FILTER_JS}</script>
 <script>{_DECISION_JS}</script>
 </body></html>"""

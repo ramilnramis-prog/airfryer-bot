@@ -93,6 +93,8 @@ from .product_reference_only_campaign_runner import (
     ProductReferenceOnlyCampaignError, run_campaign)
 from .content_factory_renderer import render_batch
 from .content_factory_planner import write_angle_variant_plan
+from .content_factory_performance import (write_performance_summary,
+                                          write_next_batch_recommendations)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -489,6 +491,20 @@ def cmd_render_content_factory_videos(args) -> int:
     return _emit(report)
 
 
+def cmd_analyze_content_performance(args) -> int:
+    """Локальный анализатор перформанса: читает master-performance-tracker
+    (+ daily-input/*.csv с вручную занесёнными метриками владельцем),
+    считает лучшие ролики/хуки/углы/стили/площадки, пишет
+    performance-tracking/reports/{performance-summary,next-batch-
+    recommendations}.{json,md}. Никаких сетевых вызовов -- если метрик ещё
+    нет, пишет пустой отчёт с пометкой "ожидаются метрики после
+    публикаций"; см. api.media_pipeline.content_factory_performance."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    summary = write_performance_summary(campaign_dir)
+    recommendations = write_next_batch_recommendations(campaign_dir)
+    return _emit({"performance_summary": summary, "next_batch_recommendations": recommendations})
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -640,6 +656,16 @@ def main(argv=None) -> int:
     p.add_argument("--duration-max", type=float, default=None,
                    help="исключить варианты длиннее этого числа секунд")
     p.set_defaults(fn=cmd_render_content_factory_videos)
+
+    p = sub.add_parser("analyze-content-performance",
+                       help="локальный анализ перформанса контент-фабрики: читает "
+                            "master-performance-tracker + daily-input/*.csv (метрики, "
+                            "занесённые владельцем вручную), пишет performance-summary "
+                            "и next-batch-recommendations; 0 внешних вызовов")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.set_defaults(fn=cmd_analyze_content_performance)
 
     args = parser.parse_args(argv)
     try:
