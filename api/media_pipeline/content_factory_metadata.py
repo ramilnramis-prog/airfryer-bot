@@ -81,7 +81,9 @@ def write_batch_platform_metadata(campaign_dir: str, batch_name: str = "batch-00
     out_dir.mkdir(parents=True, exist_ok=True)
 
     written = []
-    for render_json in sorted(render_dir.glob("v*.json")):
+    for render_json in sorted(render_dir.glob("*.json")):
+        if render_json.name == "batch-summary.json":
+            continue
         variant = json.loads(render_json.read_text(encoding="utf-8"))
         metadata = build_variant_platform_metadata(variant)
         out_path = out_dir / f"{variant['variant_id']}-platform-metadata.json"
@@ -107,6 +109,7 @@ def write_batch_platform_metadata(campaign_dir: str, batch_name: str = "batch-00
 DZEN_POST_TYPES = (
     "short_recipe", "recipe_roundup", "airfryer_lifehack", "problem_solution",
     "what_to_cook_in_airfryer", "soft_product_ad", "with_form_vs_without",
+    "lifestyle_conversational",
 )
 
 DZEN_TITLES_BY_TYPE = {
@@ -125,11 +128,15 @@ DZEN_TITLES_BY_TYPE = {
         "Лайфхак для аэрогриля, который экономит вечер",
         "Как я упростила уборку после аэрогриля",
         "Маленькая хитрость для тех, у кого есть аэрогриль",
+        "Простой способ мыть аэрогриль в разы быстрее",
+        "Лайфхак, который стоит знать каждому владельцу аэрогриля",
     ),
     "problem_solution": (
         "Почему аэрогриль так долго мыть и что с этим делать",
         "Главная проблема аэрогриля, о которой все молчат",
         "Как перестать тратить вечер на мытьё аэрогриля",
+        "Проблема с корзиной аэрогриля и простое решение",
+        "Что делать, если корзина аэрогриля всегда в жире",
     ),
     "what_to_cook_in_airfryer": (
         "Что приготовить в аэрогриле сегодня вечером",
@@ -145,6 +152,18 @@ DZEN_TITLES_BY_TYPE = {
         "С формой и без: разница в уборке после аэрогриля",
         "Пробовала готовить с силиконовой формой и без — вот что заметила",
         "До и после: что реально меняет форма для аэрогриля",
+    ),
+    "lifestyle_conversational": (
+        "Как я поняла, что мне реально нужна форма для аэрогриля",
+        "Мои честные мысли после месяца готовки в аэрогриле",
+        "То, о чём не пишут в отзывах на аэрогриль",
+        "Небольшая деталь, которая изменила мои вечера",
+        "Разговор с подругой, после которого я купила форму для аэрогриля",
+        "Призналась себе, что ненавижу мыть аэрогриль. Вот что сделала.",
+        "Аэрогриль изменил мою готовку. Мойка — нет.",
+        "Забавная история о том, как я докупала аксессуары к аэрогрилю",
+        "Что бы я сказала себе в день покупки аэрогриля",
+        "Спойлер: дело не в аэрогриле, а в том, что кладёшь в корзину",
     ),
 }
 
@@ -184,6 +203,75 @@ def write_dzen_content_plan(campaign_dir: str, repo_root: str = ".", out_path=No
     out.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
     plan["report_path"] = str(out)
     return plan
+
+
+# Theme grouping for angle-scoped Dzen batches (batch-002..004 scale-up).
+DZEN_ANGLE_POST_TYPES = {
+    "pain_problem_lifehack": ("problem_solution", "airfryer_lifehack"),
+    "recipe": ("short_recipe", "recipe_roundup", "what_to_cook_in_airfryer"),
+    "conversational_lifestyle": ("lifestyle_conversational",),
+}
+
+
+def generate_dzen_batch_by_types(post_types: tuple, count: int, id_prefix: str) -> list:
+    """count posts pulling ONLY from the given post_types (themed subset of
+    DZEN_POST_TYPES), round-robin across types with an INDEPENDENT title
+    counter per type -- titles only repeat if a single type is asked to
+    supply more posts than it has distinct titles for."""
+    posts = []
+    type_counters = {pt: 0 for pt in post_types}
+    i = 0
+    while len(posts) < count:
+        post_type = post_types[i % len(post_types)]
+        titles = DZEN_TITLES_BY_TYPE[post_type]
+        title = titles[type_counters[post_type] % len(titles)]
+        type_counters[post_type] += 1
+        posts.append({
+            "post_id": f"{id_prefix}-{len(posts) + 1:03d}",
+            "post_type": post_type,
+            "title": title,
+            "soft_product_integration": True,
+            "aggressive_promise": False,
+            "target_length_chars": "1500-3000",
+        })
+        i += 1
+    return posts
+
+
+def write_dzen_batch_for_angle(campaign_dir: str, batch_name: str, theme: str,
+                               count: int = 10, repo_root: str = ".") -> dict:
+    """Writes `count` themed Dzen markdown posts straight into
+    dzen-posts/<batch_name>/ (skips the separate content-plan step -- used
+    for the angle-scoped batch-002/003/004 scale-up, distinct from the
+    general 32-post dzen-content-plan.json + batch-001 pattern)."""
+    if theme not in DZEN_ANGLE_POST_TYPES:
+        raise ValueError(f"unknown Dzen theme {theme!r} -- expected one of {list(DZEN_ANGLE_POST_TYPES)}")
+    post_types = DZEN_ANGLE_POST_TYPES[theme]
+    posts = generate_dzen_batch_by_types(post_types, count, id_prefix=f"{batch_name}-dzen")
+
+    out_dir = Path(repo_root) / campaign_dir / "generated/content-factory/dzen-posts" / batch_name
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    written = []
+    for post in posts:
+        md = build_dzen_markdown_post(post)
+        out_path = out_dir / f"{post['post_id']}-{post['post_type']}.md"
+        out_path.write_text(md, encoding="utf-8")
+        written.append({"post_id": post["post_id"], "path": str(out_path), "chars": len(md)})
+
+    summary = {
+        "campaign_code": "coating-protect-2026-07",
+        "batch_name": batch_name,
+        "theme": theme,
+        "post_types": list(post_types),
+        "posts_written": len(written),
+        "files": written,
+        "auto_posting_triggered": False,
+    }
+    summary_path = out_dir / "dzen-batch-summary.json"
+    summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    summary["summary_path"] = str(summary_path)
+    return summary
 
 
 _RECIPE_BODY_BY_TYPE = {
@@ -323,6 +411,32 @@ _RECIPE_BODY_BY_TYPE = {
         "ужинов растягивается надолго, а с формой — занимает буквально пару минут. "
         "Для меня это оказалось той самой мелочью, которая реально меняет "
         "ежедневный опыт использования аэрогриля."
+    ),
+    "lifestyle_conversational": (
+        "Если честно, когда я покупала аэрогриль, я думала только о том, как "
+        "буду готовить хрустящую курицу и картошку без лишнего масла. Про то, "
+        "что его придётся мыть после каждой готовки, я как-то не подумала — "
+        "и зря, потому что именно это оказалось самой утомительной частью.\n\n"
+        "Первые пару недель я честно оттирала решётку щёткой после каждого "
+        "ужина. Особенно тяжело было после курицы с кожей или чего-то в "
+        "соусе — жир засыхал почти намертво, и приходилось замачивать "
+        "корзину на ночь, а утром снова тереть. В какой-то момент я поймала "
+        "себя на мысли, что готовлю в аэрогриле реже, чем хотелось бы, просто "
+        "потому что не хотелось потом мыть посуду.\n\n"
+        "Разговорилась с подругой, у которой аэрогриль уже больше года, и "
+        "она рассказала, что докупила силиконовую форму, которая ставится "
+        "прямо в корзину. Звучало как мелочь, но я решила попробовать — "
+        "хуже точно не будет.\n\n"
+        "Результат оказался куда заметнее, чем я ожидала. Форма квадратная, "
+        "с ручками по бокам, чтобы удобно доставать её горячей, и рифлёным "
+        "дном — жир стекает в промежутки между рёбрами и остаётся внутри "
+        "формы, а не на решётке. После готовки корзина аэрогриля почти "
+        "сухая, а мыть нужно только саму форму — она гладкая, и грязь "
+        "смывается за минуту под обычной водой.\n\n"
+        "Если бы мне нужно было сказать себе что-то в день покупки "
+        "аэрогриля, я бы сказала: дело не в самом аэрогриле, а в том, что "
+        "ты кладёшь внутрь. Простая форма — и вечер после готовки перестаёт "
+        "быть проблемой."
     ),
 }
 

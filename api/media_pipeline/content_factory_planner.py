@@ -206,6 +206,117 @@ def generate_video_variant_plan(campaign_dir: str, repo_root: str = ".") -> dict
     return plan
 
 
+def build_angle_variant(index: int, angle: str, format_name: str, style_type: str,
+                        hook_text: str, batch_name: str, campaign_dir: str,
+                        repo_root: str = ".") -> dict:
+    """Same shape as build_variant(), but tagged with an explicit
+    creative_angle (pain_problem/recipe/meme_conversational/fast_hype)
+    instead of the batch-001 'hook_category:style_type' convention, and with
+    angle-specific duration bounds / claim level / tone notes applied."""
+    template = fd.STYLE_TEMPLATES[style_type]
+    scene_order = list(template["scene_order"])
+    dur_min, dur_max = fd.ANGLE_DURATION_OVERRIDE.get(angle) or template["duration_range"]
+    duration = dur_min + ((dur_max - dur_min) * ((index * 7) % 10) / 10.0)
+    duration = round(max(dur_min, min(dur_max, duration)), 1)
+
+    cta = fd.CTA_BANK[index % len(fd.CTA_BANK)]
+    on_screen_text = _build_on_screen_text(scene_order, hook_text, cta)
+    caption_timeline = _build_caption_timeline(scene_order, duration, hook_text, on_screen_text, cta)
+    voiceover_text = _build_voiceover_text(on_screen_text)
+
+    required_assets = [resolve_scene_asset(s, campaign_dir, repo_root) for s in scene_order]
+    render_possible_locally = all(a["exists"] for a in required_assets)
+
+    claim_level = fd.ANGLE_PRODUCT_CLAIM_LEVEL.get(angle, template["product_claim_level"])
+    tone_note = fd.ANGLE_TONE_NOTES.get(angle, "")
+    risk_notes = _risk_notes(hook_text, cta)
+    if tone_note:
+        risk_notes.append(tone_note)
+
+    difference_note = (
+        f"batch={batch_name} angle={angle}: стиль '{style_type}' ({template['description']}) "
+        f"формат {format_name}; сцены {'->'.join(scene_order)}; hook уникален в рамках "
+        f"этого batch (позиция #{index})."
+    )
+
+    variant = {
+        "variant_id": f"{batch_name}-v{index:03d}-{format_name}-{style_type}",
+        "format": format_name,
+        "duration_target_seconds": duration,
+        "style_type": style_type,
+        "hook_text": hook_text,
+        "first_3_seconds": f"Крупный план + текст хука поверх сцены {scene_order[0]}: \"{hook_text}\"",
+        "scene_order": scene_order,
+        "caption_timeline": caption_timeline,
+        "voiceover_text": voiceover_text,
+        "on_screen_text": on_screen_text,
+        "CTA": cta,
+        "product_claim_level": claim_level,
+        "risk_notes": risk_notes,
+        "required_assets": required_assets,
+        "render_possible_locally": render_possible_locally,
+        "creative_angle": angle,
+        "difference_from_other_variants": difference_note,
+        "avoid_duplicate_posting_note": (
+            "Не публиковать этот вариант и другие варианты с тем же creative_angle "
+            "на одной платформе в один день -- см. recommended_spacing_hours."
+        ),
+        "recommended_spacing_hours": _SPACING_HOURS_BY_STYLE_GROUP.get(style_type, 12),
+        "platform_fit_score": _FORMAT_STYLE_FIT[format_name][style_type],
+    }
+    return variant
+
+
+def generate_angle_batch_variants(angle: str, campaign_dir: str, batch_name: str,
+                                  count: int = 20, repo_root: str = ".") -> list:
+    """count variants for ONE creative angle, hooks pulled (without repeats,
+    as long as count <= the angle's hook-category size) from the angle's
+    assigned hook category, styles/formats rotated for scene + platform
+    variety. Pure local planning -- ZERO network calls."""
+    if angle not in fd.CREATIVE_ANGLES:
+        raise ValueError(f"unknown creative_angle {angle!r} -- expected one of {fd.CREATIVE_ANGLES}")
+
+    hook_category = fd.ANGLE_HOOK_CATEGORY[angle]
+    hooks = list(fd.HOOK_BANK[hook_category])
+    styles = fd.ANGLE_STYLE_TYPES[angle]
+
+    variants = []
+    for i in range(count):
+        hook_text = hooks[i % len(hooks)]
+        style_type = styles[i % len(styles)]
+        format_name = fd.FORMATS[i % len(fd.FORMATS)]
+        variants.append(build_angle_variant(i + 1, angle, format_name, style_type,
+                                            hook_text, batch_name, campaign_dir, repo_root))
+    return variants
+
+
+def write_angle_variant_plan(campaign_dir: str, angle: str, batch_name: str,
+                             count: int = 20, repo_root: str = ".", out_path=None) -> dict:
+    variants = generate_angle_batch_variants(angle, campaign_dir, batch_name, count, repo_root)
+    missing_assets = sorted({
+        a["scene_id"] for v in variants for a in v["required_assets"] if not a["exists"]
+    })
+    plan = {
+        "campaign_code": "coating-protect-2026-07",
+        "batch_name": batch_name,
+        "creative_angle": angle,
+        "generated_by": "content_factory_planner.generate_angle_batch_variants",
+        "total_variants": len(variants),
+        "missing_scene_assets": missing_assets,
+        "openai_calls": 0,
+        "higgsfield_calls": 0,
+        "generated_outputs_used_as_references": False,
+        "variants": variants,
+    }
+    out = Path(out_path) if out_path else (
+        Path(repo_root) / campaign_dir /
+        f"generated/content-factory/video-variants/video-variant-plan-{batch_name}.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+    plan["report_path"] = str(out)
+    return plan
+
+
 def generate_hook_bank_doc() -> dict:
     doc = {
         "campaign_code": "coating-protect-2026-07",

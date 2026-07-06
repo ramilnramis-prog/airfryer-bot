@@ -92,6 +92,7 @@ from .product_reference_only_runner import (ProductReferenceOnlyRunnerError,
 from .product_reference_only_campaign_runner import (
     ProductReferenceOnlyCampaignError, run_campaign)
 from .content_factory_renderer import render_batch
+from .content_factory_planner import write_angle_variant_plan
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -470,11 +471,21 @@ def cmd_render_content_factory_videos(args) -> int:
     подписи + CTA-карточка в конце) из уже отревьюженных scene-01..07 PNG.
     Не вызывает OpenAI/Higgsfield -- только PIL + imageio/ffmpeg локально.
     Если ffmpeg недоступен, пишет render-plan JSON + HTML preview вместо
-    падения; см. api.media_pipeline.content_factory_renderer."""
+    падения. --angle (pain_problem/recipe/meme_conversational/fast_hype)
+    строит отдельный per-batch variant plan под этот угол вместо чтения
+    общего video-variant-plan.json -- поведение без --angle не меняется;
+    см. api.media_pipeline.content_factory_renderer /
+    content_factory_planner."""
     campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    variant_plan_path = None
+    if args.angle:
+        plan = write_angle_variant_plan(campaign_dir, angle=args.angle,
+                                        batch_name=args.batch, count=args.limit)
+        variant_plan_path = plan["report_path"]
     report = render_batch(campaign_dir, limit=args.limit, batch_name=args.batch,
                           duration_min_seconds=args.duration_min,
-                          duration_max_seconds=args.duration_max)
+                          duration_max_seconds=args.duration_max,
+                          variant_plan_path=variant_plan_path)
     return _emit(report)
 
 
@@ -615,9 +626,15 @@ def main(argv=None) -> int:
                    help="код кампании (например coating-protect-2026-07), "
                         "резолвится как content/autopilot/<campaign>")
     p.add_argument("--limit", type=int, default=10,
-                   help="сколько вариантов рендерить из video-variant-plan.json (по умолчанию 10)")
+                   help="сколько вариантов рендерить (по умолчанию 10; с --angle -- это ещё и "
+                        "количество вариантов, которые будут сгенерированы под этот angle)")
     p.add_argument("--batch", default="batch-001",
                    help="имя подпапки в generated/content-factory/video-renders/ (по умолчанию batch-001)")
+    p.add_argument("--angle", default=None,
+                   choices=["pain_problem", "recipe", "meme_conversational", "fast_hype"],
+                   help="creative angle -- строит отдельный per-batch variant plan "
+                        "(video-variant-plan-<batch>.json) под этот угол вместо общего "
+                        "video-variant-plan.json; без --angle поведение не меняется")
     p.add_argument("--duration-min", type=float, default=None,
                    help="исключить варианты короче этого числа секунд")
     p.add_argument("--duration-max", type=float, default=None,
