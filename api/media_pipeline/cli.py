@@ -15,7 +15,7 @@
   qa <observations.json>              — детерминированный вердикт по наблюдениям
   sequence-qa <transitions.json>      — вердикт по последовательности
   product-only-scene --campaign CODE --scene NN — НОВЫЙ безопасный путь
-                                        (background-first, product-only policy):
+                                        (product placement plate, product-only policy):
                                         dry-run по умолчанию, --apply для ОДНОГО
                                         реального generate-вызова (retries=0,
                                         hard cap $0.50); НИКОГДА не читает
@@ -367,7 +367,7 @@ def cmd_qa(args) -> int:
 
 
 def cmd_product_only_scene(args) -> int:
-    """product-only generation runner (background-first): dry-run по
+    """product-only generation runner (product placement plate): dry-run по
     умолчанию, --apply — РОВНО один реальный generate-вызов. НИКОГДА не
     читает campaign_visual_lock.json, никогда не резолвит appearance
     asset_id -- весь prompt идёт через product_only_policy.plan_scene_request."""
@@ -431,7 +431,7 @@ def main(argv=None) -> int:
     p.set_defaults(fn=cmd_sequence_qa)
 
     p = sub.add_parser("product-only-scene",
-                       help="НОВЫЙ безопасный путь: background-first product-only "
+                       help="НОВЫЙ безопасный путь: product placement plate product-only "
                             "generation (не читает campaign_visual_lock.json)")
     p.add_argument("--campaign", required=True,
                    help="код кампании (например coating-protect-2026-07), "

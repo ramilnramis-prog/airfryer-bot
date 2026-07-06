@@ -10,17 +10,23 @@ prompt и тот dry-run гарантированно согласованы (о
 
 **Статус: план. Ни один API (OpenAI/Higgsfield) НЕ вызывался для
 получения этого текста.** `openai_calls: 0`, `higgsfield_calls: 0`.
-`prompt_sha256: b2da7a7b09703a0639f6cbdd4ba22cc1edf7a0dad04976f32abf419a58da1fa7`.
+`prompt_sha256: 4067602b93fa23f883cea27f0df7cea4b663336da747a19d8831a8e31ada6f75`.
 
-**Mandatory image refs: НЕТ.** `reference_images: []` — background-first,
-`mode=generate` (НЕ `edit`): AI получает только текстовый prompt, без
-единого input-изображения. Единственный image lock — `real-product-v1`,
-вставляется отдельным deterministic compositing шагом ПОСЛЕ генерации, не
-входит в этот API-запрос вообще.
+**Approach: `product_placement_plate`** (PRODUCT PLACEMENT PLATE, не "нарисуй
+финальный товар" — см. раздел ниже). Предыдущая версия этого файла просила
+AI нарисовать законченную силиконовую форму, хотя dry-run говорил, что
+товар вставляется ПОСЛЕ генерации — это создавало риск ghost/double
+product. Исправлено: model_prompt теперь просит только "plate" (кухня,
+руки в ожидаемой позиции, пустое место под товар), явно запрещая рисовать
+готовую форму.
+
+**Mandatory image refs: НЕТ.** `reference_images: []` — `mode=generate`
+(НЕ `edit`): AI получает только текстовый prompt, без единого
+input-изображения.
 
 ---
 
-## Готовый prompt для будущего запуска (дословно, включая continuity block)
+## model_prompt — ТОЛЬКО это уходит в API (дословно)
 
 > Cozy clean white home kitchen, warm daylight coming from the left. Same
 > black air fryer with an open square basket in every shot. Same woman's
@@ -30,20 +36,23 @@ prompt и тот dry-run гарантированно согласованы (о
 > depth of field. No CGI, no illustration, no 3D render. No text, no
 > watermark, no logo. Vertical 9:16, 720×1280.
 >
-> The woman lifts the square silicone liner out of the open air fryer basket by its two flat corner handle tabs, thumbs resting on top of each handle, the handles' short horizontal slots partially visible through the grip; inside the liner exactly 3 roasted golden chicken thighs and potato wedges, light steam rising; below, the inside of the black air fryer basket is visibly clean and shiny, untouched by grease.
+> The woman's hands, in grey ribbed sweater sleeves, are positioned as if lifting an object out of the open air fryer basket: hands placed at the expected left and right side-handle positions, thumbs angled toward where the flat handle tabs will be, leaving a clean, empty central placement area in the basket for a square silicone liner to be inserted later. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Only very soft contact shadows/cues are allowed in the empty placement area. Below, the black air fryer basket is visibly clean and shiny. Food may be represented only as a rough, loose internal food area if needed — final food/product alignment is checked separately by QA, not guaranteed by this generation step.
 >
-> **The silicone form is not generated from imagination. The final
-> product layer must be inserted from real-product-v1 and remain
-> pixel-faithful: exact flat corner handle tabs, short horizontal slots,
-> matte dark grey silicone, ribbed bottom, proportions, silhouette.**
+> The final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.
+>
+> Negative prompt (avoid): a completed or fully rendered silicone liner, redesigned or fake handles, loop handles, vertical oval holes, any duplicate tray or basket insert, hands gripping the basket rim instead of the expected handle positions, dirty basket, text, watermark, logo.
 
-## Product lock instruction
+**Ничего из product_lock_instruction (геометрия ручек, материал, силуэт)
+в этот текст НЕ входит** — модель не может достоверно нарисовать
+real-product-v1 и не должна пытаться; PLACEMENT_NOTE выше — единственное,
+что модель знает о товаре, и это негативная инструкция ("оставь место
+чистым"), не просьба нарисовать.
 
-> The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing), никогда не из AI-редактирования. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.
+## pipeline_product_lock_instruction — НЕ отправляется модели
 
-## Negative prompt
+Используется ТОЛЬКО compositor'ом/QA после генерации:
 
-> redesigned handles, loop handles, vertical oval holes, wrong colour, warped silicone, extra handles, missing slots, hands holding the rim instead of the tabs, dirty basket in this clean-basket scene, not exactly 3 chicken thighs, excessive steam covering the product, text, watermark.
+> PIPELINE ONLY — NOT sent to the image model as a drawing instruction; used by the compositor/QA instead. The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing), никогда не из AI-редактирования. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.
 
 ---
 
@@ -53,27 +62,34 @@ prompt и тот dry-run гарантированно согласованы (о
 |---|---|
 | model | `gpt-image-2` |
 | endpoint | `POST /images/generations` |
-| mode | `generate` (background-first — НЕ `edit`, нет reference images/масок) |
+| mode | `generate` (нет reference images/масок) |
 | size | `720x1280` |
 | n | `1` |
 | output_format | `png` |
 | retries | `0` |
 | max_calls | `1` |
 | hard_cap_usd | `0.5` |
-| prompt_sha256 | `b2da7a7b09703a0639f6cbdd4ba22cc1edf7a0dad04976f32abf419a58da1fa7` |
+| prompt_sha256 | `4067602b93fa23f883cea27f0df7cea4b663336da747a19d8831a8e31ada6f75` |
 
-## Что описывает этот prompt (текстом, НЕ image reference)
+## Что описывает model_prompt (текстом, НЕ image reference)
 
 - уютная белая кухня (continuity block);
-- тот же чёрный аэрогриль с открытой квадратной корзиной (continuity block);
-- женские руки, серый ребристый свитер (continuity block);
-- руки поднимают силиконовую форму за две плоские боковые ручки-язычки;
-- большие пальцы сверху;
-- короткие горизонтальные прорези ручек частично видны сквозь хват;
-- внутри формы ровно 3 куриных бедра и картофельные дольки;
-- корзина аэрогриля чистая и блестящая под формой;
+- тот же чёрный аэрогриль с открытой квадратной корзиной, чистая и
+  блестящая корзина (continuity block + scene action);
+- женские руки, серый ребристый свитер, расположены как перед подъёмом
+  предмета — у ожидаемых позиций боковых ручек, большие пальцы развёрнуты
+  туда, где будут flat handle tabs;
+- пустое, чистое место в центре корзины под будущую вставку формы;
+- еда (если вообще нарисована) — только грубый, необязательный намёк на
+  область еды, финальное совпадение еды/товара проверяется отдельно QA;
 - реалистичное фото домашней готовки, 9:16, 720×1280;
 - без CGI/иллюстрации/3D-рендера, без текста/watermark.
+
+## Что явно ЗАПРЕЩЕНО просить у модели
+
+- рисовать законченную силиконовую форму;
+- рисовать любые (redesigned/fake) ручки;
+- рисовать дублирующий лоток/вставку в корзину.
 
 ## Что НЕ входит в этот prompt
 
@@ -86,18 +102,34 @@ prompt и тот dry-run гарантированно согласованы (о
   запрещены `campaign_visual_policy.json` и проверяются
   `api.media_pipeline.product_only_policy.assert_no_forbidden_appearance_refs`.
 
-## Approach: Background-first (не Product-guide)
+## Approach: Product Placement Plate (не Background-first-с-товаром, не Product-guide)
 
-AI генерирует ВЕСЬ кадр свободно (кухня/руки/рукава/еда/фон) без единой
-reference-картинки — значит, ему физически нечего "нарушать" (в отличие
-от CALL 1 HANDS, где именно нарушение edit-маски и было корнем всех
-четырёх отклонённых итераций). real-product-v1 вставляется ПОСЛЕ,
-deterministic compositing'ом, в фиксированную экранную позицию
-(`APPROVED_TRANSFORM_B`) — независимо от того, что нарисовал AI в этом
-месте кадра. Если AI всё равно нарисовал похожую форму где-то в кадре —
-QA gate 5 (`no_ai_redesigned_product_accepted`) отклоняет кандидата.
-Подробное обоснование — в `scene-05-product-only-apply-dry-run.json` и
+AI генерирует ТОЛЬКО plate — кухню, руки в ожидаемой позиции, чистое место
+под товар — и явно инструктируется НЕ рисовать законченный товар/ручки/
+лоток. real-product-v1 вставляется ПОСЛЕ, deterministic compositing'ом, в
+фиксированную экранную позицию (`APPROVED_TRANSFORM_B`) — независимо от
+того, что нарисовал AI. Если AI всё равно нарисовал похожую форму/лоток/
+ручки несмотря на инструкцию — QA gates 11-13
+(`no_duplicate_ai_product_visible`, `no_ai_tray_under_real_product`,
+`no_fake_handles_visible`) отклоняют кандидата. Product-guide (передать
+real-product-v1 как reference в mode=edit) по-прежнему отклонён — см.
+`scene-05-product-only-apply-dry-run.json` и
 `api/media_pipeline/product_only_scene_runner.py` (docstring).
+
+## Composite mechanics (после будущей генерации, ещё НЕ выполнено)
+
+1. raw AI plate (kitchen/hands/basket/placement area) сохраняется как есть
+2. real-product-v1 вставляется через APPROVED_TRANSFORM_B (deterministic compositing, layer_compositor.compose)
+3. front_hand extraction (палец/рукав поверх handle tabs) НЕ реализована в этом runner'е -- см. front_hand_extraction ниже
+4. если руки закрыты продуктом целиком или не взаимодействуют с handle tabs -- candidate reject
+5. если AI нарисовал собственную форму/лоток/вставку несмотря на PLACEMENT_NOTE -- candidate reject (no_duplicate_ai_product_visible)
+
+**front_hand_extraction: `not_implemented`.** Честно: этот
+runner НЕ реализует извлечение пальцев/рукава поверх handle tabs (как
+пыталась scene-05-hands-experiment-retrospective.md V3). `manual_review_required:
+true` всегда, и есть риск, что руки на AI-plate будут частично перекрыты
+слоем товара после вставки — это не скрывается, а помечается в каждом
+отчёте runner'а.
 
 ## Хуки A/B/C
 

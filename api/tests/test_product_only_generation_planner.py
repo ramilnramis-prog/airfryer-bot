@@ -211,8 +211,12 @@ class TestScene05FinalPromptIncludesProductLockInstruction(unittest.TestCase):
     """8: scene-05 final prompt включает product lock instruction."""
 
     def test_final_prompt_has_product_lock_section(self):
+        # regenerated (scene-05 "product placement plate" refinement) --
+        # heading is now pipeline_product_lock_instruction, kept structurally
+        # separate from model_prompt (see test_product_only_scene_runner.py
+        # TestPlacementPlateRefinement for the full split coverage).
         text = load_text(SCENE05_FINAL_PROMPT_PATH)
-        self.assertIn("Product lock instruction", text)
+        self.assertIn("pipeline_product_lock_instruction", text)
         self.assertIn("real-product-v1", text)
 
     def test_final_prompt_has_pixel_faithful_instruction(self):

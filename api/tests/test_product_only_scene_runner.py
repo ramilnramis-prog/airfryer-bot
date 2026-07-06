@@ -1,7 +1,7 @@
-"""Тесты product-only scene runner (background-first CLI path, замена
-отклонённого CALL 1 HANDS masked-edit подхода).
+"""Тесты product-only scene runner (product placement plate CLI path,
+замена отклонённого CALL 1 HANDS masked-edit подхода).
 
-Покрытие (12 пунктов, запрошенных явно):
+Покрытие исходного набора (12 пунктов):
 1. product-only-scene dry-run executes with network_calls=0
 2. --apply is required for network call
 3. --apply без OPENAI_API_KEY падает ДО сети
@@ -14,6 +14,19 @@
 10. старые refs заблокированы
 11. generated-файлы остаются gitignored
 12. никаких платных OpenAI-вызовов в тестах
+
+Покрытие ревизии "product placement plate" (класс
+TestPlacementPlateRefinement, 10 пунктов):
+1. model_prompt не содержит фразу, что AI должен финально нарисовать silicone liner
+2. model_prompt содержит "leave clean placement area"
+3. model_prompt содержит "do not draw completed silicone liner"
+4. product_lock_instruction хранится отдельно от model_prompt
+5. dry-run имеет approach product_placement_plate
+6. dry-run явно показывает front_hand_extraction implemented/not_implemented
+7. QA gates включают no_duplicate_ai_product_visible
+8. QA gates включают hands_positioned_near_real_handle_tabs
+9. OpenAI calls = 0
+10. Higgsfield calls = 0
 """
 import io
 import json
@@ -215,7 +228,7 @@ class TestScene05FinalPromptHasProductLockInstruction(unittest.TestCase):
 
     def test_final_prompt_has_product_lock_section_and_pixel_faithful_line(self):
         text = load_text(FINAL_PROMPT_PATH)
-        self.assertIn("Product lock instruction", text)
+        self.assertIn("pipeline_product_lock_instruction", text)
         self.assertIn("pixel-faithful", text)
         self.assertIn("real-product-v1", text)
 
@@ -237,11 +250,11 @@ class TestScene05DryRunContainsRealProductV1(unittest.TestCase):
         d = load_json(APPLY_DRY_RUN_PATH)
         self.assertEqual(d["product_canon"], "real-product-v1")
         self.assertEqual(d["generation_mode"], "product_only")
-        self.assertEqual(d["composite_approach"], "background_first")
+        self.assertEqual(d["composite_approach"], "product_placement_plate")
 
     def test_apply_dry_run_has_qa_gates_and_zero_calls(self):
         d = load_json(APPLY_DRY_RUN_PATH)
-        self.assertEqual(len(d["qa_gates"]), 10)
+        self.assertEqual(len(d["qa_gates"]), 15)
         self.assertEqual(d["openai_calls_executed"], 0)
         self.assertEqual(d["higgsfield_calls_executed"], 0)
         self.assertEqual(d["api_spend_usd"], 0)
@@ -319,6 +332,89 @@ class TestNoPaidApiCallsDuringTests(unittest.TestCase):
         src = (REPO_ROOT / "api" / "media_pipeline" / "product_only_scene_runner.py").read_text(encoding="utf-8").lower()
         for token in ("api.higgsfield",):
             self.assertNotIn(token, src, token)
+
+
+class TestPlacementPlateRefinement(unittest.TestCase):
+    """Ревизия "product placement plate": убирает конфликт, где prompt
+    просил AI нарисовать финальный silicone liner, хотя dry-run говорит,
+    что товар вставляется после генерации из real-product-v1 (риск
+    ghost/double product). 10 пунктов, запрошенных явно."""
+
+    def test_1_model_prompt_does_not_ask_to_draw_final_liner(self):
+        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
+        # раньше model_prompt содержал именно эту фразу -- явная регрессия,
+        # если она когда-нибудь вернётся.
+        self.assertNotIn("lifts the square silicone liner out of the open air fryer basket",
+                        contract.model_prompt)
+        self.assertNotIn("thumbs resting on top of each handle", contract.model_prompt)
+
+    def test_2_model_prompt_contains_leave_clean_placement_area(self):
+        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
+        self.assertIn("Leave the product placement area clean", contract.model_prompt)
+
+    def test_3_model_prompt_contains_do_not_draw_completed_liner(self):
+        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
+        self.assertIn("Do not draw a completed silicone liner", contract.model_prompt)
+
+    def test_4_product_lock_instruction_stored_separately_from_model_prompt(self):
+        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
+        self.assertTrue(contract.pipeline_product_lock_instruction)
+        self.assertNotIn(contract.pipeline_product_lock_instruction, contract.model_prompt)
+        self.assertNotIn("pixel-faithful", contract.model_prompt)
+        self.assertIn("pixel-faithful", contract.pipeline_product_lock_instruction)
+
+    def test_4b_report_exposes_both_fields_separately(self):
+        with urlopen_raises():
+            report = runner.run_product_only_scene(str(CAMPAIGN_DIR), SCENE_ID, apply=False)
+        self.assertIn("model_prompt", report["request_contract"])
+        self.assertIn("pipeline_product_lock_instruction", report)
+        self.assertNotEqual(report["request_contract"]["model_prompt"],
+                            report["pipeline_product_lock_instruction"])
+
+    def test_5_dry_run_has_approach_product_placement_plate(self):
+        with urlopen_raises():
+            report = runner.run_product_only_scene(str(CAMPAIGN_DIR), SCENE_ID, apply=False)
+        self.assertEqual(report["composite_approach"], "product_placement_plate")
+        d = load_json(APPLY_DRY_RUN_PATH)
+        self.assertEqual(d["composite_approach"], "product_placement_plate")
+
+    def test_6_dry_run_shows_front_hand_extraction_status_explicitly(self):
+        with urlopen_raises():
+            report = runner.run_product_only_scene(str(CAMPAIGN_DIR), SCENE_ID, apply=False)
+        self.assertIn("front_hand_extraction", report)
+        self.assertEqual(report["front_hand_extraction"], "not_implemented")
+        self.assertIn("hands may be partially covered", report["front_hand_extraction_risk"])
+        d = load_json(APPLY_DRY_RUN_PATH)
+        self.assertEqual(d["composite_strategy"]["front_hand_extraction"], "not_implemented")
+
+    def test_7_qa_gates_include_no_duplicate_ai_product_visible(self):
+        names = [g["name"] for g in runner.QA_GATES]
+        self.assertIn("no_duplicate_ai_product_visible", names)
+
+    def test_8_qa_gates_include_hands_positioned_near_real_handle_tabs(self):
+        names = [g["name"] for g in runner.QA_GATES]
+        self.assertIn("hands_positioned_near_real_handle_tabs", names)
+
+    def test_qa_gates_include_all_five_new_gates(self):
+        names = [g["name"] for g in runner.QA_GATES]
+        for expected in ("no_duplicate_ai_product_visible", "no_ai_tray_under_real_product",
+                        "no_fake_handles_visible", "hands_positioned_near_real_handle_tabs",
+                        "candidate_rejected_if_product_overlay_breaks_hands"):
+            self.assertIn(expected, names)
+
+    def test_9_openai_calls_zero_in_dry_run(self):
+        with urlopen_raises():
+            report = runner.run_product_only_scene(str(CAMPAIGN_DIR), SCENE_ID, apply=False)
+        self.assertEqual(report["openai_calls_executed"], 0)
+        d = load_json(APPLY_DRY_RUN_PATH)
+        self.assertEqual(d["openai_calls_executed"], 0)
+
+    def test_10_higgsfield_calls_zero(self):
+        with urlopen_raises():
+            report = runner.run_product_only_scene(str(CAMPAIGN_DIR), SCENE_ID, apply=False)
+        self.assertEqual(report["higgsfield_calls_executed"], 0)
+        d = load_json(APPLY_DRY_RUN_PATH)
+        self.assertEqual(d["higgsfield_calls_executed"], 0)
 
 
 if __name__ == "__main__":
