@@ -2,23 +2,221 @@
   "campaign_code": "coating-protect-2026-07",
   "mode": "dry-run",
   "scenes_requested": [
-    "scene-99"
+    "scene-01",
+    "scene-02",
+    "scene-03",
+    "scene-04",
+    "scene-05",
+    "scene-06",
+    "scene-07"
   ],
   "skip_existing": false,
   "skip_selected": true,
   "stop_on_error": true,
   "scene_reports": [
     {
-      "scene_id": "scene-99",
-      "status": "not_configured",
-      "reason": "scene-99 is not in product_reference_only_runner.SCENE_PROMPTS_V2"
+      "scene_id": "scene-01",
+      "status": "configured",
+      "candidate_label": "product_reference_only_v2",
+      "model": "gpt-image-2",
+      "mode": "edit",
+      "endpoint": "/images/edits",
+      "size": "720x1280",
+      "n": 1,
+      "retries": 0,
+      "max_calls": 1,
+      "hard_cap_usd": 0.5,
+      "prompt_sha256": "fdbc9e725863ab89c9fba4539d44c89fed5ad6fdac583ca17784d82cf90c85d4",
+      "reference_images": [
+        "real-product-v1:product_45deg_master",
+        "real-product-v1:product_top_master",
+        "real-product-v1:both_handles_master",
+        "real-product-v1:bottom_loop_master"
+      ],
+      "reference_image_paths": [
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+      ],
+      "forbidden_refs_scan": {
+        "scanned": 4,
+        "forbidden_found": false,
+        "findings": []
+      },
+      "estimated_spend_usd": 0.3,
+      "will_call_openai": true
+    },
+    {
+      "scene_id": "scene-02",
+      "status": "configured",
+      "candidate_label": "product_reference_only_v2",
+      "model": "gpt-image-2",
+      "mode": "edit",
+      "endpoint": "/images/edits",
+      "size": "720x1280",
+      "n": 1,
+      "retries": 0,
+      "max_calls": 1,
+      "hard_cap_usd": 0.5,
+      "prompt_sha256": "45c9bdcc865c8c34287b279e84a8f55d104d6ab70de61637538b4ff92dec3bb4",
+      "reference_images": [
+        "real-product-v1:product_45deg_master",
+        "real-product-v1:product_top_master",
+        "real-product-v1:both_handles_master",
+        "real-product-v1:bottom_loop_master"
+      ],
+      "reference_image_paths": [
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+      ],
+      "forbidden_refs_scan": {
+        "scanned": 4,
+        "forbidden_found": false,
+        "findings": []
+      },
+      "estimated_spend_usd": 0.3,
+      "will_call_openai": true
+    },
+    {
+      "scene_id": "scene-03",
+      "status": "configured",
+      "candidate_label": "product_reference_only_v2",
+      "model": "gpt-image-2",
+      "mode": "edit",
+      "endpoint": "/images/edits",
+      "size": "720x1280",
+      "n": 1,
+      "retries": 0,
+      "max_calls": 1,
+      "hard_cap_usd": 0.5,
+      "prompt_sha256": "0a21cc5968729511cd6a6142e6dd8d300c219584838b4e7da772358e6116bcb0",
+      "reference_images": [
+        "real-product-v1:product_45deg_master",
+        "real-product-v1:product_top_master",
+        "real-product-v1:both_handles_master",
+        "real-product-v1:bottom_loop_master"
+      ],
+      "reference_image_paths": [
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+      ],
+      "forbidden_refs_scan": {
+        "scanned": 4,
+        "forbidden_found": false,
+        "findings": []
+      },
+      "estimated_spend_usd": 0.3,
+      "will_call_openai": true
+    },
+    {
+      "scene_id": "scene-04",
+      "status": "configured",
+      "candidate_label": "product_reference_only_v2",
+      "model": "gpt-image-2",
+      "mode": "edit",
+      "endpoint": "/images/edits",
+      "size": "720x1280",
+      "n": 1,
+      "retries": 0,
+      "max_calls": 1,
+      "hard_cap_usd": 0.5,
+      "prompt_sha256": "c333bf8bae1647115c7899d638e78b04211859f34e10f78d528f10dd36055e10",
+      "reference_images": [
+        "real-product-v1:product_45deg_master",
+        "real-product-v1:product_top_master",
+        "real-product-v1:both_handles_master",
+        "real-product-v1:bottom_loop_master"
+      ],
+      "reference_image_paths": [
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+      ],
+      "forbidden_refs_scan": {
+        "scanned": 4,
+        "forbidden_found": false,
+        "findings": []
+      },
+      "estimated_spend_usd": 0.3,
+      "will_call_openai": true
+    },
+    {
+      "scene_id": "scene-05",
+      "status": "selected_existing",
+      "reason": "scene has an owner-selected working candidate (--skip-selected)",
+      "selected_candidate": {
+        "status": "working_candidate_selected",
+        "status_detail": "pending_final_owner_approval",
+        "candidate_file": "generated/product-reference-only-scene-v2/scene-05/scene-05-product-reference-only-v2-candidate.png",
+        "qa_report": "generated/product-reference-only-scene-v2/scene-05/scene-05-product-reference-only-v2-qa-report.json",
+        "not_promoted_to_reference": true
+      },
+      "reference_images": [],
+      "reference_image_paths": [],
+      "estimated_spend_usd": 0.0,
+      "will_call_openai": false
+    },
+    {
+      "scene_id": "scene-06",
+      "status": "configured",
+      "candidate_label": "product_reference_only_v2",
+      "model": "gpt-image-2",
+      "mode": "edit",
+      "endpoint": "/images/edits",
+      "size": "720x1280",
+      "n": 1,
+      "retries": 0,
+      "max_calls": 1,
+      "hard_cap_usd": 0.5,
+      "prompt_sha256": "560fb8699a42709febedb3218e6ec85385e6fa286e8e334ccd2a2d4fdbf08737",
+      "reference_images": [
+        "real-product-v1:product_45deg_master",
+        "real-product-v1:product_top_master",
+        "real-product-v1:both_handles_master",
+        "real-product-v1:bottom_loop_master"
+      ],
+      "reference_image_paths": [
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+        "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+      ],
+      "forbidden_refs_scan": {
+        "scanned": 4,
+        "forbidden_found": false,
+        "findings": []
+      },
+      "estimated_spend_usd": 0.3,
+      "will_call_openai": true
+    },
+    {
+      "scene_id": "scene-07",
+      "status": "selected_existing",
+      "reason": "scene has an owner-selected working candidate (--skip-selected)",
+      "selected_candidate": {
+        "status": "working_candidate_selected",
+        "status_detail": "pending_final_owner_approval",
+        "candidate_file": "generated/product-reference-only-scene-v2/scene-07/scene-07-product-reference-only-v2-candidate.png",
+        "qa_report": "generated/product-reference-only-scene-v2/scene-07/scene-07-product-reference-only-v2-qa-report.json",
+        "not_promoted_to_reference": true
+      },
+      "reference_images": [],
+      "reference_image_paths": [],
+      "estimated_spend_usd": 0.0,
+      "will_call_openai": false
     }
   ],
   "max_calls_per_scene": 1,
   "retries": 0,
   "hard_cap_usd_per_scene": 0.5,
   "campaign_total_hard_cap_usd": 5.0,
-  "total_estimated_spend_usd": 0.0,
+  "total_estimated_spend_usd": 1.5,
   "total_actual_spend_usd": 0,
   "openai_calls_executed": 0,
   "higgsfield_calls_executed": 0,

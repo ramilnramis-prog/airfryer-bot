@@ -21,6 +21,7 @@ api.media_pipeline.product_reference_only_campaign_runner.
 """
 import json
 import re
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -32,6 +33,21 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 CAMPAIGN_DIR = REPO_ROOT / "content" / "autopilot" / "coating-protect-2026-07"
 
 CAMPAIGN_DRY_RUN_PATH = CAMPAIGN_DIR / "campaign-product-reference-only-v2-dry-run.json"
+
+# run_campaign() always writes its report to disk. Without an explicit
+# out_path it writes to the real, tracked campaign_dir -- which is exactly
+# CAMPAIGN_DIR here. Tests must NEVER let that happen (it previously
+# clobbered the committed campaign-product-reference-only-v2-dry-run.json
+# with test-only content, e.g. a scene-99 fail-closed run). Every test call
+# below passes an explicit out_path inside this scratch dir instead.
+_SCRATCH_DIR = Path(tempfile.mkdtemp(prefix="campaign_runner_tests_"))
+_scratch_counter = 0
+
+
+def scratch_out_path():
+    global _scratch_counter
+    _scratch_counter += 1
+    return str(_SCRATCH_DIR / f"scratch-report-{_scratch_counter}.json")
 
 C1_C2_C3_PATTERN = re.compile(r"scene-0\d-c[123][-.]")
 GENERATED_PATTERN = re.compile(r"generated[\\/]")
@@ -62,10 +78,19 @@ class TestCampaignDryRunExists(unittest.TestCase):
     def test_file_exists(self):
         self.assertTrue(CAMPAIGN_DRY_RUN_PATH.is_file())
 
-    def test_live_dry_run_writes_same_path(self):
+    def test_default_out_path_naming_convention(self):
+        # Verifies the default (out_path=None) naming convention WITHOUT ever
+        # writing into the real tracked campaign_dir -- uses an isolated temp
+        # campaign_dir instead (copies only the registry file it needs).
+        temp_campaign_dir = _SCRATCH_DIR / "fake_campaign_dir"
+        temp_campaign_dir.mkdir(parents=True, exist_ok=True)
+        registry_src = CAMPAIGN_DIR / campaign.SELECTED_CANDIDATES_FILENAME
+        (temp_campaign_dir / campaign.SELECTED_CANDIDATES_FILENAME).write_text(
+            registry_src.read_text(encoding="utf-8"), encoding="utf-8")
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
-        self.assertEqual(Path(report["report_path"]).resolve(), CAMPAIGN_DRY_RUN_PATH.resolve())
+            report = campaign.run_campaign(str(temp_campaign_dir), apply=False)
+        expected = temp_campaign_dir / "campaign-product-reference-only-v2-dry-run.json"
+        self.assertEqual(Path(report["report_path"]).resolve(), expected.resolve())
         self.assertEqual(report["mode"], "dry-run")
 
 
@@ -80,7 +105,7 @@ class TestAllSevenScenesConfigured(unittest.TestCase):
 
     def test_live_run_all_scenes_configured_or_selected(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False, skip_selected=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False, skip_selected=False)
         statuses = {s["scene_id"]: s["status"] for s in report["scene_reports"]}
         self.assertEqual(set(statuses), set(por.CAMPAIGN_SCENE_ORDER))
         for scene_id, status in statuses.items():
@@ -90,7 +115,7 @@ class TestAllSevenScenesConfigured(unittest.TestCase):
 class TestScene05SelectedExistingNotPromoted(unittest.TestCase):
     def test_scene05_selected_existing_by_default(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-05"], apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-05"], apply=False)
         entry = report["scene_reports"][0]
         self.assertEqual(entry["status"], "selected_existing")
         self.assertTrue(entry["selected_candidate"]["not_promoted_to_reference"])
@@ -106,7 +131,7 @@ class TestScene05SelectedExistingNotPromoted(unittest.TestCase):
 class TestScene07SelectedExistingNotPromoted(unittest.TestCase):
     def test_scene07_selected_existing_by_default(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-07"], apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-07"], apply=False)
         entry = report["scene_reports"][0]
         self.assertEqual(entry["status"], "selected_existing")
         self.assertTrue(entry["selected_candidate"]["not_promoted_to_reference"])
@@ -122,7 +147,7 @@ class TestScene07SelectedExistingNotPromoted(unittest.TestCase):
 class TestAllScenesOnlyApprovedProductReferences(unittest.TestCase):
     def test_every_configured_scene_uses_exactly_allowed_four(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False, skip_selected=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False, skip_selected=False)
         for entry in report["scene_reports"]:
             self.assertEqual(entry["status"], "configured")
             self.assertEqual(set(entry["reference_images"]), set(por.PRODUCT_REFERENCE_IMAGES_V2))
@@ -133,7 +158,7 @@ class TestAllScenesOnlyApprovedProductReferences(unittest.TestCase):
 class TestNoGeneratedC1C2C3CandidateInReferenceImages(unittest.TestCase):
     def test_resolved_paths_clean(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False, skip_selected=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False, skip_selected=False)
         for entry in report["scene_reports"]:
             for p in entry["reference_image_paths"]:
                 self.assertIsNone(GENERATED_PATTERN.search(p))
@@ -143,7 +168,7 @@ class TestNoGeneratedC1C2C3CandidateInReferenceImages(unittest.TestCase):
 
     def test_forbidden_refs_scan_reports_clean_for_every_scene(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False, skip_selected=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False, skip_selected=False)
         for entry in report["scene_reports"]:
             scan = entry["forbidden_refs_scan"]
             self.assertFalse(scan["forbidden_found"])
@@ -182,13 +207,13 @@ class TestUnconfiguredSceneFailsClosed(unittest.TestCase):
 
     def test_campaign_run_reports_not_configured_without_network(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-99"], apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-99"], apply=False)
         self.assertEqual(report["scene_reports"][0]["status"], "not_configured")
 
     def test_apply_unconfigured_scene_does_not_call_openai(self):
         with mock.patch.dict("os.environ", {"OPENAI_API_KEY": "sk-fake-not-real"}):
             with urlopen_raises():
-                report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-99"], apply=True)
+                report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-99"], apply=True)
         self.assertEqual(report["scene_reports"][0]["status"], "not_configured")
         self.assertEqual(report["openai_calls_executed"], 0)
 
@@ -196,7 +221,7 @@ class TestUnconfiguredSceneFailsClosed(unittest.TestCase):
 class TestDryRunZeroOpenAICalls(unittest.TestCase):
     def test_whole_campaign_dry_run_zero_calls(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
         self.assertEqual(report["openai_calls_executed"], 0)
         self.assertEqual(report["total_actual_spend_usd"], 0)
 
@@ -206,7 +231,7 @@ class TestDryRunZeroOpenAICalls(unittest.TestCase):
             had_key = os.environ.pop("OPENAI_API_KEY", None)
             try:
                 with urlopen_raises():
-                    report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+                    report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
                 self.assertEqual(report["openai_calls_executed"], 0)
             finally:
                 if had_key is not None:
@@ -216,7 +241,7 @@ class TestDryRunZeroOpenAICalls(unittest.TestCase):
 class TestHiggsfieldCallsAlwaysZero(unittest.TestCase):
     def test_dry_run(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
         self.assertEqual(report["higgsfield_calls_executed"], 0)
 
     def test_dry_run_doc_on_disk(self):
@@ -230,7 +255,7 @@ class TestMaxCallsPerSceneIsOne(unittest.TestCase):
 
     def test_reported_in_dry_run(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
         self.assertEqual(report["max_calls_per_scene"], 1)
         for entry in report["scene_reports"]:
             if entry["status"] == "configured":
@@ -243,7 +268,7 @@ class TestRetriesIsZero(unittest.TestCase):
 
     def test_reported_in_dry_run(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
         self.assertEqual(report["retries"], 0)
         for entry in report["scene_reports"]:
             if entry["status"] == "configured":
@@ -256,7 +281,7 @@ class TestCampaignTotalHardCapPresent(unittest.TestCase):
 
     def test_present_in_dry_run(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
         self.assertEqual(report["campaign_total_hard_cap_usd"], 5.00)
 
     def test_present_in_tracked_doc(self):
@@ -295,14 +320,14 @@ class TestNoAutoAcceptedStatusPossible(unittest.TestCase):
 
     def test_dry_run_statuses_never_accepted(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False, skip_selected=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False, skip_selected=False)
         for entry in report["scene_reports"]:
             self.assertNotEqual(entry["status"], "accepted")
             self.assertIn(entry["status"], self.ACCEPTABLE_STATUSES)
 
     def test_candidate_status_note_present(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), apply=False)
         self.assertIn("never accepted automatically", report["candidate_status_note"])
 
     def test_apply_error_path_never_accepted(self):
@@ -310,7 +335,7 @@ class TestNoAutoAcceptedStatusPossible(unittest.TestCase):
             import os
             os.environ.pop("OPENAI_API_KEY", None)
             with urlopen_raises():
-                report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-01"], apply=True)
+                report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-01"], apply=True)
         entry = report["scene_reports"][0]
         self.assertEqual(entry["status"], "rejected_api_error")
         self.assertNotEqual(entry["status"], "accepted")
@@ -319,25 +344,25 @@ class TestNoAutoAcceptedStatusPossible(unittest.TestCase):
 class TestSkipExistingAndStopOnErrorFlags(unittest.TestCase):
     def test_skip_existing_default_false(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-01"], apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-01"], apply=False)
         self.assertFalse(report["skip_existing"])
 
     def test_skip_selected_default_true(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-05"], apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-05"], apply=False)
         self.assertTrue(report["skip_selected"])
         self.assertEqual(report["scene_reports"][0]["status"], "selected_existing")
 
     def test_stop_on_error_default_true(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR), scenes=["scene-01"], apply=False)
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(), scenes=["scene-01"], apply=False)
         self.assertTrue(report["stop_on_error"])
 
 
 class TestScopedScenesSelection(unittest.TestCase):
     def test_scenes_param_limits_run(self):
         with urlopen_raises():
-            report = campaign.run_campaign(str(CAMPAIGN_DIR),
+            report = campaign.run_campaign(str(CAMPAIGN_DIR), out_path=scratch_out_path(),
                                            scenes=["scene-01", "scene-02", "scene-03"],
                                            apply=False)
         self.assertEqual(report["scenes_requested"], ["scene-01", "scene-02", "scene-03"])
