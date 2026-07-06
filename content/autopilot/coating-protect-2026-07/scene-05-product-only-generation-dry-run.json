@@ -1,0 +1,48 @@
+{
+  "status": "dry_run_only",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "continuity_block_included": true,
+  "continuity_block_source": "content/autopilot/coating-protect-2026-07/video-continuity-block.md",
+  "continuity_block_text": "# Video continuity block — coating-protect-ad (product-only policy)\n\nЭтот блок — **единственный источник continuity** для всего, что НЕ товар.\nИспользуется одинаковым текстом во всех 7 сценах и во всех трёх hooks\n(A/B/C) этого видео. Между сценами меняется только действие/композиция/food\nstate (см. `video-scene-prompts-product-only.md`); между hooks — только\nпервые 1-3 секунды (см. `hook_openers` в том же файле).\n\nДля другого видео можно взять другой continuity block — товар\n(`real-product-v1`) остаётся неизменным всегда.\n\n## Текст блока (вставляется в каждый scene prompt дословно)\n\n> Cozy clean white home kitchen, warm daylight coming from the left. Same\n> black air fryer with an open square basket in every shot. Same woman's\n> natural hands throughout — no rings, no bracelets, no watch, short\n> unpolished nails. Same grey ribbed sweater sleeves visible at the wrists\n> in every shot. Realistic home cooking photo, DSLR 50mm look, shallow\n> depth of field. No CGI, no illustration, no 3D render. No text, no\n> watermark, no logo. Vertical 9:16, 720×1280.\n\n## Правила применения\n\n- **Товар не описывается творчески.** Продукт вставляется из\n  `real-product-v1` (deterministic compositing), не генерируется текстом и\n  не переописывается словами формы/цвета/материала в prompt — только\n  контекст действия с ним (достаёт, моет, показывает).\n- AI может генерировать руки/окружение/фон/еду, но **не имеет права\n  перерисовывать товар** — реальные пиксели товара всегда накладываются\n  поверх сгенерированного слоя через product-lock compositing (см.\n  `product-only-generation-dry-run.json`).\n- Когда по сценарию сцены руки держат товар — они должны естественно\n  держать его за реальные плоские угловые ручки-язычки (flat corner\n  handle tabs), не за верхний борт формы или корзины.\n- Короткие горизонтальные прорези ручек должны оставаться хотя бы частично\n  видны в кадрах, где показан хват.\n- Кухня, аэрогриль, руки, одежда и свет — **одни и те же по тексту** во\n  всех 7 сценах и во всех 3 hooks этого видео (это текстовая continuity,\n  не image lock — см. `campaign_visual_policy.json.not_image_locked`).\n\n## Что явно НЕ входит в этот блок\n\nСостав и количество еды — сцено-специфичны, задаются отдельно в\n`video-scene-prompts-product-only.md` для каждой сцены (например, ровно 3\nкуриных бедра + картофельные дольки в сценах, где показано блюдо).\n",
+  "product_canon": "real-product-v1",
+  "product_reference_mode": "deterministic_composite",
+  "product_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+  "appearance_image_refs": [],
+  "hands_image_refs": [],
+  "kitchen_image_refs": [],
+  "airfryer_image_refs": [],
+  "old_hands_experiment_status": "rejected_for_generation",
+  "old_hands_experiment_retrospective": "content/autopilot/coating-protect-2026-07/scene-05-hands-experiment-retrospective.md",
+  "planned_ai_background_prompt": "The woman lifts the square silicone liner out of the open air fryer basket by its two flat corner handle tabs, thumbs resting on top of each handle; inside the liner exactly 3 roasted golden chicken thighs and potato wedges, light steam rising; below, the inside of the black basket is visibly clean and dry, untouched by grease.",
+  "product_lock_instruction": "product/handle pixels — исключительно из real-product-v1 (APPROVED_TRANSFORM_B), никогда не из AI-редактирования. Хват строго за flat corner handle tabs (не за борт формы/корзины), большие пальцы сверху, короткая горизонтальная прорезь ручки частично видна сквозь хват, пальцы не проходят сквозь силикон. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
+  "negative_prompt": "not exactly 3 chicken thighs is a hard fail, grip on basket rim instead of handle tab is a hard fail, handle geometry other than real-product-v1 (tall loop handle, vertical oval cut-out) is a hard fail, dirty basket under the liner is a hard fail, excessive steam covering the product, no text, no watermark.",
+  "planned_product_lock_composite": {
+    "compositor": "api/media_pipeline/compositor/layer_compositor.py:compose",
+    "order": "background -> back_hand (AI) -> product (real-product-v1, RigidTransform) -> front_hand (AI) -> effects",
+    "product_source": "real-product-v1 через APPROVED_TRANSFORM_B — никогда AI"
+  },
+  "planned_QA": {
+    "validator": "api/media_pipeline/compositor/product_lock_validator.py:validate_composite",
+    "checks": [
+      "silhouette",
+      "handle_geometry",
+      "aspect_ratio",
+      "pixel_similarity",
+      "no_local_warp"
+    ],
+    "scene_specific_hard_fail": [
+      "бёдрышек не ровно 3 или раскладка не как в scene-04",
+      "захват не за flat corner handle tabs (например, за борт корзины)",
+      "геометрия ручек не по real-product-v1",
+      "корзина под формой грязная"
+    ]
+  },
+  "hooks_usage": "shared body — это ГЛАВНЫЙ кадр ролика (\"денежный\" кадр), одинаков для всех 3 hooks.",
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "food_calls_executed": 0,
+  "api_spend_usd": 0,
+  "generated_by_planner": "api.media_pipeline.product_only_policy:plan_scene_request(campaign_dir, 'scene-05')"
+}
