@@ -1,0 +1,96 @@
+{
+  "status": "dry_run_only",
+  "generation_mode": "product_only",
+  "composite_approach": "background_first",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "model": "gpt-image-2",
+  "endpoint": "POST /images/generations",
+  "mode": "generate",
+  "size": "720x1280",
+  "n": 1,
+  "output_format": "png",
+  "prompt_sha256": "b2da7a7b09703a0639f6cbdd4ba22cc1edf7a0dad04976f32abf419a58da1fa7",
+  "product_canon": "real-product-v1",
+  "product_transform": "api/media_pipeline/compositor/scene05_baseplate.py:APPROVED_TRANSFORM_B",
+  "product_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+  "composite_strategy": {
+    "approach": "background_first",
+    "reasoning": "AI генерирует весь кадр СВОБОДНО (mode=generate, без reference images/масок) -- физически нечего нарушать, в отличие от CALL 1 HANDS (masked edit), где нарушение edit-маски было корнем всех отклонённых итераций V1-V4. real-product-v1 вставляется ПОСЛЕ генерации, deterministic compositing (layer_compositor.compose), в фиксированную позицию APPROVED_TRANSFORM_B -- независимо от содержимого AI-фона.",
+    "compositor": "api/media_pipeline/compositor/layer_compositor.py:compose",
+    "order": "background(AI) -> back_hand(AI, часть фона) -> product(real-product-v1) -> front_hand(AI) -> effects",
+    "validator": "api/media_pipeline/compositor/product_lock_validator.py:validate_composite",
+    "rejected_alternative": "product_guide (передать real-product-v1 как reference/placement guide в mode=edit) -- отклонено: возвращает multipart/mask-зависимость без пользы, т.к. APPROVED_TRANSFORM_B уже детерминированно определяет позицию товара независимо от guide-референса"
+  },
+  "qa_gates": [
+    {
+      "id": 1,
+      "name": "product_inserted",
+      "check": "real-product-v1 вставлен в кадр deterministic compositing'ом (не пропущен)"
+    },
+    {
+      "id": 2,
+      "name": "silhouette_match",
+      "check": "силуэт товара совпадает с real-product-v1 (product_lock_validator: silhouette)"
+    },
+    {
+      "id": 3,
+      "name": "handle_geometry_match",
+      "check": "геометрия ручек — плоские угловые язычки, как в real-product-v1 (handle_geometry)"
+    },
+    {
+      "id": 4,
+      "name": "handle_slots_visible",
+      "check": "короткие горизонтальные прорези ручек хотя бы частично видны"
+    },
+    {
+      "id": 5,
+      "name": "no_ai_redesigned_product_accepted",
+      "check": "если AI нарисовал собственную форму-двойник где-либо в кадре — candidate reject, канонический слой не отменяет эту проверку"
+    },
+    {
+      "id": 6,
+      "name": "hands_interact_with_flat_tabs",
+      "check": "руки визуально держат именно плоские боковые ручки-язычки, не борт корзины/формы"
+    },
+    {
+      "id": 7,
+      "name": "basket_clean",
+      "check": "корзина аэрогриля чистая (сцена scene-05 требует чистую корзину)"
+    },
+    {
+      "id": 8,
+      "name": "food_count_exact",
+      "check": "ровно 3 куриных бедра + картофельные дольки внутри формы"
+    },
+    {
+      "id": 9,
+      "name": "no_text_or_watermark",
+      "check": "нет текста/watermark/логотипа в кадре"
+    },
+    {
+      "id": 10,
+      "name": "manual_review_required",
+      "check": "anatomy/grip realism рук НИКОГДА не auto-PASS — требует визуальной проверки владельцем"
+    }
+  ],
+  "max_calls_future_apply": 1,
+  "retries": 0,
+  "hard_cap_usd": 0.5,
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "food_calls_executed": 0,
+  "api_spend_usd": 0,
+  "runner_module": "api.media_pipeline.product_only_scene_runner:run_product_only_scene",
+  "runner_cli": "python -m api.media_pipeline.cli product-only-scene --campaign coating-protect-2026-07 --scene scene-05 [--apply]",
+  "prompt_source_files": [
+    "content/autopilot/coating-protect-2026-07/video-continuity-block.md",
+    "content/autopilot/coating-protect-2026-07/video-scene-prompts-product-only.md"
+  ],
+  "final_prompt_file": "content/autopilot/coating-protect-2026-07/scene-05-final-product-only-prompt.md",
+  "uses_campaign_visual_lock": false,
+  "uses_reference_library_for_appearance": false,
+  "push": "NO",
+  "production": "NO"
+}

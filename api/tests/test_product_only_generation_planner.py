@@ -230,9 +230,12 @@ class TestScene05FinalPromptHasNoMandatoryImageRefs(unittest.TestCase):
         self.assertIn("Mandatory image refs: НЕТ", text)
 
     def test_final_prompt_explicitly_states_no_mandatory_refs(self):
+        # regenerated (Step 5 of the product-only-scene-runner task) from
+        # product_only_scene_runner.build_request_contract() -- wording
+        # updated accordingly, still asserts zero mandatory image refs.
         text = load_text(SCENE05_FINAL_PROMPT_PATH)
-        self.assertIn("appearance_image_refs", text)
-        self.assertIn("пустые", text)  # "все ... пустые" (может переноситься строкой в markdown)
+        self.assertIn("Mandatory image refs: НЕТ", text)
+        self.assertIn("reference_images: []", text)
 
     def test_scene05_dry_run_confirms_empty_refs(self):
         scene05 = load_json(SCENE05_DRY_RUN_PATH)

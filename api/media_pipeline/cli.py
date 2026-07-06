@@ -14,6 +14,12 @@
                                         при необходимости)
   qa <observations.json>              — детерминированный вердикт по наблюдениям
   sequence-qa <transitions.json>      — вердикт по последовательности
+  product-only-scene --campaign CODE --scene NN — НОВЫЙ безопасный путь
+                                        (background-first, product-only policy):
+                                        dry-run по умолчанию, --apply для ОДНОГО
+                                        реального generate-вызова (retries=0,
+                                        hard cap $0.50); НИКОГДА не читает
+                                        campaign_visual_lock.json
 
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
@@ -32,6 +38,7 @@ from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
 from .openai_vision_evaluator import OpenAIVisionEvaluator
 from .product_only_policy import (ProductOnlyPolicyError,
                                   assert_legacy_generation_allowed)
+from .product_only_scene_runner import ProductOnlyRunnerError, run_product_only_scene
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -94,7 +101,11 @@ def _load_specs(campaign_dir: str) -> list:
 
 
 def _emit(obj, code: int = 0) -> int:
-    print(json.dumps(obj, ensure_ascii=False, indent=2))
+    # ensure_ascii=True — избегает UnicodeEncodeError/побитого вывода при
+    # печати в Windows-консоль с cp1251 (символы вроде "×" не входят в
+    # cp1251); json.loads на стороне тестов/потребителей декодирует \uXXXX
+    # обратно прозрачно (см. reference_library/cli.py — тот же паттерн).
+    print(json.dumps(obj, ensure_ascii=True, indent=2))
     return code
 
 
@@ -355,6 +366,16 @@ def cmd_qa(args) -> int:
     return _emit(decision.to_dict())
 
 
+def cmd_product_only_scene(args) -> int:
+    """product-only generation runner (background-first): dry-run по
+    умолчанию, --apply — РОВНО один реальный generate-вызов. НИКОГДА не
+    читает campaign_visual_lock.json, никогда не резолвит appearance
+    asset_id -- весь prompt идёт через product_only_policy.plan_scene_request."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = run_product_only_scene(campaign_dir, args.scene, apply=args.apply)
+    return _emit(report)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -409,10 +430,24 @@ def main(argv=None) -> int:
     p.add_argument("transitions")
     p.set_defaults(fn=cmd_sequence_qa)
 
+    p = sub.add_parser("product-only-scene",
+                       help="НОВЫЙ безопасный путь: background-first product-only "
+                            "generation (не читает campaign_visual_lock.json)")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1)")
+    p.set_defaults(fn=cmd_product_only_scene)
+
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
-    except ProductOnlyPolicyError as e:
+    except (ProductOnlyPolicyError, ProductOnlyRunnerError) as e:
         return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (MissingAPIKeyError, BudgetExceededError, BudgetStop,
             VisionSchemaError, FileNotFoundError, ValueError, KeyError) as e:
