@@ -318,6 +318,7 @@ def plan_scene_request(campaign_dir, scene_id: str) -> dict:
         "continuity_block_text": policy.continuity_block_text,
         "clean_continuity_prompt": policy.clean_continuity_prompt,
         "scene_goal": scene.get("scene_goal", ""),
+        "scene_variant": scene.get("scene_variant", ""),
         "scene_action_prompt": scene.get("image_prompt", ""),
         "product_lock_instruction": scene.get("product_lock_instruction", ""),
         "negative_prompt": scene.get("negative_prompt", ""),

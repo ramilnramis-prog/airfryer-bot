@@ -102,6 +102,25 @@ PLACEMENT_NOTE = (
     "product placement area clean."
 )
 
+# -- no-hands scene variant (C3, see scene-05 C1/C2 rejection) --------------
+# The shared video-continuity-block.md text is written for scenes that DO
+# show hands (it positively instructs "Same woman's natural hands
+# throughout... Same grey ribbed sweater sleeves visible at the wrists").
+# For a no_hands_result_shot scene, sending that text to the model and then
+# separately saying "no hands, no person" is a self-contradictory prompt
+# (positive hands/sleeves instruction immediately followed by its own
+# negation). NO_HANDS_CONTINUITY_PROMPT is the same continuity text with
+# every hands/person/sleeve-positive line removed -- used INSTEAD of
+# plan['clean_continuity_prompt'] for this scene variant, never appended to
+# it, so no "override" sentence is ever needed in the scene-specific prompt.
+NO_HANDS_CONTINUITY_PROMPT = (
+    "Cozy clean white home kitchen, warm daylight coming from the left. "
+    "Same black air fryer with an open square basket in every shot. "
+    "Realistic home cooking photo, DSLR 50mm look, shallow depth of field. "
+    "No CGI, no illustration, no 3D render. No text, no watermark, no logo. "
+    "Vertical 9:16, 720×1280."
+)
+
 # Порядок шагов composite mechanics ПОСЛЕ будущей генерации (ничего из этого
 # ещё не выполнено -- ни один API-вызов этим runner'ом не делался).
 COMPOSITE_MECHANICS_STEPS = (
@@ -293,9 +312,20 @@ def build_model_prompt(plan: dict) -> str:
     PLACEMENT_NOTE (негативная инструкция "не рисуй товар, оставь место
     чистым" -- НЕ просьба нарисовать его достоверно) + negative prompt.
     plan['product_lock_instruction'] СОЗНАТЕЛЬНО сюда НЕ входит -- см.
-    build_pipeline_product_lock_instruction()."""
+    build_pipeline_product_lock_instruction().
+
+    scene_variant == 'no_hands_result_shot' (C3): shared continuity text
+    positively instructs hands/sleeves ("Same woman's natural hands
+    throughout... Same grey ribbed sweater sleeves visible at the wrists"),
+    which would contradict a scene that must show no hands/person at all --
+    NO_HANDS_CONTINUITY_PROMPT (hands/sleeves lines removed) is used INSTEAD
+    of plan['clean_continuity_prompt'] for this variant, so the scene action
+    text never needs to "override" an earlier positive hands instruction."""
+    continuity = (NO_HANDS_CONTINUITY_PROMPT
+                 if plan.get("scene_variant") == SCENE_VARIANT_C3
+                 else plan["clean_continuity_prompt"])
     parts = [
-        plan["clean_continuity_prompt"].strip(),
+        continuity.strip(),
         plan["scene_action_prompt"].strip(),
         PLACEMENT_NOTE,
         f"Negative prompt (avoid): {plan['negative_prompt'].strip()}",

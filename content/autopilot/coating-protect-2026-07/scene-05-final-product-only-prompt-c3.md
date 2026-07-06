@@ -14,7 +14,7 @@ no-hands result shot), через
 
 **Статус: план. Ни один API (OpenAI/Higgsfield) НЕ вызывался для
 получения этого текста.** `openai_calls: 0`, `higgsfield_calls: 0`.
-`prompt_sha256: 6dc5607c1453bb57e1aa826563906ad3b7a300fa58a29dc54b3173226c1c28bc`.
+`prompt_sha256: 9842d38e3aae2777460ca9789e7acb5cad79aae941e88e3376c0043b7c464f04`.
 
 **C3 decision (после отклонения C1 и C2).** В product-only compositing руки,
 держащие ручки, требуют корректного front/back occlusion вокруг вставленного
@@ -35,10 +35,18 @@ hands-слоя: AI рисует только "plate" (кухня/корзина/
 rough food cluster, БЕЗ рук/человека), финальный товар вставляется отдельным
 deterministic шагом ПОСЛЕ генерации.
 
-**model_prompt_clean: true.**
+**model_prompt_clean: true. no_hands_prompt: true.**
 `build_model_prompt()` берёт `plan["clean_continuity_prompt"]`
 (только английский blockquote), не `plan["continuity_block_text"]` (весь
-файл).
+файл) -- **кроме** сцен с `scene_variant == "no_hands_result_shot"`: для них
+вместо этого используется `NO_HANDS_CONTINUITY_PROMPT` (тот же текст без
+строк про руки/рукава — "Same woman's natural hands...", "Same grey ribbed
+sweater sleeves..."). **Fix (замечание владельца на первом C3 draft):**
+раньше continuity-текст с позитивной инструкцией про руки/рукава всё равно
+попадал в model_prompt, а сцено-специфичный текст пытался её "отменить"
+фразой "this overrides..." — противоречивый prompt. Теперь позитивная
+инструкция про руки/рукава просто никогда не отправляется для этой сцены,
+и никакого "override" в тексте больше нет.
 
 **Mandatory image refs: НЕТ.** `reference_images: []` — `mode=generate`
 (НЕ `edit`): AI получает только текстовый prompt ниже, без единого
@@ -48,9 +56,9 @@ input-изображения.
 
 ## model_prompt — ТОЛЬКО это уходит в API (дословно, ничего больше)
 
-> Cozy clean white home kitchen, warm daylight coming from the left. Same black air fryer with an open square basket in every shot. Same woman's natural hands throughout — no rings, no bracelets, no watch, short unpolished nails. Same grey ribbed sweater sleeves visible at the wrists in every shot. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720×1280.
+> Cozy clean white home kitchen, warm daylight coming from the left. Same black air fryer with an open square basket in every shot. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720×1280.
 
-This shot contains no hands and no person anywhere in the frame -- this overrides the earlier mention of hands/sleeves above for this one frame only. High 3/4 top-down camera angle looking down into the open air fryer basket, matching the framing used for the real product photography (compatible with product_45deg), with the basket occupying the upper/middle area of the frame. The basket interior shows a clean, empty central placement area where the square silicone liner will be inserted later. In the central placement area, include a loose cluster of exactly 3 roasted golden chicken thighs with potato wedges, positioned where the liner interior will be after compositing. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Do not draw a black insert or black liner inside the basket. Only very soft contact shadows/cues are allowed in the empty placement area. Around and below the placement area, the black air fryer basket is visibly clean and shiny. No hands, no arms, no fingers, no person anywhere in this frame.
+High 3/4 top-down camera angle looking down into the open air fryer basket, matching the framing used for the real product photography (compatible with product_45deg), with the basket occupying the upper/middle area of the frame. The basket interior shows a clean, empty central placement area where the square silicone liner will be inserted later. In the central placement area, include a loose cluster of exactly 3 roasted golden chicken thighs with potato wedges, positioned where the liner interior will be after compositing. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Do not draw a black insert or black liner inside the basket. Only very soft contact shadows/cues are allowed in the empty placement area. Around and below the placement area, the black air fryer basket is visibly clean and shiny. No hands, no arms, no fingers, no person anywhere in this frame.
 
 The final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.
 
@@ -169,7 +177,7 @@ extract_food_cluster(): AI plate pixels restricted to product_interior_food_mask
 | retries | `0` |
 | max_calls | `1` |
 | hard_cap_usd | `0.5` |
-| prompt_sha256 | `6dc5607c1453bb57e1aa826563906ad3b7a300fa58a29dc54b3173226c1c28bc` |
+| prompt_sha256 | `9842d38e3aae2777460ca9789e7acb5cad79aae941e88e3376c0043b7c464f04` |
 | per_plate_transform_allowed | `true` |
 | allowed_transform_type | `rigid_only` |
 | front_hand_extraction | `not_needed` |

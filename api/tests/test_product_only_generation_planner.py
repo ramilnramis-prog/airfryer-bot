@@ -194,9 +194,13 @@ class TestScene05FinalPromptIncludesContinuityBlock(unittest.TestCase):
         self.assertTrue(SCENE05_FINAL_PROMPT_PATH.is_file())
 
     def test_final_prompt_contains_continuity_language(self):
+        # scene-05 is now the C3 no-hands result shot: NO_HANDS_CONTINUITY_PROMPT
+        # (used instead of the shared continuity block for this scene_variant)
+        # deliberately drops "grey ribbed sweater sleeves" (a hands/sleeves
+        # line that would contradict a no-hands scene) -- see
+        # test_product_only_scene05_c3_continuity_fix.py for that check.
         text = load_text(SCENE05_FINAL_PROMPT_PATH)
-        for token in ("Cozy clean white home kitchen", "grey ribbed sweater",
-                     "9:16", "720", "1280"):
+        for token in ("Cozy clean white home kitchen", "9:16", "720", "1280"):
             self.assertIn(token, text)
 
     def test_final_prompt_built_from_same_planner_as_dry_run(self):
