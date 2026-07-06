@@ -218,6 +218,28 @@ extract_food_cluster(): AI plate pixels restricted to product_interior_food_mask
 
 Нет hands-слоя. Нет front-hand extraction. Нет handle-grip alignment.
 
+## image_generation_timeout_seconds (после client_read_timeout на первой реальной попытке)
+
+Первая реальная попытка `--apply` для этой сцены упала с `TimeoutError` --
+запрос был отправлен, но ответ не пришёл за 300s (старый таймаут). Это не
+retry-достойная ошибка приложения, а слишком короткий таймаут для реальной
+латентности image generation. Исправлено в
+`api/media_pipeline/openai_images_client.py`:
+
+| поле | значение |
+|---|---|
+| image_generation_timeout_seconds (default) | `900` |
+| env override | `IMAGE_GENERATION_TIMEOUT_SECONDS` (integer, 60-1800s; невалидное значение -> fallback на default + warning, никогда не падает) |
+| auto_retry_on_timeout | `false` -- по-прежнему ровно один вызов, retries не добавлены |
+| timeout_error_policy | `{"request_sent": true, "response_received": false, "candidate_status": "no_candidate_timeout", "explicit_owner_authorization_required_for_new_attempt": true}` |
+
+Если новый timeout всё равно недостаточен и `--apply` снова упадёт с
+`client_read_timeout` -- runner возвращает структурированный отчёт
+(`candidate_status: no_candidate_timeout`, НЕ `rejected` -- кандидата не
+существует, чтобы его отклонять) вместо необработанного traceback, не
+делает retry и не запускает composite/QA. Новая попытка `--apply` требует
+отдельного явного разрешения владельца.
+
 ## Хуки A/B/C
 
 Этот prompt — shared body, одинаков для всех трёх hooks этого видео (см.

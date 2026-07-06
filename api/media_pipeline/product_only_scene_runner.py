@@ -69,7 +69,9 @@ from pathlib import Path
 
 from .budget import SpendTracker
 from .models import ImageRequest
-from .openai_images_client import MissingAPIKeyError, OpenAIImagesProvider
+from .openai_images_client import (IMAGE_GENERATION_TIMEOUT_ENV_VAR,
+                                   MissingAPIKeyError, OpenAIImagesProvider,
+                                   resolve_image_generation_timeout_seconds)
 from .product_only_policy import ProductOnlyPolicyError, plan_scene_request
 
 GENERATION_MODE = "product_only"
@@ -458,6 +460,61 @@ def build_request_contract(campaign_dir, scene_id: str) -> tuple[ImageRequest, S
     return req, contract, plan
 
 
+def _build_timeout_report(scene_id: str, contract: SceneRequestContract, out_dir: str,
+                          apply: bool, timeout_seconds: int, timeout_warnings: list,
+                          tracker: SpendTracker, error_message: str) -> dict:
+    """Structured, honest outcome for a client-side read timeout on the
+    image-generation HTTP call: the request WAS sent (openai_call_attempted),
+    but no response was ever read, so there is no candidate image to judge
+    -- this is NOT a rejection (nothing was generated to reject) and NOT
+    retried (one-call rule). candidate_status is its own distinct value
+    (no_candidate_timeout) so callers can't confuse it with either outcome.
+    Never includes OPENAI_API_KEY or any part of it."""
+    report = {
+        "generation_mode": GENERATION_MODE,
+        "composite_approach": COMPOSITE_APPROACH,
+        "scene_id": scene_id,
+        "mode": "apply" if apply else "dry-run",
+        "error_type": "client_read_timeout",
+        "error_message": error_message,
+        "request_sent": True,
+        "response_received": False,
+        "openai_call_attempted": True,
+        "retry_attempted": False,
+        "actual_cost_known": False,
+        "candidate_status": "no_candidate_timeout",
+        "image_generation_timeout_seconds": timeout_seconds,
+        "timeout_env_var": IMAGE_GENERATION_TIMEOUT_ENV_VAR,
+        "image_generation_timeout_warnings": timeout_warnings,
+        "auto_retry_on_timeout": False,
+        "explicit_owner_authorization_required_for_new_attempt": True,
+        "request_contract": {
+            "model": contract.model, "endpoint": contract.endpoint,
+            "mode": contract.mode, "size": contract.size, "n": contract.n,
+            "output_format": contract.output_format, "retries": contract.retries,
+            "max_calls": contract.max_calls, "hard_cap_usd": contract.hard_cap_usd,
+            "prompt_sha256": contract.prompt_sha256,
+            "reference_images": [],
+        },
+        "openai_calls_executed": 1,
+        "higgsfield_calls_executed": 0,
+        "food_calls_executed": 0,
+        "api_spend_usd": None,
+        "budget": tracker.summary(),
+        "manual_review_required": True,
+        "composite_and_qa_run": False,
+        "next_step": ("No candidate image exists -- composite/QA were not attempted. A new "
+                     "--apply run requires a fresh, explicit owner authorization; this is not "
+                     "an automatic retry."),
+    }
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    report_path = out / f"{scene_id}-product-only-apply-timeout-report.json"
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    report["report_path"] = str(report_path)
+    return report
+
+
 def run_product_only_scene(campaign_dir, scene_id: str, apply: bool = False,
                            out_dir=None) -> dict:
     """Единственный entry point генерации product-only сцены.
@@ -496,14 +553,25 @@ def run_product_only_scene(campaign_dir, scene_id: str, apply: bool = False,
         # при apply=True (MissingAPIKeyError) -- ничего не резолвим руками здесь,
         # чтобы не задваивать логику проверки ключа.
 
+    timeout_seconds, timeout_warnings = resolve_image_generation_timeout_seconds()
     tracker = SpendTracker(cap_usd=HARD_CAP_USD)
     provider = OpenAIImagesProvider(model=MODEL, tracker=tracker,
-                                    price_per_image_usd=PRICE_PER_IMAGE_USD_ESTIMATE)
+                                    price_per_image_usd=PRICE_PER_IMAGE_USD_ESTIMATE,
+                                    timeout_seconds=timeout_seconds)
 
     out_dir = str(out_dir) if out_dir else str(
         Path(campaign_dir) / "generated" / "product-only-scene" / scene_id)
 
-    results = provider.generate(req, out_dir=out_dir, apply=apply)
+    try:
+        results = provider.generate(req, out_dir=out_dir, apply=apply)
+    except TimeoutError as e:
+        # Request was sent but no response arrived within timeout_seconds --
+        # NOT retried (one-call rule holds), NOT treated as "rejected" (no
+        # candidate image exists to judge), NOT followed by composite/QA
+        # (nothing to composite). A fresh --apply still requires a new,
+        # explicit owner authorization -- this is not an automatic retry path.
+        return _build_timeout_report(scene_id, contract, out_dir, apply,
+                                     timeout_seconds, timeout_warnings, tracker, str(e))
 
     report = {
         "generation_mode": GENERATION_MODE,
@@ -533,6 +601,10 @@ def run_product_only_scene(campaign_dir, scene_id: str, apply: bool = False,
         "higgsfield_calls_executed": 0,
         "food_calls_executed": 0,
         "api_spend_usd": tracker.total_actual() if apply else 0,
+        "image_generation_timeout_seconds": timeout_seconds,
+        "timeout_env_var": IMAGE_GENERATION_TIMEOUT_ENV_VAR,
+        "image_generation_timeout_warnings": timeout_warnings,
+        "auto_retry_on_timeout": False,
         "qa_gates": list(QA_GATES),
         "manual_review_required": True,
         "front_hand_extraction": FRONT_HAND_EXTRACTION_STATUS,

@@ -28,6 +28,15 @@
   "allowed_transform_type": "rigid_only",
   "front_hand_extraction": "not_needed",
   "hands_grip_qa": "not_applicable",
+  "image_generation_timeout_seconds": 900,
+  "timeout_env_var": "IMAGE_GENERATION_TIMEOUT_SECONDS",
+  "auto_retry_on_timeout": false,
+  "timeout_error_policy": {
+    "request_sent": true,
+    "response_received": false,
+    "candidate_status": "no_candidate_timeout",
+    "explicit_owner_authorization_required_for_new_attempt": true
+  },
   "composite_order": [
     "1. AI plate background / air fryer basket / food placement (no hands, no person)",
     "2. real-product-v1 inserted via APPROVED_TRANSFORM_B, or a rigid per-plate transform fallback within the same limits if needed",
@@ -133,6 +142,7 @@
       "stray_wire_rack_artifact_bleeding_through_near_seam",
       "product_overlay_makes_hand_grip_read_as_disconnected"
     ],
-    "c3_decision": "Stop trying to make scene-05 a hands-lifting-by-handles shot -- the root cause is an occlusion-compositing problem (hand-in-front-of-handle-tab), not a prompt wording problem; C3 removes hands/lifting from the scene concept entirely."
+    "c3_decision": "Stop trying to make scene-05 a hands-lifting-by-handles shot -- the root cause is an occlusion-compositing problem (hand-in-front-of-handle-tab), not a prompt wording problem; C3 removes hands/lifting from the scene concept entirely.",
+    "c3_apply_attempt_1": "client_read_timeout after 300s -- request sent, no response received, no candidate image produced, not retried. Root cause: default image-generation read timeout (300s) was too short for observed latency. Fixed by making the timeout configurable (default raised to 900s, env override IMAGE_GENERATION_TIMEOUT_SECONDS, validated 60-1800s) -- see api/media_pipeline/openai_images_client.py."
   }
 }

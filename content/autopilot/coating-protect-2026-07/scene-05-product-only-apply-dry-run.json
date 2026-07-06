@@ -254,5 +254,14 @@
       "check": "manual_review_required: true — accepted никогда не проставляется автоматически"
     }
   ],
-  "no_hands_prompt": true
+  "no_hands_prompt": true,
+  "image_generation_timeout_seconds": 900,
+  "timeout_env_var": "IMAGE_GENERATION_TIMEOUT_SECONDS",
+  "auto_retry_on_timeout": false,
+  "timeout_error_policy": {
+    "request_sent": true,
+    "response_received": false,
+    "candidate_status": "no_candidate_timeout",
+    "explicit_owner_authorization_required_for_new_attempt": true
+  }
 }
