@@ -205,6 +205,57 @@ QA_GATES_C2_GEOMETRY_PRECHECK = (
 )
 
 
+# -- C3: no-hands result shot (see scene-05 C1/C2 rejection) ---------------
+# C1 (frontal/level tabs) and C2 (high 3/4/asymmetric tabs) both showed that
+# generated hands do not reliably align with real-product-v1 after
+# deterministic overlay -- correct front/back occlusion around a hand
+# gripping a handle tab is an occlusion-compositing problem, not something a
+# prompt revision alone can fix. C3 drops the hands-lifting-by-handles
+# concept entirely: scene-05 becomes a no-hands product result shot (food
+# cooked in the form, clean basket), so no front-hand extraction and no
+# handle-grip alignment QA are needed for this scene variant.
+CANDIDATE_LABEL_C3 = "C3"
+SCENE_VARIANT_C3 = "no_hands_result_shot"
+FRONT_HAND_EXTRACTION_STATUS_C3 = "not_needed"
+HANDS_GRIP_QA_C3 = "not_applicable"
+
+# C3 QA gates (STEP 5): hands_interact_with_flat_tabs,
+# hands_positioned_near_real_handle_tabs and
+# candidate_rejected_if_product_overlay_breaks_hands from the general
+# QA_GATES above do not apply to this no-hands scene variant -- they are
+# simply absent here rather than kept and marked not_applicable, since this
+# is a separate, scene-variant-specific gate list (QA_GATES itself, used by
+# other scenes/candidates, is unchanged).
+QA_GATES_C3_NO_HANDS = (
+    {"id": "c3-1", "name": "no_hands_visible",
+     "check": "нет рук в кадре — сцена больше не показывает захват ручек"},
+    {"id": "c3-2", "name": "no_person_visible",
+     "check": "нет человека/частей тела в кадре — чистый product result shot"},
+    {"id": "c3-3", "name": "no_duplicate_ai_product_visible",
+     "check": "AI не нарисовал собственную силиконовую форму/вставку в placement area — если нарисовал, candidate reject даже после наложения real-product-v1"},
+    {"id": "c3-4", "name": "no_black_insert_or_black_liner",
+     "check": "AI не нарисовал чёрный insert/liner/container внутри корзины"},
+    {"id": "c3-5", "name": "no_fake_handles_visible",
+     "check": "AI не нарисовал собственные (redesigned/fake) ручки — видны только реальные ручки real-product-v1 после compositing"},
+    {"id": "c3-6", "name": "basket_perspective_compatible_with_product_45deg",
+     "check": "ракурс корзины совместим с product_45deg (high 3/4 top-down, корзина в верхней/средней части кадра)"},
+    {"id": "c3-7", "name": "product_inserted_from_real_product_v1",
+     "check": "real-product-v1 вставлен через APPROVED_TRANSFORM_B (или rigid per-plate transform в тех же пределах), не пропущен"},
+    {"id": "c3-8", "name": "product_lock_passed",
+     "check": "product_lock_validator.validate_composite: silhouette, handle_geometry, aspect_ratio, pixel_similarity, no_local_warp"},
+    {"id": "c3-9", "name": "food_extracted_only_inside_interior_mask",
+     "check": "food cluster извлечён из AI plate ТОЛЬКО внутри product_interior_food_mask"},
+    {"id": "c3-10", "name": "food_count_exact",
+     "check": "визуально ровно 3 куриных бедра + картофельные дольки"},
+    {"id": "c3-11", "name": "basket_clean_around_product",
+     "check": "корзина аэрогриля чистая вокруг/под вставленным real-product-v1"},
+    {"id": "c3-12", "name": "no_text_or_watermark",
+     "check": "нет текста/watermark/логотипа в кадре"},
+    {"id": "c3-13", "name": "manual_review_required",
+     "check": "manual_review_required: true — accepted никогда не проставляется автоматически"},
+)
+
+
 class ProductOnlyRunnerError(RuntimeError):
     """Fail-closed: конфигурация --apply некорректна (нет ключа, hard cap не
     задан, max_calls/retries не по контракту) — бросается ДО сети."""

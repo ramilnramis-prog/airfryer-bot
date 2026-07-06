@@ -1,10 +1,21 @@
-"""Тесты scene-05 C2 (angled/asymmetric framing prompt) -- готовим AI plate,
+"""Тесты scene-05 C2 (angled/asymmetric framing prompt) -- готовили AI plate,
 геометрически совместимый с real-product-v1/product_45deg + APPROVED_TRANSFORM_B,
 после отклонения C1 (frontal basket, level hand tabs) и его V2 local-transform
 salvage (см. scene-05-qa-report-v2.json: rigid transform не может согласовать
 асимметричную высоту ручек product_45deg с level-tabs C1 plate).
 
-Покрытие (12 пунктов, запрошенных явно):
+C2 сам был впоследствии отклонён (см. scene-05-c2-qa-report.json: hands не
+выравниваются достаточно близко к real handle tabs даже с per-plate rigid
+transform) и заменён C3 (no-hands result shot, см.
+test_product_only_scene05_c3_no_hands.py) -- scene-05's АКТИВНЫЙ prompt
+больше НЕ этот C2-текст. Эти тесты поэтому проверяют ЗАМОРОЖЕННЫЙ артефакт
+(scene-05-product-only-apply-dry-run-c2.json / scene-05-final-product-only-
+prompt-c2.md) как исторический документ, а не live-контракт runner'а --
+только geometry-функции (get_expected_plate_geometry_c2,
+QA_GATES_C2_GEOMETRY_PRECHECK), которые не зависят от текста активной сцены,
+по-прежнему сверяются с живым кодом.
+
+Покрытие (12 пунктов, запрошенных явно, теперь на замороженном C2-документе):
 1. C2 prompt is clean, no markdown docs
 2. C2 prompt contains "high 3/4 top-down"
 3. C2 prompt contains upper-left to lower-right diagonal product axis
@@ -41,6 +52,12 @@ def load_text(path):
     return Path(path).read_text(encoding="utf-8")
 
 
+def c2_model_prompt():
+    """Frozen C2 model_prompt text -- from the tracked historical doc, not
+    the (now superseded) live runner contract."""
+    return load_json(C2_DRY_RUN_PATH)["model_prompt"]
+
+
 def urlopen_raises():
     return mock.patch("urllib.request.urlopen",
                       side_effect=AssertionError("network call!"))
@@ -48,19 +65,19 @@ def urlopen_raises():
 
 class Test1C2PromptIsCleanNoMarkdown(unittest.TestCase):
     def test_model_prompt_has_no_markdown_headings_or_fences(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertNotIn("##", contract.model_prompt)
-        self.assertNotIn("```", contract.model_prompt)
+        prompt = c2_model_prompt()
+        self.assertNotIn("##", prompt)
+        self.assertNotIn("```", prompt)
 
     def test_model_prompt_has_no_internal_file_paths(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
+        prompt = c2_model_prompt()
         for token in ("video-continuity-block.md", "campaign_visual_policy.json",
                      "video-scene-prompts-product-only.md", ".json", ".py"):
-            self.assertNotIn(token, contract.model_prompt)
+            self.assertNotIn(token, prompt)
 
     def test_model_prompt_is_pure_ascii_plus_typographic_punctuation(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        cyrillic = [ch for ch in contract.model_prompt if "Ѐ" <= ch <= "ӿ"]
+        prompt = c2_model_prompt()
+        cyrillic = [ch for ch in prompt if "Ѐ" <= ch <= "ӿ"]
         self.assertEqual(cyrillic, [], f"found Cyrillic characters: {cyrillic}")
 
     def test_c2_dry_run_doc_has_model_prompt_clean_true(self):
@@ -70,8 +87,7 @@ class Test1C2PromptIsCleanNoMarkdown(unittest.TestCase):
 
 class Test2C2PromptHighThreeQuarterTopDown(unittest.TestCase):
     def test_model_prompt_contains_high_3_4_top_down(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertIn("High 3/4 top-down camera angle", contract.model_prompt)
+        self.assertIn("High 3/4 top-down camera angle", c2_model_prompt())
 
     def test_geometry_targets_declare_camera_angle(self):
         geometry = runner.get_expected_plate_geometry_c2(str(REPO_ROOT))
@@ -80,9 +96,8 @@ class Test2C2PromptHighThreeQuarterTopDown(unittest.TestCase):
 
 class Test3C2PromptDiagonalAxis(unittest.TestCase):
     def test_model_prompt_contains_upper_left_to_lower_right_axis(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
         self.assertIn("diagonal product axis from the upper-left to the lower-right",
-                     contract.model_prompt)
+                     c2_model_prompt())
 
     def test_geometry_targets_declare_axis(self):
         geometry = runner.get_expected_plate_geometry_c2(str(REPO_ROOT))
@@ -91,9 +106,9 @@ class Test3C2PromptDiagonalAxis(unittest.TestCase):
 
 class Test4C2PromptLeftHandHigherThanRight(unittest.TestCase):
     def test_model_prompt_states_left_hand_higher_right_hand_lower(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertIn("the left hand is higher in the frame", contract.model_prompt)
-        self.assertIn("the right hand is lower in the frame", contract.model_prompt)
+        prompt = c2_model_prompt()
+        self.assertIn("the left hand is higher in the frame", prompt)
+        self.assertIn("the right hand is lower in the frame", prompt)
 
     def test_geometry_targets_left_handle_region_higher_than_right(self):
         # "higher" on screen == smaller y (canvas y grows downward)
@@ -106,37 +121,25 @@ class Test4C2PromptLeftHandHigherThanRight(unittest.TestCase):
 
 class Test5C2PromptForbidsCompletedLiner(unittest.TestCase):
     def test_model_prompt_forbids_completed_silicone_liner(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertIn("Do not draw a completed silicone liner", contract.model_prompt)
+        self.assertIn("Do not draw a completed silicone liner", c2_model_prompt())
 
 
 class Test6C2PromptForbidsTrayInsertAndBlackLiner(unittest.TestCase):
     def test_model_prompt_forbids_duplicate_tray_insert(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertIn("Do not draw any duplicate tray or basket insert", contract.model_prompt)
+        self.assertIn("Do not draw any duplicate tray or basket insert", c2_model_prompt())
 
     def test_model_prompt_forbids_black_insert_or_liner(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
         self.assertIn("Do not draw a black insert or black liner inside the basket",
-                     contract.model_prompt)
+                     c2_model_prompt())
 
 
 class Test7ReferenceImagesEmpty(unittest.TestCase):
-    def test_request_contract_reference_images_empty(self):
-        req, _contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertEqual(req.reference_images, [])
-
     def test_c2_dry_run_doc_reference_images_empty(self):
         d = load_json(C2_DRY_RUN_PATH)
         self.assertEqual(d["reference_images"], [])
 
 
 class Test8ModeIsGenerate(unittest.TestCase):
-    def test_request_and_contract_mode_generate(self):
-        req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
-        self.assertEqual(req.mode, "generate")
-        self.assertEqual(contract.mode, "generate")
-
     def test_c2_dry_run_doc_mode_generate(self):
         d = load_json(C2_DRY_RUN_PATH)
         self.assertEqual(d["mode"], "generate")
@@ -195,6 +198,8 @@ class Test10DryRunRejectsLevelOrFrontalGeometry(unittest.TestCase):
 
 class Test11OpenAICallsZero(unittest.TestCase):
     def test_dry_run_report_openai_calls_zero(self):
+        # this now dry-runs the CURRENT (C3) active scene-05 prompt, not C2 --
+        # still a valid check that dry-run never makes a network call.
         with urlopen_raises():
             report = runner.run_product_only_scene(str(CAMPAIGN_DIR), SCENE_ID, apply=False)
         self.assertEqual(report["openai_calls_executed"], 0)
@@ -223,10 +228,14 @@ class TestC2FilesExistAndConsistent(unittest.TestCase):
     def test_c2_prompt_md_exists(self):
         self.assertTrue(C2_PROMPT_MD_PATH.is_file())
 
-    def test_c2_dry_run_prompt_sha256_matches_live_contract(self):
-        _req, contract, _plan = runner.build_request_contract(str(CAMPAIGN_DIR), SCENE_ID)
+    def test_c2_dry_run_prompt_sha256_matches_its_own_model_prompt(self):
+        # C2 is no longer the active scene-05 prompt (superseded by C3) --
+        # this is now a frozen self-consistency check (the recorded sha256
+        # matches the recorded text), not a comparison to the live contract.
+        import hashlib
         d = load_json(C2_DRY_RUN_PATH)
-        self.assertEqual(d["prompt_sha256"], contract.prompt_sha256)
+        self.assertEqual(d["prompt_sha256"],
+                         hashlib.sha256(d["model_prompt"].encode("utf-8")).hexdigest())
 
     def test_c2_dry_run_max_calls_retries_hard_cap(self):
         d = load_json(C2_DRY_RUN_PATH)
@@ -242,7 +251,6 @@ class TestC2FilesExistAndConsistent(unittest.TestCase):
     def test_c2_dry_run_does_not_use_forbidden_appearance_refs(self):
         from api.media_pipeline.product_only_policy import FORBIDDEN_APPEARANCE_ASSET_IDS
         d = load_json(C2_DRY_RUN_PATH)
-        flat = json.dumps(d, ensure_ascii=False)
         for asset_id in FORBIDDEN_APPEARANCE_ASSET_IDS:
             # only allowed inside the documentary "previous_attempts" note --
             # confirm it's not present as an actual request field value.

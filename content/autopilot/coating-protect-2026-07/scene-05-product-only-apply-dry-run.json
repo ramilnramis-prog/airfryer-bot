@@ -11,11 +11,11 @@
   "size": "720x1280",
   "n": 1,
   "output_format": "png",
-  "prompt_sha256": "9b93134892de66037c4c9cbada46c1d9a74218cd94aaed49b920621a7f23e08a",
+  "prompt_sha256": "6dc5607c1453bb57e1aa826563906ad3b7a300fa58a29dc54b3173226c1c28bc",
   "model_prompt_clean": true,
-  "model_prompt_clean_note": "build_model_prompt() uses plan['clean_continuity_prompt'] (English blockquote only) -- model never sees markdown headings, Russian documentation or file paths. C2 revision: scene-05's image_prompt in video-scene-prompts-product-only.md was updated to a high 3/4 top-down, diagonal-axis, asymmetric-hand-height framing so the resulting AI plate is geometry-compatible with real-product-v1/product_45deg + APPROVED_TRANSFORM_B (see scene-05-qa-report-v2.json for why the C1 frontal/level framing could not be rigidly transformed to match).",
-  "model_prompt": "Cozy clean white home kitchen, warm daylight coming from the left. Same black air fryer with an open square basket in every shot. Same woman's natural hands throughout — no rings, no bracelets, no watch, short unpolished nails. Same grey ribbed sweater sleeves visible at the wrists in every shot. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720×1280.\n\nHigh 3/4 top-down camera angle looking down and slightly forward into the open air fryer basket, matching a diagonal product axis from the upper-left to the lower-right of the frame, not a frontal straight-on view. The woman's hands, in grey ribbed sweater sleeves, are positioned asymmetrically along that diagonal as if lifting an object out of the basket: the left hand is higher in the frame, near the upper-left corner of the basket where the future flat handle tab will be, and the right hand is lower in the frame, near the lower-right corner of the basket where the other future flat handle tab will be; thumbs angled toward those future flat handle tab positions. This leaves a clean, empty central placement area in the basket, aligned with the diagonal axis, for a square silicone liner to be inserted later. In the central placement area, include a loose cluster of exactly 3 roasted golden chicken thighs with potato wedges, positioned where the liner interior will be after compositing. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Do not draw a black insert or black liner inside the basket. Only very soft contact shadows/cues are allowed in the empty placement area. Around and below the placement area, the black air fryer basket is visibly clean and shiny.\n\nThe final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.\n\nNegative prompt (avoid): a completed or fully rendered silicone liner, redesigned or fake handles, loop handles, vertical oval holes, any duplicate tray or basket insert, a black insert or black liner inside the basket, hands gripping the basket rim instead of the expected handle positions, level or symmetric left/right hand heights, frontal straight-on camera angle, extra fingers, missing fingers, jewelry, dirty basket, text, watermark, logo.",
-  "pipeline_product_lock_instruction": "PIPELINE ONLY — NOT sent to the image model as a drawing instruction; used by the compositor/QA instead. The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing), никогда не из AI-редактирования. C2: AI plate camera angle/diagonal axis/asymmetric hand heights теперь выбраны так, чтобы APPROVED_TRANSFORM_B (или минимальная rigid-подстройка в его пределах) подошёл напрямую, без риска, что согласование одной ручки разваливает другую (см. scene-05-hands-experiment-retrospective.md и V2 salvage отчёты для истории C1). Food cluster извлекается из AI plate ТОЛЬКО внутри product_interior_food_mask (см. scene-05-product-only-apply-dry-run.json:food_composite_strategy) и композитится внутрь товара отдельным шагом — не в этом model_prompt. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
+  "model_prompt_clean_note": "build_model_prompt() uses plan['clean_continuity_prompt'] (English blockquote only) -- model never sees markdown headings, Russian documentation or file paths. C3 revision: scene-05 is now a no-hands result shot (food cooked in the real form, clean basket) -- C1 (frontal/level tabs) and C2 (high 3/4/asymmetric tabs) both showed generated hands do not reliably align with real-product-v1 after deterministic overlay (an occlusion-compositing problem, not a prompt-only issue), so scene-05 no longer attempts a hands-lifting-by-handles shot at all. See scene-05-qa-report.json (C1) and scene-05-c2-qa-report.json (C2).",
+  "model_prompt": "Cozy clean white home kitchen, warm daylight coming from the left. Same black air fryer with an open square basket in every shot. Same woman's natural hands throughout — no rings, no bracelets, no watch, short unpolished nails. Same grey ribbed sweater sleeves visible at the wrists in every shot. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720×1280.\n\nThis shot contains no hands and no person anywhere in the frame -- this overrides the earlier mention of hands/sleeves above for this one frame only. High 3/4 top-down camera angle looking down into the open air fryer basket, matching the framing used for the real product photography (compatible with product_45deg), with the basket occupying the upper/middle area of the frame. The basket interior shows a clean, empty central placement area where the square silicone liner will be inserted later. In the central placement area, include a loose cluster of exactly 3 roasted golden chicken thighs with potato wedges, positioned where the liner interior will be after compositing. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Do not draw a black insert or black liner inside the basket. Only very soft contact shadows/cues are allowed in the empty placement area. Around and below the placement area, the black air fryer basket is visibly clean and shiny. No hands, no arms, no fingers, no person anywhere in this frame.\n\nThe final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.\n\nNegative prompt (avoid): a completed or fully rendered silicone liner, redesigned or fake handles, loop handles, vertical oval holes, any duplicate tray or basket insert, a black insert or black liner inside the basket, hands, arms, fingers, a person or any part of a person visible in frame, frontal straight-on camera angle, dirty basket, text, watermark, logo.",
+  "pipeline_product_lock_instruction": "PIPELINE ONLY — NOT sent to the image model as a drawing instruction; used by the compositor/QA instead. The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing) или, при необходимости, минимальный rigid per-plate transform в тех же пределах (uniform scale + малый rotation + translation, без warp) — никогда не из AI-редактирования. C3: сцена больше не показывает руки/захват ручек — C1 и C2 (см. их отчёты и scene-05-hands-experiment-retrospective.md) показали, что сгенерированные руки не выравниваются надёжно с real-product-v1 после deterministic overlay; front_hand extraction для этой сцены больше не нужен (front_hand_extraction: not_needed), т.к. рук в кадре нет вообще. Food cluster извлекается из AI plate ТОЛЬКО внутри product_interior_food_mask (см. scene-05-product-only-apply-dry-run.json:food_composite_strategy) и композитится внутрь товара отдельным шагом — не в этом model_prompt. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
   "pipeline_product_lock_instruction_note": "НЕ отправляется модели -- используется только compositor/QA после генерации",
   "food_composite_strategy": {
     "food_extraction": "implemented",
@@ -183,37 +183,75 @@
   "uses_reference_library_for_appearance": false,
   "push": "NO",
   "production": "NO",
-  "candidate_label": "C2",
-  "expected_plate_geometry": {
-    "camera_angle": "high_3_4_top_down",
-    "expected_product_axis": "upper_left_to_lower_right",
-    "left_future_handle_region": [
-      190,
-      44,
-      275,
-      100
-    ],
-    "right_future_handle_region": [
-      549,
-      166,
-      595,
-      259
-    ],
-    "basket_region_target": [
-      145,
-      28,
-      595,
-      380
-    ],
-    "product_interior_food_mask_bbox": [
-      200,
-      79,
-      539,
-      329
-    ],
-    "source": "api/media_pipeline/compositor/scene05_layer_masks.py:build_all_layer_masks with DEFAULT_VIEW (product_45deg) + APPROVED_TRANSFORM_B -- regions are computed from the real product asset, not invented",
-    "reject_if_handles_level": true,
-    "reject_if_basket_frontal": true,
-    "reject_if_black_insert_drawn": true
-  }
+  "candidate_label": "C3",
+  "scene_variant": "no_hands_result_shot",
+  "front_hand_extraction": "not_needed",
+  "hands_grip_qa": "not_applicable",
+  "qa_gates_c3_no_hands": [
+    {
+      "id": "c3-1",
+      "name": "no_hands_visible",
+      "check": "нет рук в кадре — сцена больше не показывает захват ручек"
+    },
+    {
+      "id": "c3-2",
+      "name": "no_person_visible",
+      "check": "нет человека/частей тела в кадре — чистый product result shot"
+    },
+    {
+      "id": "c3-3",
+      "name": "no_duplicate_ai_product_visible",
+      "check": "AI не нарисовал собственную силиконовую форму/вставку в placement area — если нарисовал, candidate reject даже после наложения real-product-v1"
+    },
+    {
+      "id": "c3-4",
+      "name": "no_black_insert_or_black_liner",
+      "check": "AI не нарисовал чёрный insert/liner/container внутри корзины"
+    },
+    {
+      "id": "c3-5",
+      "name": "no_fake_handles_visible",
+      "check": "AI не нарисовал собственные (redesigned/fake) ручки — видны только реальные ручки real-product-v1 после compositing"
+    },
+    {
+      "id": "c3-6",
+      "name": "basket_perspective_compatible_with_product_45deg",
+      "check": "ракурс корзины совместим с product_45deg (high 3/4 top-down, корзина в верхней/средней части кадра)"
+    },
+    {
+      "id": "c3-7",
+      "name": "product_inserted_from_real_product_v1",
+      "check": "real-product-v1 вставлен через APPROVED_TRANSFORM_B (или rigid per-plate transform в тех же пределах), не пропущен"
+    },
+    {
+      "id": "c3-8",
+      "name": "product_lock_passed",
+      "check": "product_lock_validator.validate_composite: silhouette, handle_geometry, aspect_ratio, pixel_similarity, no_local_warp"
+    },
+    {
+      "id": "c3-9",
+      "name": "food_extracted_only_inside_interior_mask",
+      "check": "food cluster извлечён из AI plate ТОЛЬКО внутри product_interior_food_mask"
+    },
+    {
+      "id": "c3-10",
+      "name": "food_count_exact",
+      "check": "визуально ровно 3 куриных бедра + картофельные дольки"
+    },
+    {
+      "id": "c3-11",
+      "name": "basket_clean_around_product",
+      "check": "корзина аэрогриля чистая вокруг/под вставленным real-product-v1"
+    },
+    {
+      "id": "c3-12",
+      "name": "no_text_or_watermark",
+      "check": "нет текста/watermark/логотипа в кадре"
+    },
+    {
+      "id": "c3-13",
+      "name": "manual_review_required",
+      "check": "manual_review_required: true — accepted никогда не проставляется автоматически"
+    }
+  ]
 }
