@@ -29,6 +29,15 @@
                                         остальное текстом; dry-run по умолчанию,
                                         --apply для ОДНОГО реального вызова
                                         (retries=0, hard cap $0.50)
+  product-reference-only-scene-v2 --campaign CODE --scene NN — multi-product-
+                                        reference (owner clarification): РОВНО
+                                        4 product-only reference images
+                                        (product_45deg, product_top,
+                                        both_handles, bottom_loop) -- НИКОГДА
+                                        airfryer/basket/motion/generated refs;
+                                        dry-run по умолчанию, --apply для
+                                        ОДНОГО реального вызова (retries=0,
+                                        hard cap $0.50)
 
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
@@ -49,7 +58,8 @@ from .product_only_policy import (ProductOnlyPolicyError,
                                   assert_legacy_generation_allowed)
 from .product_only_scene_runner import ProductOnlyRunnerError, run_product_only_scene
 from .product_reference_only_runner import (ProductReferenceOnlyRunnerError,
-                                            run_product_reference_only_scene)
+                                            run_product_reference_only_scene,
+                                            run_product_reference_only_scene_v2)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -398,6 +408,17 @@ def cmd_product_reference_only_scene(args) -> int:
     return _emit(report)
 
 
+def cmd_product_reference_only_scene_v2(args) -> int:
+    """product-reference-only-v2: dry-run по умолчанию, --apply — РОВНО
+    один реальный edit-вызов с 4 product-only reference images (product_45deg,
+    product_top, both_handles, bottom_loop). Никогда не резолвит airfryer/
+    basket/motion/generated assets -- см.
+    api.media_pipeline.product_reference_only_runner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = run_product_reference_only_scene_v2(campaign_dir, args.scene, apply=args.apply)
+    return _emit(report)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -479,6 +500,20 @@ def main(argv=None) -> int:
                    help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
                         "hard cap $0.50, retries=0, max_calls=1)")
     p.set_defaults(fn=cmd_product_reference_only_scene)
+
+    p = sub.add_parser("product-reference-only-scene-v2",
+                       help="multi-product-reference (product+handles+bottom, "
+                            "4 real-v1 crops); никаких airfryer/basket/motion/generated refs")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1)")
+    p.set_defaults(fn=cmd_product_reference_only_scene_v2)
 
     args = parser.parse_args(argv)
     try:
