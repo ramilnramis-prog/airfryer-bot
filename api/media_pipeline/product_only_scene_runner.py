@@ -134,6 +134,77 @@ QA_GATES = (
 )
 
 
+# -- C2: plate-specific geometry compatibility (see scene-05 C1/V2 rejection) -
+# C1's AI plate used a frontal basket with level left/right hand tabs;
+# real-product-v1/product_45deg is a 3/4-angle photo with asymmetric handle
+# heights (left higher, right lower). No rigid transform (uniform scale +
+# small rotation + translation, no warp) can reconcile a level-handle plate
+# with that asset -- fitting one handle always throws the other far off (see
+# scene-05-qa-report-v2.json). C2 asks the AI plate itself to match
+# product_45deg's perspective/handle asymmetry up front, so APPROVED_TRANSFORM_B
+# (or a small rigid nudge within its limits) applies directly instead of
+# requiring a bespoke per-plate transform.
+CANDIDATE_LABEL_C2 = "C2"
+PER_PLATE_TRANSFORM_ALLOWED = True
+ALLOWED_TRANSFORM_TYPE = "rigid_only"
+
+
+def get_expected_plate_geometry_c2(repo_root: str = ".") -> dict:
+    """Geometry compatibility targets for a C2 AI plate, derived from the
+    REAL product mask/handle masks + APPROVED_TRANSFORM_B (never invented by
+    hand) -- the same deterministic path scene05_layer_masks already uses for
+    QA/compositing. A future AI plate is compatible with product_45deg when
+    its own basket/hand geometry roughly matches these regions."""
+    from .compositor.product_assets import DEFAULT_VIEW
+    from .compositor.scene05_baseplate import APPROVED_CANVAS_SIZE, APPROVED_TRANSFORM_B
+    from .compositor.scene05_layer_masks import build_all_layer_masks
+
+    masks = build_all_layer_masks(DEFAULT_VIEW, APPROVED_TRANSFORM_B,
+                                  APPROVED_CANVAS_SIZE, repo_root)
+    return {
+        "camera_angle": "high_3_4_top_down",
+        "expected_product_axis": "upper_left_to_lower_right",
+        "left_future_handle_region": list(masks["left_handle_bbox"]),
+        "right_future_handle_region": list(masks["right_handle_bbox"]),
+        "basket_region_target": list(masks["product_full_bbox"]),
+        "product_interior_food_mask_bbox": list(masks["product_interior_food_mask"].getbbox() or ()),
+        "source": ("api/media_pipeline/compositor/scene05_layer_masks.py:build_all_layer_masks "
+                  "with DEFAULT_VIEW (product_45deg) + APPROVED_TRANSFORM_B -- regions are "
+                  "computed from the real product asset, not invented"),
+        "reject_if_handles_level": True,
+        "reject_if_basket_frontal": True,
+        "reject_if_black_insert_drawn": True,
+    }
+
+
+# -- C2 pre-composite geometry QA (STEP 3): evaluated on the raw AI plate
+# BEFORE attempting any local transform/compositing. Distinct from QA_GATES
+# above (which judge the finished composite) -- these fail fast so a
+# geometrically incompatible plate is rejected without spending time on a
+# transform salvage attempt that (per C1/V2) cannot succeed against a
+# mismatched plate.
+QA_GATES_C2_GEOMETRY_PRECHECK = (
+    {"id": "c2-1", "name": "basket_perspective_matches_product_45deg",
+     "stage": "precheck_before_transform_salvage",
+     "check": "AI plate camera angle reads as high 3/4 top-down (not frontal), compatible with the product_45deg photo angle"},
+    {"id": "c2-2", "name": "future_handle_regions_asymmetric",
+     "stage": "precheck_before_transform_salvage",
+     "check": "left future handle position is visibly higher in frame than the right (matches left_future_handle_region vs right_future_handle_region)"},
+    {"id": "c2-3", "name": "no_level_left_right_tabs",
+     "stage": "precheck_before_transform_salvage",
+     "check": "left/right hand or tab positions are NOT at the same height -- a level pair is the exact C1 failure mode, reject immediately"},
+    {"id": "c2-4", "name": "no_black_insert_or_liner_in_basket",
+     "stage": "precheck_before_transform_salvage",
+     "check": "no AI-drawn black container/liner/tray shape occupies the basket interior (same defect that caused C1 duplicate_ai_product_visible)"},
+    {"id": "c2-5", "name": "ai_plate_has_clean_empty_product_area",
+     "stage": "precheck_before_transform_salvage",
+     "check": "central placement area is empty/clean aside from the rough food cluster -- no pre-drawn product silhouette"},
+    {"id": "c2-6", "name": "hands_near_expected_asymmetric_handle_regions",
+     "stage": "precheck_before_transform_salvage",
+     "check": "left/right hands sit close to left_future_handle_region / right_future_handle_region from get_expected_plate_geometry_c2()"},
+)
+
+
 class ProductOnlyRunnerError(RuntimeError):
     """Fail-closed: конфигурация --apply некорректна (нет ключа, hard cap не
     задан, max_calls/retries не по контракту) — бросается ДО сети."""

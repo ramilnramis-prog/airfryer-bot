@@ -1,0 +1,197 @@
+{
+  "candidate_label": "C2",
+  "status": "dry_run_only",
+  "generation_mode": "product_only",
+  "composite_approach": "product_placement_plate",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "model": "gpt-image-2",
+  "endpoint": "/images/generations",
+  "mode": "generate",
+  "size": "720x1280",
+  "n": 1,
+  "output_format": "png",
+  "model_prompt_clean": true,
+  "model_prompt": "Cozy clean white home kitchen, warm daylight coming from the left. Same black air fryer with an open square basket in every shot. Same woman's natural hands throughout — no rings, no bracelets, no watch, short unpolished nails. Same grey ribbed sweater sleeves visible at the wrists in every shot. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720×1280.\n\nHigh 3/4 top-down camera angle looking down and slightly forward into the open air fryer basket, matching a diagonal product axis from the upper-left to the lower-right of the frame, not a frontal straight-on view. The woman's hands, in grey ribbed sweater sleeves, are positioned asymmetrically along that diagonal as if lifting an object out of the basket: the left hand is higher in the frame, near the upper-left corner of the basket where the future flat handle tab will be, and the right hand is lower in the frame, near the lower-right corner of the basket where the other future flat handle tab will be; thumbs angled toward those future flat handle tab positions. This leaves a clean, empty central placement area in the basket, aligned with the diagonal axis, for a square silicone liner to be inserted later. In the central placement area, include a loose cluster of exactly 3 roasted golden chicken thighs with potato wedges, positioned where the liner interior will be after compositing. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Do not draw a black insert or black liner inside the basket. Only very soft contact shadows/cues are allowed in the empty placement area. Around and below the placement area, the black air fryer basket is visibly clean and shiny.\n\nThe final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.\n\nNegative prompt (avoid): a completed or fully rendered silicone liner, redesigned or fake handles, loop handles, vertical oval holes, any duplicate tray or basket insert, a black insert or black liner inside the basket, hands gripping the basket rim instead of the expected handle positions, level or symmetric left/right hand heights, frontal straight-on camera angle, extra fingers, missing fingers, jewelry, dirty basket, text, watermark, logo.",
+  "prompt_sha256": "9b93134892de66037c4c9cbada46c1d9a74218cd94aaed49b920621a7f23e08a",
+  "pipeline_product_lock_instruction": "PIPELINE ONLY — NOT sent to the image model as a drawing instruction; used by the compositor/QA instead. The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing), никогда не из AI-редактирования. C2: AI plate camera angle/diagonal axis/asymmetric hand heights теперь выбраны так, чтобы APPROVED_TRANSFORM_B (или минимальная rigid-подстройка в его пределах) подошёл напрямую, без риска, что согласование одной ручки разваливает другую (см. scene-05-hands-experiment-retrospective.md и V2 salvage отчёты для истории C1). Food cluster извлекается из AI plate ТОЛЬКО внутри product_interior_food_mask (см. scene-05-product-only-apply-dry-run.json:food_composite_strategy) и композитится внутрь товара отдельным шагом — не в этом model_prompt. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
+  "geometry_compatibility_targets": {
+    "camera_angle": "high_3_4_top_down",
+    "expected_product_axis": "upper_left_to_lower_right",
+    "left_future_handle_region": [
+      190,
+      44,
+      275,
+      100
+    ],
+    "right_future_handle_region": [
+      549,
+      166,
+      595,
+      259
+    ],
+    "basket_region_target": [
+      145,
+      28,
+      595,
+      380
+    ],
+    "product_interior_food_mask_bbox": [
+      200,
+      79,
+      539,
+      329
+    ],
+    "source": "api/media_pipeline/compositor/scene05_layer_masks.py:build_all_layer_masks with DEFAULT_VIEW (product_45deg) + APPROVED_TRANSFORM_B -- regions are computed from the real product asset, not invented",
+    "reject_if_handles_level": true,
+    "reject_if_basket_frontal": true,
+    "reject_if_black_insert_drawn": true
+  },
+  "qa_gates_c2_geometry_precheck": [
+    {
+      "id": "c2-1",
+      "name": "basket_perspective_matches_product_45deg",
+      "stage": "precheck_before_transform_salvage",
+      "check": "AI plate camera angle reads as high 3/4 top-down (not frontal), compatible with the product_45deg photo angle"
+    },
+    {
+      "id": "c2-2",
+      "name": "future_handle_regions_asymmetric",
+      "stage": "precheck_before_transform_salvage",
+      "check": "left future handle position is visibly higher in frame than the right (matches left_future_handle_region vs right_future_handle_region)"
+    },
+    {
+      "id": "c2-3",
+      "name": "no_level_left_right_tabs",
+      "stage": "precheck_before_transform_salvage",
+      "check": "left/right hand or tab positions are NOT at the same height -- a level pair is the exact C1 failure mode, reject immediately"
+    },
+    {
+      "id": "c2-4",
+      "name": "no_black_insert_or_liner_in_basket",
+      "stage": "precheck_before_transform_salvage",
+      "check": "no AI-drawn black container/liner/tray shape occupies the basket interior (same defect that caused C1 duplicate_ai_product_visible)"
+    },
+    {
+      "id": "c2-5",
+      "name": "ai_plate_has_clean_empty_product_area",
+      "stage": "precheck_before_transform_salvage",
+      "check": "central placement area is empty/clean aside from the rough food cluster -- no pre-drawn product silhouette"
+    },
+    {
+      "id": "c2-6",
+      "name": "hands_near_expected_asymmetric_handle_regions",
+      "stage": "precheck_before_transform_salvage",
+      "check": "left/right hands sit close to left_future_handle_region / right_future_handle_region from get_expected_plate_geometry_c2()"
+    }
+  ],
+  "qa_gates": [
+    {
+      "id": 1,
+      "name": "product_inserted",
+      "check": "real-product-v1 вставлен в кадр deterministic compositing'ом (не пропущен)"
+    },
+    {
+      "id": 2,
+      "name": "silhouette_match",
+      "check": "силуэт товара совпадает с real-product-v1 (product_lock_validator: silhouette)"
+    },
+    {
+      "id": 3,
+      "name": "handle_geometry_match",
+      "check": "геометрия ручек — плоские угловые язычки, как в real-product-v1 (handle_geometry)"
+    },
+    {
+      "id": 4,
+      "name": "handle_slots_visible",
+      "check": "короткие горизонтальные прорези ручек хотя бы частично видны"
+    },
+    {
+      "id": 5,
+      "name": "no_ai_redesigned_product_accepted",
+      "check": "если AI нарисовал собственную форму-двойник где-либо в кадре — candidate reject, канонический слой не отменяет эту проверку"
+    },
+    {
+      "id": 6,
+      "name": "hands_interact_with_flat_tabs",
+      "check": "руки визуально держат именно плоские боковые ручки-язычки, не борт корзины/формы"
+    },
+    {
+      "id": 7,
+      "name": "basket_clean",
+      "check": "корзина аэрогриля чистая (сцена scene-05 требует чистую корзину)"
+    },
+    {
+      "id": 8,
+      "name": "food_count_exact",
+      "check": "ровно 3 куриных бедра + картофельные дольки внутри формы"
+    },
+    {
+      "id": 9,
+      "name": "no_text_or_watermark",
+      "check": "нет текста/watermark/логотипа в кадре"
+    },
+    {
+      "id": 10,
+      "name": "manual_review_required",
+      "check": "anatomy/grip realism рук НИКОГДА не auto-PASS — требует визуальной проверки владельцем"
+    },
+    {
+      "id": 11,
+      "name": "no_duplicate_ai_product_visible",
+      "check": "AI не нарисовал собственную силиконовую форму/вставку в placement area несмотря на PLACEMENT_NOTE — если нарисовал, candidate reject даже после наложения real-product-v1"
+    },
+    {
+      "id": 12,
+      "name": "no_ai_tray_under_real_product",
+      "check": "под/вокруг вставленного real-product-v1 не виден край AI-сгенерированного лотка/подложки-двойника"
+    },
+    {
+      "id": 13,
+      "name": "no_fake_handles_visible",
+      "check": "AI не нарисовал собственные (redesigned/fake) ручки — видны только реальные ручки real-product-v1 после compositing"
+    },
+    {
+      "id": 14,
+      "name": "hands_positioned_near_real_handle_tabs",
+      "check": "руки на AI-plate расположены достаточно близко к позиции реальных flat corner handle tabs (APPROVED_TRANSFORM_B), чтобы после вставки товара выглядеть держащими именно ручки"
+    },
+    {
+      "id": 15,
+      "name": "candidate_rejected_if_product_overlay_breaks_hands",
+      "check": "если наложение real-product-v1 перекрывает руки так, что хват выглядит неестественно/оторванно (палец в воздухе, рука без видимой точки опоры) — candidate reject"
+    }
+  ],
+  "product_canon": "real-product-v1",
+  "product_transform_baseline": "api/media_pipeline/compositor/scene05_baseplate.py:APPROVED_TRANSFORM_B",
+  "per_plate_transform_allowed": true,
+  "allowed_transform_type": "rigid_only",
+  "reference_images": [],
+  "forbidden_appearance_asset_ids_not_used": [
+    "person-b-exhausted-01",
+    "real-grip-motion-01",
+    "v2-hand-hold-01",
+    "v2-form-in-basket-01",
+    "food-wings-01"
+  ],
+  "max_calls_future_apply": 1,
+  "retries": 0,
+  "hard_cap_usd": 0.5,
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "api_spend_usd": 0,
+  "previous_attempts": {
+    "c1_apply_report": "content/autopilot/coating-protect-2026-07/generated/product-only-scene/scene-05/scene-05-product-only-apply-report.json",
+    "c1_qa_report": "content/autopilot/coating-protect-2026-07/generated/product-only-scene/scene-05/scene-05-qa-report.json",
+    "v2_salvage_qa_report": "content/autopilot/coating-protect-2026-07/generated/product-only-scene/scene-05/scene-05-qa-report-v2.json",
+    "c1_rejection_reasons": [
+      "duplicate_ai_product_visible",
+      "product_placement_misaligned"
+    ],
+    "v2_rejection_reasons": [
+      "duplicate_ai_product_visible (partial)",
+      "handle_height_asymmetry_unreconcilable_by_rigid_transform"
+    ]
+  }
+}
