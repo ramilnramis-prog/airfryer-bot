@@ -217,6 +217,74 @@ QA_GATES_PRODUCT_REFERENCE_ONLY_V2 = (
      "check": "manual_review_required: true -- accepted никогда не проставляется автоматически"},
 )
 
+# -- scene-07 (CTA beauty shot): same product-reference-only-v2 mechanism,
+# different scene-specific prompt/QA (no food, handles+ribs must be visible,
+# CTA space at bottom). Reuses the SAME 4 product-only reference images and
+# the SAME fail-closed contract (MAX_CALLS/RETRIES/HARD_CAP_USD) as scene-05.
+MODEL_PROMPT_V2_SCENE07 = (
+    "Cozy clean white home kitchen, warm daylight from the left. Clean "
+    "product composition on the countertop: the same silicone form shown "
+    "in the product reference images stands empty in front, both flat "
+    "corner handle tabs with short horizontal slots clearly visible on "
+    "each side, ribbed bottom angled so the ridges are visible. Keep the "
+    "form shape and handle geometry faithful to the product references. "
+    "The black air fryer sits slightly behind at camera-right, soft "
+    "daylight, styled like an e-commerce listing card. No food inside the "
+    "form. No hands, no arms, no fingers, no person. Leave clean empty "
+    "space at the bottom of the frame for a CTA overlay. Realistic home "
+    "product photo, DSLR 50mm look, vertical 9:16, 720x1280. No text, no "
+    "watermark, no logo."
+)
+
+NEGATIVE_PROMPT_V2_SCENE07 = (
+    "redesigned handles, loop handles, vertical oval holes, duplicate tray, "
+    "second product, black extra insert, food inside the form, hands, "
+    "fingers, person, text, watermark, logo, CGI, illustration, 3D render, "
+    "handles or bottom ribs not visible."
+)
+
+FULL_MODEL_PROMPT_V2_SCENE07 = (MODEL_PROMPT_V2_SCENE07 + "\n\nNegative prompt (avoid): "
+                                + NEGATIVE_PROMPT_V2_SCENE07)
+
+QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE07 = (
+    {"id": 1, "name": "only_product_references_used",
+     "check": "reference_images содержит ТОЛЬКО изображения из PRODUCT_REFERENCE_ASSET_PATHS, ничего из FORBIDDEN_PRODUCT_LOCK_ASSETS/FORBIDDEN_REFERENCE_SOURCES"},
+    {"id": 2, "name": "reference_images_length_exactly_4",
+     "check": "reference_images содержит РОВНО 4 элемента"},
+    {"id": 3, "name": "every_reference_under_real_v1_product_only",
+     "check": "каждый reference image находится под real-v1/(product|handles|bottom) и показывает ТОЛЬКО товар"},
+    {"id": 4, "name": "no_airfryer_basket_motion_generated_refs",
+     "check": "нет airfryer/basket/motion референсов и нет generated/ референсов"},
+    {"id": 5, "name": "no_c1_c2_c3_refs",
+     "check": "нет ссылок на любой previous candidate/generated output"},
+    {"id": 6, "name": "product_visually_matches_references",
+     "check": "square dark grey matte silicone, flat corner handle tabs, short horizontal handle slots, ribbed bottom; no loop handles; no vertical oval holes"},
+    {"id": 7, "name": "handles_and_ribs_clearly_visible",
+     "check": "оба ручки-язычка и рёбра дна чётко видны -- hard fail, если не видны (витринный CTA-кадр товара)"},
+    {"id": 8, "name": "no_food_in_frame",
+     "check": "еды в кадре быть не должно (в отличие от scene-05)"},
+    {"id": 9, "name": "no_hands_no_person",
+     "check": "нет рук/человека в кадре"},
+    {"id": 10, "name": "no_duplicate_product_or_tray",
+     "check": "нет дублирующего товара/лотка"},
+    {"id": 11, "name": "cta_space_left_at_bottom",
+     "check": "внизу кадра оставлено чистое место под CTA-плашку (накладывается на монтаже)"},
+    {"id": 12, "name": "realistic_photo",
+     "check": "реалистичное фото, не CGI/иллюстрация/3D render"},
+    {"id": 13, "name": "no_text_or_watermark",
+     "check": "нет текста/watermark/логотипа в кадре"},
+    {"id": 14, "name": "manual_review_required",
+     "check": "manual_review_required: true -- accepted никогда не проставляется автоматически"},
+)
+
+# scene_id -> (full_model_prompt, qa_gates). v2 is fail-closed on unknown
+# scenes (raises SCENE_NOT_CONFIGURED_FOR_V2) rather than silently reusing
+# scene-05's prompt for an unconfigured scene.
+SCENE_PROMPTS_V2 = {
+    "scene-05": (FULL_MODEL_PROMPT_V2, QA_GATES_PRODUCT_REFERENCE_ONLY_V2),
+    "scene-07": (FULL_MODEL_PROMPT_V2_SCENE07, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE07),
+}
+
 
 class ProductReferenceOnlyRunnerError(RuntimeError):
     """Fail-closed: конфигурация --apply некорректна (нет ключа, hard cap не
@@ -298,7 +366,17 @@ def build_request_contract_v2(campaign_dir, scene_id: str = "scene-05",
     product/handles/bottom real-v1 crops) + контракт для отчёта. Никогда не
     резолвит airfryer/basket/motion/generated assets -- reference_images
     строится ИСКЛЮЧИТЕЛЬНО из PRODUCT_REFERENCE_IMAGES_V2 (allow-list),
-    никогда из произвольного пути."""
+    никогда из произвольного пути. model_prompt выбирается по scene_id из
+    SCENE_PROMPTS_V2 -- fail-closed (SCENE_NOT_CONFIGURED_FOR_V2), если для
+    сцены ещё нет prepared prompt (никогда не подставляет scene-05's prompt
+    молча для незнакомой сцены)."""
+    if scene_id not in SCENE_PROMPTS_V2:
+        raise ProductReferenceOnlyRunnerError(
+            "SCENE_NOT_CONFIGURED_FOR_V2",
+            f"{scene_id} не подготовлена для product-reference-only-v2 -- "
+            f"доступны: {sorted(SCENE_PROMPTS_V2)}")
+    full_model_prompt, _qa_gates = SCENE_PROMPTS_V2[scene_id]
+
     resolved_paths = []
     for asset_id in PRODUCT_REFERENCE_IMAGES_V2:
         rel_path = PRODUCT_REFERENCE_ASSET_PATHS[asset_id]
@@ -308,14 +386,14 @@ def build_request_contract_v2(campaign_dir, scene_id: str = "scene-05",
                 "PRODUCT_REFERENCE_IMAGE_MISSING", f"{full_path} не найден ({asset_id})")
         resolved_paths.append(full_path)
 
-    prompt_sha256 = hashlib.sha256(FULL_MODEL_PROMPT_V2.encode("utf-8")).hexdigest()
+    prompt_sha256 = hashlib.sha256(full_model_prompt.encode("utf-8")).hexdigest()
 
     req = ImageRequest(
-        scene_id=scene_id, prompt=FULL_MODEL_PROMPT_V2, n=N, size=SIZE,
+        scene_id=scene_id, prompt=full_model_prompt, n=N, size=SIZE,
         mode=MODE, reference_images=resolved_paths, output_format=OUTPUT_FORMAT,
     )
     contract = ProductReferenceOnlyContractV2(
-        scene_id=scene_id, model_prompt=FULL_MODEL_PROMPT_V2, prompt_sha256=prompt_sha256,
+        scene_id=scene_id, model_prompt=full_model_prompt, prompt_sha256=prompt_sha256,
         model=MODEL, endpoint="/images/edits", mode=MODE,
         size=SIZE, n=N, output_format=OUTPUT_FORMAT, retries=RETRIES,
         max_calls=MAX_CALLS, hard_cap_usd=HARD_CAP_USD,
@@ -333,6 +411,7 @@ def run_product_reference_only_scene_v2(campaign_dir, scene_id: str = "scene-05"
     reference images (product_45deg, product_top, both_handles,
     bottom_loop). Тот же fail-closed контракт, что и v1."""
     req, contract = build_request_contract_v2(campaign_dir, scene_id, repo_root)
+    _full_prompt, scene_qa_gates = SCENE_PROMPTS_V2[scene_id]
 
     if apply:
         if MAX_CALLS != 1:
@@ -428,7 +507,7 @@ def run_product_reference_only_scene_v2(campaign_dir, scene_id: str = "scene-05"
         "timeout_env_var": IMAGE_GENERATION_TIMEOUT_ENV_VAR,
         "image_generation_timeout_warnings": timeout_warnings,
         "auto_retry_on_timeout": False,
-        "qa_gates": list(QA_GATES_PRODUCT_REFERENCE_ONLY_V2),
+        "qa_gates": list(scene_qa_gates),
         "manual_review_required": True,
         "candidate_status_note": "future apply must set candidate_status to pending_manual_review or rejected -- never accepted automatically.",
     }
