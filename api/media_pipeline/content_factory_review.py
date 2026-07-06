@@ -29,6 +29,21 @@ h1 { font-size: 20px; }
 video { max-width: 100%; border-radius:6px; }
 pre { white-space: pre-wrap; font-size:12px; background:#111; padding:8px; border-radius:4px; }
 a { color:#8ab4ff; }
+.queue-section { margin-top:32px; border-top:1px solid #333; padding-top:20px; }
+.queue-day { background:#161616; border:1px solid #2a2a2a; border-radius:8px;
+            padding:14px; margin-bottom:14px; }
+.queue-day h3 { margin:0 0 8px 0; font-size:16px; }
+.queue-item { display:flex; gap:12px; align-items:flex-start; padding:8px 0;
+             border-top:1px solid #232323; }
+.queue-item:first-of-type { border-top:none; }
+.queue-item video { width:140px; }
+.queue-item .qi-body { flex:1; }
+.decision-buttons button { font-size:11px; padding:3px 8px; margin-right:6px;
+                          border-radius:4px; border:1px solid #444; background:#222;
+                          color:#ccc; cursor:pointer; }
+.decision-buttons button.active-approve { background:#1e5c33; color:#c8ffd9; border-color:#1e5c33; }
+.decision-buttons button.active-needs_edit { background:#5c4b1e; color:#ffe9b3; border-color:#5c4b1e; }
+.decision-buttons button.active-reject { background:#5c1e1e; color:#ffc8c8; border-color:#5c1e1e; }
 """
 
 _FILTER_JS = """
@@ -46,6 +61,19 @@ function applyFilters() {
     if (status !== 'all' && card.dataset.status !== status) ok = false;
     card.classList.toggle('hidden', !ok);
   });
+}
+"""
+
+_DECISION_JS = """
+function setDecision(btn, decision) {
+  var group = btn.closest('.decision-buttons');
+  group.querySelectorAll('button').forEach(function(b) {
+    b.classList.remove('active-approve', 'active-needs_edit', 'active-reject');
+  });
+  btn.classList.add('active-' + decision);
+  var label = group.querySelector('.decision-label');
+  if (label) { label.textContent = 'owner decision: ' + decision; }
+  // Local in-page state only -- no backend, no persistence, no auto-posting.
 }
 """
 
@@ -197,6 +225,83 @@ def build_batch_review_page(campaign_dir: str, batch_name: str, repo_root: str =
     return str(out)
 
 
+def _rel_from_content_factory(path_str: str) -> str:
+    """review/index.html lives one level under generated/content-factory/ --
+    rewrites an absolute-ish stored path into a relative link from there."""
+    normalized = str(path_str).replace("\\", "/")
+    marker = "content-factory/"
+    idx = normalized.find(marker)
+    if idx == -1:
+        return normalized
+    return "../" + normalized[idx + len(marker):]
+
+
+def _publishing_queue_html(campaign_dir: str, repo_root: str = ".") -> str:
+    """First 14 Days Publishing Queue section -- read-only rendering of
+    first-14-days-publishing-plan.json (built by content_factory_publishing,
+    never generated here). Approve/needs_edit/reject buttons are local
+    DOM-state only (see _DECISION_JS) -- no backend, no persistence, no
+    auto-posting. Returns '' if the plan hasn't been built yet."""
+    plan_path = (Path(repo_root) / campaign_dir /
+                "generated/content-factory/publishing/first-14-days-publishing-plan.json")
+    if not plan_path.is_file():
+        return ""
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+
+    days_html = []
+    for day in plan["days"]:
+        items = []
+        for v in day["videos"]:
+            video_rel = _rel_from_content_factory(v["file_path"])
+            items.append(f"""
+            <div class="queue-item">
+              <video controls preload="metadata" src="{video_rel}"></video>
+              <div class="qi-body">
+                <b>{v['posting_time']}</b> [{v['bucket_label']}] {v['variant_id']} (batch {v['batch']})<br>
+                <span>hook: {v['hook']}</span><br>
+                <span>CTA: {v['CTA']}</span><br>
+                <span class="decision-label">owner decision: not_reviewed</span>
+                <div class="decision-buttons">
+                  <button onclick="setDecision(this,'approve')">approve</button>
+                  <button onclick="setDecision(this,'needs_edit')">needs edit</button>
+                  <button onclick="setDecision(this,'reject')">reject</button>
+                </div>
+              </div>
+            </div>""")
+        if day["dzen_post"]:
+            dp = day["dzen_post"]
+            dzen_rel = _rel_from_content_factory(dp["file_path"])
+            items.append(f"""
+            <div class="queue-item">
+              <div class="qi-body">
+                <b>{dp['posting_time']}</b> [Dzen/{dp['theme']}] {dp['post_id']}<br>
+                <span>{dp['title']}</span><br>
+                <a href="{dzen_rel}">open Dzen post</a><br>
+                <span class="decision-label">owner decision: not_reviewed</span>
+                <div class="decision-buttons">
+                  <button onclick="setDecision(this,'approve')">approve</button>
+                  <button onclick="setDecision(this,'needs_edit')">needs edit</button>
+                  <button onclick="setDecision(this,'reject')">reject</button>
+                </div>
+              </div>
+            </div>""")
+        days_html.append(f"""
+        <div class="queue-day">
+          <h3>Day {day['day']:02d}</h3>
+          {''.join(items)}
+        </div>""")
+
+    return f"""
+    <div class="queue-section">
+      <h2>First 14 Days Publishing Queue</h2>
+      <p style="color:#888; font-size:13px;">{plan['total_videos_selected']} videos + """ \
+           f"""{plan['total_dzen_selected']} Dzen posts selected from already-rendered assets. """ \
+           f"""Decision buttons below are local to this page (no backend, nothing is """ \
+           f"""published automatically).</p>
+      {''.join(days_html)}
+    </div>"""
+
+
 def build_review_dashboard(campaign_dir: str, batches=None, repo_root: str = ".",
                            out_path=None) -> str:
     """Combined dashboard across ALL batches (or the given `batches` list),
@@ -229,6 +334,7 @@ def build_review_dashboard(campaign_dir: str, batches=None, repo_root: str = "."
         return "".join(opts)
 
     batch_links = " | ".join(f'<a href="{b}.html">{b}</a>' for b in batch_list)
+    queue_section = _publishing_queue_html(campaign_dir, repo_root)
 
     html = f"""<!doctype html>
 <html><head><meta charset="utf-8">
@@ -260,7 +366,9 @@ def build_review_dashboard(campaign_dir: str, batches=None, repo_root: str = "."
 <div class="grid" id="grid">
 {''.join(all_cards)}
 </div>
+{queue_section}
 <script>{_FILTER_JS}</script>
+<script>{_DECISION_JS}</script>
 </body></html>"""
 
     out = Path(out_path) if out_path else (review_dir / "index.html")
