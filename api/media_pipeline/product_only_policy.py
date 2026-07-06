@@ -28,6 +28,12 @@ POLICY_FILENAME = "campaign_visual_policy.json"
 CONTINUITY_FILENAME = "video-continuity-block.md"
 SCENE_PROMPTS_FILENAME = "video-scene-prompts-product-only.md"
 
+# Заголовок, под которым в video-continuity-block.md лежит ЕДИНСТВЕННЫЙ
+# кусок текста, который реально годится для отправки в image API (чистый
+# английский prompt, blockquote). Всё остальное в этом .md -- русская
+# документация/заголовки/file paths -- НИКОГДА не должно попасть в API.
+CONTINUITY_PROMPT_HEADING_MARKER = "## Текст блока"
+
 REQUIRED_POLICY_VERSION = "product-only-v1"
 REQUIRED_PRODUCT_CANON = "real-product-v1"
 REQUIRED_CONTINUITY_SOURCE = "text_prompt_block"
@@ -59,7 +65,9 @@ class ProductOnlyPolicyError(RuntimeError):
     POLICY_NOT_FOUND, POLICY_VERSION_MISMATCH, PRODUCT_CANON_MISMATCH,
     CONTINUITY_SOURCE_MISMATCH, MISSING_CONTINUITY_FILE,
     MISSING_SCENE_PROMPTS_FILE, FORBIDDEN_APPEARANCE_REF_FOUND,
-    BLOCKED_BY_PRODUCT_ONLY_POLICY, SCENE_NOT_FOUND."""
+    BLOCKED_BY_PRODUCT_ONLY_POLICY, SCENE_NOT_FOUND,
+    CONTINUITY_PROMPT_BLOCK_NOT_FOUND, CONTINUITY_PROMPT_BLOCK_EMPTY,
+    CONTINUITY_PROMPT_BLOCK_NOT_CLEAN."""
 
     def __init__(self, code: str, message: str):
         self.code = code
@@ -75,9 +83,58 @@ class ProductOnlyPolicy:
     not_image_locked: tuple
     continuity_source: str
     continuity_block_text: str
+    clean_continuity_prompt: str
     scene_prompts_text: str
     policy_path: Path
     raw: dict = field(repr=False)
+
+
+def parse_clean_continuity_prompt(continuity_block_text: str) -> str:
+    """Извлекает ТОЛЬКО чистый английский prompt (blockquote) из
+    video-continuity-block.md -- строго между заголовком
+    CONTINUITY_PROMPT_HEADING_MARKER и следующим '##' заголовком. Никакой
+    русской документации/заголовков/file paths в результате быть не должно
+    -- это и есть то немногое, что реально годится для отправки в image API.
+
+    Формат источника (см. video-continuity-block.md):
+        ## Текст блока (вставляется в каждый scene prompt дословно)
+
+        > Cozy clean white home kitchen, ...
+        > ... Vertical 9:16, 720×1280.
+
+        ## Правила применения
+        ...
+    """
+    lines = continuity_block_text.splitlines()
+    start = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith(CONTINUITY_PROMPT_HEADING_MARKER):
+            start = i + 1
+            break
+    if start is None:
+        raise ProductOnlyPolicyError(
+            "CONTINUITY_PROMPT_BLOCK_NOT_FOUND",
+            f"не найден заголовок {CONTINUITY_PROMPT_HEADING_MARKER!r} "
+            "в video-continuity-block.md")
+
+    quote_lines = []
+    for line in lines[start:]:
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            break
+        if stripped.startswith(">"):
+            quote_lines.append(stripped.lstrip(">").strip())
+
+    clean = " ".join(quote_lines).strip()
+    if not clean:
+        raise ProductOnlyPolicyError(
+            "CONTINUITY_PROMPT_BLOCK_EMPTY",
+            "clean continuity prompt пуст после парсинга blockquote")
+    if "#" in clean or "```" in clean:
+        raise ProductOnlyPolicyError(
+            "CONTINUITY_PROMPT_BLOCK_NOT_CLEAN",
+            "clean continuity prompt содержит markdown-артефакты после парсинга")
+    return clean
 
 
 def _policy_path(campaign_dir) -> Path:
@@ -158,6 +215,9 @@ def load_product_only_policy(campaign_dir, required: bool = False) -> ProductOnl
     assert_no_forbidden_appearance_refs(continuity_text, str(continuity_path))
     assert_no_forbidden_appearance_refs(scene_prompts_text, str(scene_prompts_path))
 
+    clean_continuity_prompt = parse_clean_continuity_prompt(continuity_text)
+    assert_no_forbidden_appearance_refs(clean_continuity_prompt, f"{continuity_path} (clean prompt)")
+
     not_image_locked = tuple(raw.get("not_image_locked", ()))
     for category in REQUIRED_NOT_IMAGE_LOCKED_CATEGORIES:
         if category not in not_image_locked:
@@ -174,6 +234,7 @@ def load_product_only_policy(campaign_dir, required: bool = False) -> ProductOnl
         not_image_locked=not_image_locked,
         continuity_source=raw["continuity_source"],
         continuity_block_text=continuity_text,
+        clean_continuity_prompt=clean_continuity_prompt,
         scene_prompts_text=scene_prompts_text,
         policy_path=policy_path,
         raw=raw,
@@ -255,6 +316,7 @@ def plan_scene_request(campaign_dir, scene_id: str) -> dict:
         "kitchen_image_refs": [],
         "airfryer_image_refs": [],
         "continuity_block_text": policy.continuity_block_text,
+        "clean_continuity_prompt": policy.clean_continuity_prompt,
         "scene_goal": scene.get("scene_goal", ""),
         "scene_action_prompt": scene.get("image_prompt", ""),
         "product_lock_instruction": scene.get("product_lock_instruction", ""),

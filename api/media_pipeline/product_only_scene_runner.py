@@ -88,6 +88,14 @@ PRICE_PER_IMAGE_USD_ESTIMATE = 0.30
 # модуля). Никогда не обещается по умолчанию.
 FRONT_HAND_EXTRACTION_STATUS = "not_implemented"
 
+# Food extraction РЕАЛИЗОВАНА (extract_food_cluster() ниже) -- механизм
+# детерминирован и покрыт тестами на синтетическом plate (реального
+# AI-plate ещё не существует, т.к. --apply ни разу не выполнялся). Если
+# этот статус когда-нибудь понижается обратно до "not_implemented",
+# run_product_only_scene() блокирует --apply тем же способом, что и
+# MAX_CALLS/RETRIES -- см. FOOD_EXTRACTION_NOT_IMPLEMENTED ниже.
+FOOD_EXTRACTION_STATUS = "implemented"
+
 PLACEMENT_NOTE = (
     "The final silicone form is inserted after generation from "
     "real-product-v1. Do not invent or redesign the product. Leave the "
@@ -97,11 +105,14 @@ PLACEMENT_NOTE = (
 # Порядок шагов composite mechanics ПОСЛЕ будущей генерации (ничего из этого
 # ещё не выполнено -- ни один API-вызов этим runner'ом не делался).
 COMPOSITE_MECHANICS_STEPS = (
-    "1. raw AI plate (kitchen/hands/basket/placement area) сохраняется как есть",
-    "2. real-product-v1 вставляется через APPROVED_TRANSFORM_B (deterministic compositing, layer_compositor.compose)",
-    "3. front_hand extraction (палец/рукав поверх handle tabs) НЕ реализована в этом runner'е -- см. front_hand_extraction ниже",
-    "4. если руки закрыты продуктом целиком или не взаимодействуют с handle tabs -- candidate reject",
-    "5. если AI нарисовал собственную форму/лоток/вставку несмотря на PLACEMENT_NOTE -- candidate reject (no_duplicate_ai_product_visible)",
+    "1. raw AI plate (kitchen/hands/basket/placement area/rough food cluster) сохраняется как есть",
+    "2. real-product-v1 base/exterior вставляется через APPROVED_TRANSFORM_B (deterministic compositing, layer_compositor.compose)",
+    "3. food cluster извлекается из AI plate СТРОГО внутри product_interior_food_mask (extract_food_cluster(), детерминированная геометрия из real-product-v1, не из AI) и композитится внутрь товара",
+    "4. product front occluder / rim / handle pixels из real-product-v1 перерисовываются поверх еды (закрывают края, без новых пикселей товара)",
+    "5. front_hand extraction (палец/рукав поверх handle tabs) НЕ реализована в этом runner'е -- см. front_hand_extraction ниже",
+    "6. если руки закрыты продуктом целиком или не взаимодействуют с handle tabs -- candidate reject",
+    "7. если AI нарисовал собственную форму/лоток/вставку несмотря на PLACEMENT_NOTE -- candidate reject (no_duplicate_ai_product_visible)",
+    "8. QA: food_count_exact -- если AI не нарисовал ровно 3 бедра, candidate reject/manual_review_required (extraction сам не считает еду, это отдельная visual QA проверка)",
 )
 
 QA_GATES = (
@@ -150,14 +161,19 @@ class SceneRequestContract:
 
 
 def build_model_prompt(plan: dict) -> str:
-    """Собирает ТОЛЬКО то, что реально отправляется в OpenAI: continuity
-    block + сцено-специфичный action (уже описывающий placement plate, не
-    финальный товар) + PLACEMENT_NOTE (негативная инструкция "не рисуй
-    товар, оставь место чистым" -- НЕ просьба нарисовать его достоверно) +
-    negative prompt. plan['product_lock_instruction'] СОЗНАТЕЛЬНО сюда НЕ
-    входит -- см. build_pipeline_product_lock_instruction()."""
+    """Собирает ТОЛЬКО то, что реально отправляется в OpenAI: ЧИСТЫЙ
+    continuity prompt (plan['clean_continuity_prompt'] -- уже распарсен
+    product_only_policy.parse_clean_continuity_prompt() из blockquote в
+    video-continuity-block.md, БЕЗ markdown-заголовков/русской
+    документации/file paths -- ИСПРАВЛЕНО: раньше сюда по ошибке попадал
+    plan['continuity_block_text'], весь исходный .md целиком) + сцено-
+    специфичный action (описывающий placement plate, не финальный товар) +
+    PLACEMENT_NOTE (негативная инструкция "не рисуй товар, оставь место
+    чистым" -- НЕ просьба нарисовать его достоверно) + negative prompt.
+    plan['product_lock_instruction'] СОЗНАТЕЛЬНО сюда НЕ входит -- см.
+    build_pipeline_product_lock_instruction()."""
     parts = [
-        plan["continuity_block_text"].strip(),
+        plan["clean_continuity_prompt"].strip(),
         plan["scene_action_prompt"].strip(),
         PLACEMENT_NOTE,
         f"Negative prompt (avoid): {plan['negative_prompt'].strip()}",
@@ -170,6 +186,95 @@ def build_pipeline_product_lock_instruction(plan: dict) -> str:
     компоситора и QA). НИКОГДА не отправляется модели -- используется
     только runner'ом/QA/compositor'ом после генерации."""
     return plan["product_lock_instruction"].strip()
+
+
+def get_product_interior_food_mask_info(repo_root: str = ".") -> dict:
+    """Геометрия product_interior_food_mask -- ДЕТЕРМИНИРОВАННАЯ (эрозия
+    реального силуэта real-product-v1 через APPROVED_TRANSFORM_B), НЕ
+    зависит от того, что нарисовал AI. Та же функция, что уже используется
+    scene05_layer_masks для остальных слоёв сцены-05 -- ничего нового не
+    изобретается для food extraction."""
+    from .compositor.product_assets import DEFAULT_VIEW
+    from .compositor.scene05_baseplate import APPROVED_CANVAS_SIZE, APPROVED_TRANSFORM_B
+    from .compositor.scene05_layer_masks import build_all_layer_masks
+
+    masks = build_all_layer_masks(DEFAULT_VIEW, APPROVED_TRANSFORM_B,
+                                  APPROVED_CANVAS_SIZE, repo_root)
+    interior_mask = masks["product_interior_food_mask"]
+    bbox = interior_mask.getbbox()
+    return {
+        "canvas_size": list(APPROVED_CANVAS_SIZE),
+        "bbox": list(bbox) if bbox else None,
+        "mask_source": ("api/media_pipeline/compositor/scene05_layer_masks.py:"
+                        "product_interior_food_mask (deterministic, from "
+                        "real-product-v1 geometry via APPROVED_TRANSFORM_B, "
+                        "NOT from the AI plate)"),
+    }
+
+
+def extract_food_cluster(ai_plate_path, repo_root: str = ".", out_path=None):
+    """Извлекает ТОЛЬКО пиксели AI plate внутри product_interior_food_mask
+    (реальная геометрия товара из real-product-v1, не AI-угаданная и не
+    зависящая от того, что AI фактически нарисовал). Силикон/ручки/стенки/
+    фон НИКОГДА не попадают в результат -- маска строго ограничивает
+    вырезку внутренней областью формы, тем же путём, что уже используется
+    для остальных слоёв сцены-05 (scene05_layer_masks).
+
+    Возвращает RGBA PIL.Image (alpha=255 внутри interior mask, 0 снаружи).
+    Не считает и не проверяет количество еды -- это отдельная visual QA
+    (food_count_exact gate), а не часть extraction."""
+    from PIL import Image
+    import numpy as np
+
+    from .compositor.product_assets import DEFAULT_VIEW
+    from .compositor.scene05_baseplate import APPROVED_CANVAS_SIZE, APPROVED_TRANSFORM_B
+    from .compositor.scene05_layer_masks import build_all_layer_masks
+
+    masks = build_all_layer_masks(DEFAULT_VIEW, APPROVED_TRANSFORM_B,
+                                  APPROVED_CANVAS_SIZE, repo_root)
+    interior_mask = masks["product_interior_food_mask"]
+
+    plate = Image.open(ai_plate_path).convert("RGB")
+    if plate.size != tuple(APPROVED_CANVAS_SIZE):
+        raise ProductOnlyRunnerError(
+            "FOOD_EXTRACTION_SIZE_MISMATCH",
+            f"AI plate size {plate.size} != {tuple(APPROVED_CANVAS_SIZE)}")
+
+    plate_arr = np.asarray(plate)
+    mask_arr = np.asarray(interior_mask)
+    inside = mask_arr > 128
+
+    rgba = np.zeros((*plate_arr.shape[:2], 4), dtype=np.uint8)
+    rgba[..., :3][inside] = plate_arr[inside]
+    rgba[..., 3] = np.where(inside, 255, 0).astype(np.uint8)
+    food_layer = Image.fromarray(rgba, "RGBA")
+    if out_path:
+        food_layer.save(out_path)
+    return food_layer
+
+
+def _build_food_composite_strategy(repo_root: str = ".") -> dict:
+    return {
+        "food_extraction": FOOD_EXTRACTION_STATUS,
+        "method": ("extract_food_cluster(): AI plate pixels restricted to "
+                  "product_interior_food_mask (deterministic geometry from "
+                  "real-product-v1 + APPROVED_TRANSFORM_B, NOT AI-guessed) -- "
+                  "silicone/handles/walls/background NEVER taken from AI"),
+        "mask_function": "api/media_pipeline/compositor/scene05_layer_masks.py:product_interior_food_mask",
+        "product_interior_food_mask": get_product_interior_food_mask_info(repo_root),
+        "final_composite_order": [
+            "1. AI plate background/hands/basket (raw; everything outside the interior mask is discarded for food purposes)",
+            "2. real-product-v1 base/exterior inserted via APPROVED_TRANSFORM_B",
+            "3. extracted food cluster (AI plate pixels masked to product_interior_food_mask) composited inside the product",
+            "4. product front occluder / rim / handle pixels from real-product-v1 redrawn on top (covers food edges, same real pixels, no new product pixels)",
+            "5. QA: food_count_exact (exactly 3 chicken thighs) -- if AI did not draw exactly 3, candidate reject / manual_review_required",
+        ],
+        "if_ai_did_not_draw_exactly_3_thighs": ("candidate_status=manual_review_required / "
+                                                "rejected -- QA gate food_count_exact catches "
+                                                "this; the extraction mechanism itself does "
+                                                "not count or validate food count (that's a "
+                                                "vision QA step, not implemented here)"),
+    }
 
 
 def build_request_contract(campaign_dir, scene_id: str) -> tuple[ImageRequest, SceneRequestContract, dict]:
@@ -229,6 +334,12 @@ def run_product_only_scene(campaign_dir, scene_id: str, apply: bool = False,
         if HARD_CAP_USD <= 0:
             raise ProductOnlyRunnerError(
                 "HARD_CAP_NOT_SET", "hard_cap_usd должен быть > 0 для apply")
+        if FOOD_EXTRACTION_STATUS != "implemented":
+            raise ProductOnlyRunnerError(
+                "FOOD_EXTRACTION_NOT_IMPLEMENTED",
+                "food_extraction не реализован -- apply заблокирован, "
+                "QA gate food_count_exact невозможно выполнить без "
+                "извлечения food cluster из будущего AI plate")
         # OPENAI_API_KEY проверяется ДО сети самим OpenAIImagesProvider._api_key()
         # при apply=True (MissingAPIKeyError) -- ничего не резолвим руками здесь,
         # чтобы не задваивать логику проверки ключа.
@@ -277,6 +388,10 @@ def run_product_only_scene(campaign_dir, scene_id: str, apply: bool = False,
                                       "front_hand extraction (палец/рукав поверх handle tabs) "
                                       "НЕ реализована в этом runner'е; вставка real-product-v1 "
                                       "может визуально перекрыть руки на AI-plate без коррекции."),
+        "food_extraction": FOOD_EXTRACTION_STATUS,
+        # repo_root="." -- product-lock assets резолвятся от корня репозитория,
+        # НЕ от campaign_dir (тот же default, что и у compositor-функций).
+        "food_composite_strategy": _build_food_composite_strategy(),
         "composite_mechanics": {
             "steps": list(COMPOSITE_MECHANICS_STEPS),
             "compositor": "api/media_pipeline/compositor/layer_compositor.py:compose",

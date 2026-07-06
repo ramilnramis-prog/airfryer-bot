@@ -11,25 +11,77 @@
   "size": "720x1280",
   "n": 1,
   "output_format": "png",
-  "prompt_sha256": "4067602b93fa23f883cea27f0df7cea4b663336da747a19d8831a8e31ada6f75",
-  "model_prompt": "# Video continuity block — coating-protect-ad (product-only policy)\n\nЭтот блок — **единственный источник continuity** для всего, что НЕ товар.\nИспользуется одинаковым текстом во всех 7 сценах и во всех трёх hooks\n(A/B/C) этого видео. Между сценами меняется только действие/композиция/food\nstate (см. `video-scene-prompts-product-only.md`); между hooks — только\nпервые 1-3 секунды (см. `hook_openers` в том же файле).\n\nДля другого видео можно взять другой continuity block — товар\n(`real-product-v1`) остаётся неизменным всегда.\n\n## Текст блока (вставляется в каждый scene prompt дословно)\n\n> Cozy clean white home kitchen, warm daylight coming from the left. Same\n> black air fryer with an open square basket in every shot. Same woman's\n> natural hands throughout — no rings, no bracelets, no watch, short\n> unpolished nails. Same grey ribbed sweater sleeves visible at the wrists\n> in every shot. Realistic home cooking photo, DSLR 50mm look, shallow\n> depth of field. No CGI, no illustration, no 3D render. No text, no\n> watermark, no logo. Vertical 9:16, 720×1280.\n\n## Правила применения\n\n- **Товар не описывается творчески.** Продукт вставляется из\n  `real-product-v1` (deterministic compositing), не генерируется текстом и\n  не переописывается словами формы/цвета/материала в prompt — только\n  контекст действия с ним (достаёт, моет, показывает).\n- AI может генерировать руки/окружение/фон/еду, но **не имеет права\n  перерисовывать товар** — реальные пиксели товара всегда накладываются\n  поверх сгенерированного слоя через product-lock compositing (см.\n  `product-only-generation-dry-run.json`).\n- Когда по сценарию сцены руки держат товар — они должны естественно\n  держать его за реальные плоские угловые ручки-язычки (flat corner\n  handle tabs), не за верхний борт формы или корзины.\n- Короткие горизонтальные прорези ручек должны оставаться хотя бы частично\n  видны в кадрах, где показан хват.\n- Кухня, аэрогриль, руки, одежда и свет — **одни и те же по тексту** во\n  всех 7 сценах и во всех 3 hooks этого видео (это текстовая continuity,\n  не image lock — см. `campaign_visual_policy.json.not_image_locked`).\n\n## Что явно НЕ входит в этот блок\n\nСостав и количество еды — сцено-специфичны, задаются отдельно в\n`video-scene-prompts-product-only.md` для каждой сцены (например, ровно 3\nкуриных бедра + картофельные дольки в сценах, где показано блюдо).\n\nThe woman's hands, in grey ribbed sweater sleeves, are positioned as if lifting an object out of the open air fryer basket: hands placed at the expected left and right side-handle positions, thumbs angled toward where the flat handle tabs will be, leaving a clean, empty central placement area in the basket for a square silicone liner to be inserted later. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Only very soft contact shadows/cues are allowed in the empty placement area. Below, the black air fryer basket is visibly clean and shiny. Food may be represented only as a rough, loose internal food area if needed — final food/product alignment is checked separately by QA, not guaranteed by this generation step.\n\nThe final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.\n\nNegative prompt (avoid): a completed or fully rendered silicone liner, redesigned or fake handles, loop handles, vertical oval holes, any duplicate tray or basket insert, hands gripping the basket rim instead of the expected handle positions, dirty basket, text, watermark, logo.",
-  "pipeline_product_lock_instruction": "PIPELINE ONLY — NOT sent to the image model as a drawing instruction; used by the compositor/QA instead. The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing), никогда не из AI-редактирования. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
+  "prompt_sha256": "057c4df255e0174397b7349905cb9c45da3f7f96abae31ee6b2c040d541f5695",
+  "model_prompt_clean": true,
+  "model_prompt_clean_note": "build_model_prompt() использует plan['clean_continuity_prompt'] (только английский blockquote из video-continuity-block.md, распарсенный parse_clean_continuity_prompt()), НЕ plan['continuity_block_text'] (весь .md файл целиком, как было раньше по ошибке) -- модель никогда не видит markdown-заголовки, русскую документацию или file paths.",
+  "model_prompt": "Cozy clean white home kitchen, warm daylight coming from the left. Same black air fryer with an open square basket in every shot. Same woman's natural hands throughout — no rings, no bracelets, no watch, short unpolished nails. Same grey ribbed sweater sleeves visible at the wrists in every shot. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720×1280.\n\nThe woman's hands, in grey ribbed sweater sleeves, are positioned as if lifting an object out of the open air fryer basket: hands placed at the expected left and right side-handle positions, thumbs angled toward where the flat handle tabs will be, leaving a clean, empty central placement area in the basket for a square silicone liner to be inserted later. In the central placement area, include a loose cluster of exactly 3 roasted golden chicken thighs with potato wedges, positioned where the liner interior will be after compositing. Do not draw a completed silicone liner. Do not draw redesigned or fake handles. Do not draw any duplicate tray or basket insert. Only very soft contact shadows/cues are allowed in the empty placement area. Below, the black air fryer basket is visibly clean and shiny.\n\nThe final silicone form is inserted after generation from real-product-v1. Do not invent or redesign the product. Leave the product placement area clean.\n\nNegative prompt (avoid): a completed or fully rendered silicone liner, redesigned or fake handles, loop handles, vertical oval holes, any duplicate tray or basket insert, hands gripping the basket rim instead of the expected handle positions, extra fingers, missing fingers, jewelry, dirty basket, text, watermark, logo.",
+  "pipeline_product_lock_instruction": "PIPELINE ONLY — NOT sent to the image model as a drawing instruction; used by the compositor/QA instead. The silicone form is not generated from imagination. The final product layer must be inserted from real-product-v1 and remain pixel-faithful: exact flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom, proportions, silhouette. Вставляется через APPROVED_TRANSFORM_B (deterministic compositing), никогда не из AI-редактирования. Food cluster извлекается из AI plate ТОЛЬКО внутри product_interior_food_mask (см. scene-05-product-only-apply-dry-run.json:food_composite_strategy) и композитится внутрь товара отдельным шагом — не в этом model_prompt. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
   "pipeline_product_lock_instruction_note": "НЕ отправляется модели -- используется только compositor/QA после генерации",
+  "food_composite_strategy": {
+    "food_extraction": "implemented",
+    "method": "extract_food_cluster(): AI plate pixels restricted to product_interior_food_mask (deterministic geometry from real-product-v1 + APPROVED_TRANSFORM_B, NOT AI-guessed) -- silicone/handles/walls/background NEVER taken from AI",
+    "mask_function": "api/media_pipeline/compositor/scene05_layer_masks.py:product_interior_food_mask",
+    "product_interior_food_mask": {
+      "canvas_size": [
+        720,
+        1280
+      ],
+      "bbox": [
+        200,
+        79,
+        539,
+        329
+      ],
+      "mask_source": "api/media_pipeline/compositor/scene05_layer_masks.py:product_interior_food_mask (deterministic, from real-product-v1 geometry via APPROVED_TRANSFORM_B, NOT from the AI plate)"
+    },
+    "final_composite_order": [
+      "1. AI plate background/hands/basket (raw; everything outside the interior mask is discarded for food purposes)",
+      "2. real-product-v1 base/exterior inserted via APPROVED_TRANSFORM_B",
+      "3. extracted food cluster (AI plate pixels masked to product_interior_food_mask) composited inside the product",
+      "4. product front occluder / rim / handle pixels from real-product-v1 redrawn on top (covers food edges, same real pixels, no new product pixels)",
+      "5. QA: food_count_exact (exactly 3 chicken thighs) -- if AI did not draw exactly 3, candidate reject / manual_review_required"
+    ],
+    "if_ai_did_not_draw_exactly_3_thighs": "candidate_status=manual_review_required / rejected -- QA gate food_count_exact catches this; the extraction mechanism itself does not count or validate food count (that's a vision QA step, not implemented here)"
+  },
+  "food_extraction": "implemented",
+  "product_interior_food_mask": {
+    "canvas_size": [
+      720,
+      1280
+    ],
+    "bbox": [
+      200,
+      79,
+      539,
+      329
+    ],
+    "mask_source": "api/media_pipeline/compositor/scene05_layer_masks.py:product_interior_food_mask (deterministic, from real-product-v1 geometry via APPROVED_TRANSFORM_B, NOT from the AI plate)"
+  },
+  "final_composite_order": [
+    "1. AI plate background/hands/basket (raw; everything outside the interior mask is discarded for food purposes)",
+    "2. real-product-v1 base/exterior inserted via APPROVED_TRANSFORM_B",
+    "3. extracted food cluster (AI plate pixels masked to product_interior_food_mask) composited inside the product",
+    "4. product front occluder / rim / handle pixels from real-product-v1 redrawn on top (covers food edges, same real pixels, no new product pixels)",
+    "5. QA: food_count_exact (exactly 3 chicken thighs) -- if AI did not draw exactly 3, candidate reject / manual_review_required"
+  ],
   "product_canon": "real-product-v1",
   "product_transform": "api/media_pipeline/compositor/scene05_baseplate.py:APPROVED_TRANSFORM_B",
   "product_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
   "composite_strategy": {
     "approach": "product_placement_plate",
-    "reasoning": "Предыдущая версия (background_first) всё ещё просила AI нарисовать законченную форму, хотя товар вставляется после генерации -- риск ghost/double product. product_placement_plate убирает конфликт: model_prompt просит только plate (кухня/руки/пустое место), явно запрещая рисовать законченный товар/ручки/лоток. real-product-v1 вставляется ПОСЛЕ генерации, deterministic compositing (layer_compositor.compose), в фиксированную позицию APPROVED_TRANSFORM_B -- независимо от содержимого AI-plate.",
+    "reasoning": "Предыдущая версия (background_first) всё ещё просила AI нарисовать законченную форму, хотя товар вставляется после генерации -- риск ghost/double product. product_placement_plate убирает конфликт: model_prompt просит только plate (кухня/руки/пустое место/rough food cluster), явно запрещая рисовать законченный товар/ручки/лоток. real-product-v1 вставляется ПОСЛЕ генерации, deterministic compositing (layer_compositor.compose), в фиксированную позицию APPROVED_TRANSFORM_B -- независимо от содержимого AI-plate.",
     "compositor": "api/media_pipeline/compositor/layer_compositor.py:compose",
-    "order": "background(AI plate) -> back_hand(AI plate, руки) -> product(real-product-v1) -> front_hand(AI plate, НЕ извлекается отдельно) -> effects",
+    "order": "background(AI plate) -> back_hand(AI plate, руки) -> product base/exterior(real-product-v1) -> food(extracted from AI plate via product_interior_food_mask) -> product front occluder/rim/handles(real-product-v1) -> effects",
     "validator": "api/media_pipeline/compositor/product_lock_validator.py:validate_composite",
     "composite_mechanics_steps": [
-      "1. raw AI plate (kitchen/hands/basket/placement area) сохраняется как есть",
-      "2. real-product-v1 вставляется через APPROVED_TRANSFORM_B (deterministic compositing, layer_compositor.compose)",
-      "3. front_hand extraction (палец/рукав поверх handle tabs) НЕ реализована в этом runner'е -- см. front_hand_extraction ниже",
-      "4. если руки закрыты продуктом целиком или не взаимодействуют с handle tabs -- candidate reject",
-      "5. если AI нарисовал собственную форму/лоток/вставку несмотря на PLACEMENT_NOTE -- candidate reject (no_duplicate_ai_product_visible)"
+      "1. raw AI plate (kitchen/hands/basket/placement area/rough food cluster) сохраняется как есть",
+      "2. real-product-v1 base/exterior вставляется через APPROVED_TRANSFORM_B (deterministic compositing, layer_compositor.compose)",
+      "3. food cluster извлекается из AI plate СТРОГО внутри product_interior_food_mask (extract_food_cluster(), детерминированная геометрия из real-product-v1, не из AI) и композитится внутрь товара",
+      "4. product front occluder / rim / handle pixels из real-product-v1 перерисовываются поверх еды (закрывают края, без новых пикселей товара)",
+      "5. front_hand extraction (палец/рукав поверх handle tabs) НЕ реализована в этом runner'е -- см. front_hand_extraction ниже",
+      "6. если руки закрыты продуктом целиком или не взаимодействуют с handle tabs -- candidate reject",
+      "7. если AI нарисовал собственную форму/лоток/вставку несмотря на PLACEMENT_NOTE -- candidate reject (no_duplicate_ai_product_visible)",
+      "8. QA: food_count_exact -- если AI не нарисовал ровно 3 бедра, candidate reject/manual_review_required (extraction сам не считает еду, это отдельная visual QA проверка)"
     ],
     "front_hand_extraction": "not_implemented",
     "front_hand_extraction_risk": "hands may be partially covered by product layer -- front_hand extraction НЕ реализована в этом runner'е",
