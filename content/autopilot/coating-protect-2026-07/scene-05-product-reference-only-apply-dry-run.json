@@ -1,0 +1,115 @@
+{
+  "status": "dry_run_only",
+  "candidate_label": "product_reference_only_v1",
+  "scene_variant": "no_hands_result_shot",
+  "product_reference_mode": "real_product_reference_only",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "model": "gpt-image-2",
+  "endpoint": "/images/edits",
+  "mode": "edit",
+  "size": "720x1280",
+  "n": 1,
+  "output_format": "png",
+  "retries": 0,
+  "max_calls": 1,
+  "hard_cap_usd": 0.5,
+  "reference_images": [
+    "real-product-v1"
+  ],
+  "reference_image_resolved_path": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+  "reference_images_note": "Exactly one image reference: real-product-v1 (resolved to the master crop -- a real, unmodified RGB photo, no alpha -- avoids any alpha-as-implicit-mask ambiguity in the /images/edits endpoint). Never a C1/C2/C3 generated PNG, never any AI-generated plate. 'reference_images' uses the canonical asset_id (real-product-v1, same identifier used throughout this campaign's policy docs); reference_image_resolved_path is the actual file path the runner uploads.",
+  "forbidden_reference_sources": [
+    "C1",
+    "C2",
+    "C3",
+    "generated_plates",
+    "previous_candidate_composites",
+    "kitchen",
+    "air_fryer",
+    "basket",
+    "food",
+    "hands",
+    "person",
+    "clothing",
+    "lighting"
+  ],
+  "no_hands_prompt": true,
+  "model_prompt_clean": true,
+  "prompt_sha256": "5d868e1d34f61100825b34c1aba1598963f2418da363fca87f12b61590801e58",
+  "model_prompt": "Cozy clean white home kitchen, warm daylight from the left. Black air fryer with open square basket, high 3/4 top-down camera angle. Inside the basket is the same silicone form as the only reference image: dark grey matte square silicone air fryer liner, flat corner handle tabs, short horizontal slots in the tabs, ribbed bottom. Inside the form are exactly 3 roasted golden chicken thighs with potato wedges. The air fryer basket is clean around the form. No hands, no arms, no fingers, no person. Realistic home cooking photo, DSLR 50mm look, vertical 9:16, 720x1280. No text, no watermark, no logo.\n\nNegative prompt (avoid): redesigned handles, loop handles, vertical oval holes, duplicate tray, second product, black extra insert, hands, fingers, person, text, watermark, logo, CGI, illustration, 3D render.",
+  "qa_gates_product_reference_only": [
+    {
+      "id": 1,
+      "name": "only_real_product_v1_used_as_image_reference",
+      "check": "reference_images содержит РОВНО один элемент -- real-product-v1 master crop; ничего из FORBIDDEN_REFERENCE_SOURCES"
+    },
+    {
+      "id": 2,
+      "name": "no_generated_plate_used_as_reference",
+      "check": "ни один AI-сгенерированный plate (C1/C2/C3 или любой другой) не использован как image reference"
+    },
+    {
+      "id": 3,
+      "name": "no_c1_c2_c3_png_referenced",
+      "check": "ни один путь generated/product-only-scene/scene-05/scene-05-c[123]*.png не встречается ни в запросе, ни в отчёте как reference"
+    },
+    {
+      "id": 4,
+      "name": "product_visually_matches_real_product_v1",
+      "check": "square dark grey matte silicone, flat corner handle tabs, short horizontal handle slots, ribbed bottom; no loop handles; no vertical oval holes"
+    },
+    {
+      "id": 5,
+      "name": "food_count_exact",
+      "check": "ровно 3 куриных бедра + картофельные дольки"
+    },
+    {
+      "id": 6,
+      "name": "no_hands_no_person",
+      "check": "нет рук/человека в кадре"
+    },
+    {
+      "id": 7,
+      "name": "basket_clean_around_product",
+      "check": "корзина аэрогриля чистая вокруг товара"
+    },
+    {
+      "id": 8,
+      "name": "no_duplicate_tray_or_second_product",
+      "check": "нет дублирующего лотка/второго товара"
+    },
+    {
+      "id": 9,
+      "name": "no_text_or_watermark",
+      "check": "нет текста/watermark/логотипа в кадре"
+    },
+    {
+      "id": 10,
+      "name": "manual_review_required",
+      "check": "manual_review_required: true -- accepted никогда не проставляется автоматически"
+    }
+  ],
+  "manual_review_required": true,
+  "candidate_status_note": "future apply must set candidate_status to pending_manual_review or rejected -- never accepted automatically.",
+  "image_client_capability_check": {
+    "finding": "api/media_pipeline/openai_images_client.py ALREADY supports mode='edit' with reference_images=[<path>] and no mask (files = [('image[]', ref, Path(ref).read_bytes()) for ref in request.reference_images]; mask_path is optional, only required to be absent when mode != 'edit'). No new API surface was invented for this contract -- it reuses the existing edit-mode request path (POST /images/edits).",
+    "new_code_added": "api/media_pipeline/product_reference_only_runner.py (new module) + cli.py subcommand 'product-reference-only-scene' -- wires the existing client capability into a fail-closed, single-call runner with the same MAX_CALLS=1/RETRIES=0/HARD_CAP_USD=0.50 contract as product_only_scene_runner.py."
+  },
+  "openai_calls_planned": 0,
+  "higgsfield_calls_planned": 0,
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "api_spend_usd": 0,
+  "supersedes_generation_strategy_of": [
+    "content/autopilot/coating-protect-2026-07/scene-05-product-only-plan.json (C1)",
+    "content/autopilot/coating-protect-2026-07/video-scene-prompts-product-only.md scene-05 entry (C1/C2/C3 local deterministic compositing)"
+  ],
+  "related_docs": [
+    "content/autopilot/coating-protect-2026-07/scene-05-generation-attempts-status.json",
+    "content/autopilot/coating-protect-2026-07/scene-05-product-reference-only-dry-run.json (earlier planning-only version of this same direction)",
+    "content/autopilot/coating-protect-2026-07/campaign_visual_policy.json"
+  ],
+  "created_at": "2026-07-06"
+}

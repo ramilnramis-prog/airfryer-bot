@@ -20,6 +20,15 @@
                                         реального generate-вызова (retries=0,
                                         hard cap $0.50); НИКОГДА не читает
                                         campaign_visual_lock.json
+  product-reference-only-scene --campaign CODE --scene NN — PRODUCT ONLY MEANS
+                                        PRODUCT ONLY (после отклонения scene-05
+                                        C1/C2/C3 local compositing, см.
+                                        scene-05-generation-attempts-status.json):
+                                        mode=edit, РОВНО один image reference
+                                        (real-product-v1 master crop), всё
+                                        остальное текстом; dry-run по умолчанию,
+                                        --apply для ОДНОГО реального вызова
+                                        (retries=0, hard cap $0.50)
 
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
@@ -39,6 +48,8 @@ from .openai_vision_evaluator import OpenAIVisionEvaluator
 from .product_only_policy import (ProductOnlyPolicyError,
                                   assert_legacy_generation_allowed)
 from .product_only_scene_runner import ProductOnlyRunnerError, run_product_only_scene
+from .product_reference_only_runner import (ProductReferenceOnlyRunnerError,
+                                            run_product_reference_only_scene)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -376,6 +387,17 @@ def cmd_product_only_scene(args) -> int:
     return _emit(report)
 
 
+def cmd_product_reference_only_scene(args) -> int:
+    """product-reference-only generation runner: dry-run по умолчанию,
+    --apply — РОВНО один реальный edit-вызов с real-product-v1 как
+    единственным image reference. НИКОГДА не читает C1/C2/C3 generated
+    outputs, campaign_visual_lock.json -- см.
+    api.media_pipeline.product_reference_only_runner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = run_product_reference_only_scene(campaign_dir, args.scene, apply=args.apply)
+    return _emit(report)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -444,10 +466,24 @@ def main(argv=None) -> int:
                         "hard cap $0.50, retries=0, max_calls=1)")
     p.set_defaults(fn=cmd_product_only_scene)
 
+    p = sub.add_parser("product-reference-only-scene",
+                       help="PRODUCT ONLY MEANS PRODUCT ONLY: mode=edit, единственный "
+                            "image reference real-product-v1, всё остальное текстом")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1)")
+    p.set_defaults(fn=cmd_product_reference_only_scene)
+
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
-    except (ProductOnlyPolicyError, ProductOnlyRunnerError) as e:
+    except (ProductOnlyPolicyError, ProductOnlyRunnerError, ProductReferenceOnlyRunnerError) as e:
         return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (MissingAPIKeyError, BudgetExceededError, BudgetStop,
             VisionSchemaError, FileNotFoundError, ValueError, KeyError) as e:
