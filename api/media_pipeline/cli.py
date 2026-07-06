@@ -38,6 +38,20 @@
                                         dry-run по умолчанию, --apply для
                                         ОДНОГО реального вызова (retries=0,
                                         hard cap $0.50)
+  product-reference-only-campaign-v2 --campaign CODE [--scenes scene-01,...]
+                                        — batch runner по всей кампании
+                                        (scene-01..scene-07) поверх
+                                        product-reference-only-v2: dry-run по
+                                        умолчанию (0 вызовов OpenAI), --apply
+                                        для реального прогона; --skip-existing
+                                        пропускает сцены с уже сгенерированным
+                                        файлом на диске, --skip-selected
+                                        (по умолчанию включён) пропускает сцены
+                                        из campaign-selected-working-candidates.json
+                                        (scene-05/scene-07); stop_on_error по
+                                        умолчанию; campaign_total_hard_cap_usd
+                                        $5.00; см.
+                                        api.media_pipeline.product_reference_only_campaign_runner
 
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
@@ -60,6 +74,8 @@ from .product_only_scene_runner import ProductOnlyRunnerError, run_product_only_
 from .product_reference_only_runner import (ProductReferenceOnlyRunnerError,
                                             run_product_reference_only_scene,
                                             run_product_reference_only_scene_v2)
+from .product_reference_only_campaign_runner import (
+    ProductReferenceOnlyCampaignError, run_campaign)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -419,6 +435,19 @@ def cmd_product_reference_only_scene_v2(args) -> int:
     return _emit(report)
 
 
+def cmd_product_reference_only_campaign_v2(args) -> int:
+    """product-reference-only-v2 campaign batch runner: dry-run по умолчанию
+    (0 вызовов OpenAI), --apply — реальный прогон по всей кампании (или по
+    --scenes) с stop_on_error, --skip-existing, --skip-selected; см.
+    api.media_pipeline.product_reference_only_campaign_runner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    scenes = [s.strip() for s in args.scenes.split(",") if s.strip()] if args.scenes else None
+    report = run_campaign(campaign_dir, scenes=scenes, apply=args.apply,
+                          skip_existing=args.skip_existing,
+                          skip_selected=args.skip_selected)
+    return _emit(report)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -515,10 +544,38 @@ def main(argv=None) -> int:
                         "hard cap $0.50, retries=0, max_calls=1)")
     p.set_defaults(fn=cmd_product_reference_only_scene_v2)
 
+    p = sub.add_parser("product-reference-only-campaign-v2",
+                       help="batch runner по всей кампании (scene-01..scene-07) поверх "
+                            "product-reference-only-v2; scene-05/scene-07 (working "
+                            "candidates) пропускаются по умолчанию (--skip-selected)")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scenes", default=None,
+                   help="список сцен через запятую, например scene-01,scene-02,scene-03 "
+                        "(по умолчанию — все scene-01..scene-07)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply); "
+                        "0 вызовов OpenAI/Higgsfield")
+    p.add_argument("--apply", action="store_true",
+                   help="РЕАЛЬНЫЙ прогон: до одного вызова OpenAI на configured-сцену "
+                        "(retries=0, max_calls_per_scene=1, campaign_total_hard_cap_usd=$5.00)")
+    p.add_argument("--skip-existing", action="store_true", default=False,
+                   help="пропустить сцены, для которых уже есть сгенерированный файл на диске")
+    p.add_argument("--skip-selected", dest="skip_selected", action="store_true",
+                   help="пропустить сцены с уже выбранным working candidate "
+                        "(campaign-selected-working-candidates.json, напр. scene-05/scene-07) "
+                        "-- включено по умолчанию")
+    p.add_argument("--no-skip-selected", dest="skip_selected", action="store_false",
+                   help="ОПАСНО: разрешить регенерацию сцен с уже выбранным working "
+                        "candidate; не использовать без явного подтверждения владельца")
+    p.set_defaults(fn=cmd_product_reference_only_campaign_v2, skip_selected=True)
+
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
-    except (ProductOnlyPolicyError, ProductOnlyRunnerError, ProductReferenceOnlyRunnerError) as e:
+    except (ProductOnlyPolicyError, ProductOnlyRunnerError, ProductReferenceOnlyRunnerError,
+            ProductReferenceOnlyCampaignError) as e:
         return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (MissingAPIKeyError, BudgetExceededError, BudgetStop,
             VisionSchemaError, FileNotFoundError, ValueError, KeyError) as e:

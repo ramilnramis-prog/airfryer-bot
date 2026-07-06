@@ -1,0 +1,146 @@
+{
+  "status": "dry_run_only",
+  "candidate_label": "product_reference_only_v2",
+  "scene_variant": "no_hands_result_shot",
+  "product_reference_mode": "multi_product_reference_only",
+  "scene_id": "scene-04",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "model": "gpt-image-2",
+  "endpoint": "/images/edits",
+  "mode": "edit",
+  "size": "720x1280",
+  "n": 1,
+  "output_format": "png",
+  "retries": 0,
+  "max_calls": 1,
+  "hard_cap_usd": 0.5,
+  "reference_images": [
+    "real-product-v1:product_45deg_master",
+    "real-product-v1:product_top_master",
+    "real-product-v1:both_handles_master",
+    "real-product-v1:bottom_loop_master"
+  ],
+  "reference_image_paths": [
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+    "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+  ],
+  "reference_images_note": "Same 4 product-only reference images used across the whole campaign (product_45deg, product_top, both_handles, bottom_loop) -- no airfryer/basket/motion/generated reference, no C1/C2/C3 output, no other scene's candidate. Note: both_handles_master.png is byte-identical to product_45deg_master.png in the current asset pack -- so 3 visually distinct images are actually sent, not 4.",
+  "forbidden_reference_sources": [
+    "C1",
+    "C2",
+    "C3",
+    "generated_plates",
+    "previous_candidate_composites",
+    "kitchen",
+    "air_fryer",
+    "basket",
+    "food",
+    "hands",
+    "person",
+    "clothing",
+    "lighting"
+  ],
+  "forbidden_product_lock_assets": [
+    "real-v1/airfryer/airfryer_front_master.png",
+    "real-v1/airfryer/clean_basket_master.png",
+    "real-v1/motion/product_in_basket_master.png",
+    "real-v1/motion/grip_motion_master.png"
+  ],
+  "allowed_product_reference_catalog": {
+    "real-product-v1:product_45deg_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_45deg_master.png",
+    "real-product-v1:product_top_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_top_master.png",
+    "real-product-v1:product_full_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/product/product_full_master.png",
+    "real-product-v1:left_handle_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png",
+    "real-product-v1:right_handle_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/right_handle_master.png",
+    "real-product-v1:both_handles_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/both_handles_master.png",
+    "real-product-v1:bottom_loop_master": "assets/product-lock/airfryer-silicone-form/references/real-v1/bottom/bottom_loop_master.png"
+  },
+  "no_hands_prompt": true,
+  "model_prompt_clean": true,
+  "prompt_sha256": "c333bf8bae1647115c7899d638e78b04211859f34e10f78d528f10dd36055e10",
+  "model_prompt": "Cozy clean white home kitchen, warm daylight from the left. Front view of the closed black air fryer working on the countertop; through the front viewing window, the same silicone form shown in the product reference images is visible holding food, warm cooking glow inside, subtle heat shimmer: square dark grey matte silicone, flat corner handle tabs with short horizontal slots, ribbed bottom. Keep the form shape and handle geometry faithful to the product references. Inside the form, exactly 3 roasted golden chicken thighs with potato wedges are visible through the window. No hands, no arms, no fingers, no person. Realistic home cooking photo, DSLR 50mm look, vertical 9:16, 720x1280. No text, no watermark, no logo.\n\nNegative prompt (avoid): redesigned handles, loop handles, vertical oval holes, duplicate tray, second product, black extra insert, hands, fingers, person, text, watermark, logo, CGI, illustration, 3D render, food outside the form, not exactly 3 chicken thighs.",
+  "qa_gates_product_reference_only_v2": [
+    {
+      "id": 1,
+      "name": "only_product_references_used",
+      "check": "reference_images содержит ТОЛЬКО изображения из PRODUCT_REFERENCE_ASSET_PATHS, ничего из FORBIDDEN_PRODUCT_LOCK_ASSETS/FORBIDDEN_REFERENCE_SOURCES"
+    },
+    {
+      "id": 2,
+      "name": "reference_images_length_exactly_4",
+      "check": "reference_images содержит РОВНО 4 элемента"
+    },
+    {
+      "id": 3,
+      "name": "every_reference_under_real_v1_product_only",
+      "check": "каждый reference image находится под real-v1/(product|handles|bottom) и показывает ТОЛЬКО товар"
+    },
+    {
+      "id": 4,
+      "name": "no_airfryer_basket_motion_generated_refs",
+      "check": "нет airfryer/basket/motion референсов и нет generated/ референсов"
+    },
+    {
+      "id": 5,
+      "name": "no_c1_c2_c3_refs",
+      "check": "нет ссылок на любой previous candidate/generated output"
+    },
+    {
+      "id": 6,
+      "name": "product_visually_matches_references",
+      "check": "square dark grey matte silicone, flat corner handle tabs, short horizontal handle slots, ribbed bottom; no loop handles; no vertical oval holes"
+    },
+    {
+      "id": 7,
+      "name": "food_count_exact",
+      "check": "ровно 3 куриных бедра + картофельные дольки видны через окно"
+    },
+    {
+      "id": 8,
+      "name": "no_food_outside_form",
+      "check": "еда только внутри формы, не вне её"
+    },
+    {
+      "id": 9,
+      "name": "no_hands_no_person",
+      "check": "нет рук/человека в кадре"
+    },
+    {
+      "id": 10,
+      "name": "no_duplicate_product_or_tray",
+      "check": "нет дублирующего товара/лотка"
+    },
+    {
+      "id": 11,
+      "name": "realistic_photo",
+      "check": "реалистичное фото, не CGI/иллюстрация/3D render"
+    },
+    {
+      "id": 12,
+      "name": "no_text_or_watermark",
+      "check": "нет текста/watermark/логотипа в кадре"
+    },
+    {
+      "id": 13,
+      "name": "manual_review_required",
+      "check": "manual_review_required: true -- accepted никогда не проставляется автоматически"
+    }
+  ],
+  "manual_review_required": true,
+  "candidate_status_note": "future apply must set candidate_status to pending_manual_review, rejected, no_candidate_timeout, or rejected_api_error -- never accepted automatically.",
+  "scene_goal": "Usage / cooking-in-progress -- form with food seen through the closed air fryer's front window, no hands.",
+  "openai_calls_planned": 0,
+  "higgsfield_calls_planned": 0,
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "api_spend_usd": 0,
+  "related_docs": [
+    "content/autopilot/coating-protect-2026-07/campaign-product-reference-only-v2-dry-run.json",
+    "content/autopilot/coating-protect-2026-07/scene-05-generation-attempts-status.json",
+    "content/autopilot/coating-protect-2026-07/campaign_visual_policy.json"
+  ],
+  "created_at": "2026-07-06"
+}

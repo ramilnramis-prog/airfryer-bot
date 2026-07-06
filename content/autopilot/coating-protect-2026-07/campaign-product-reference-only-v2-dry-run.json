@@ -1,0 +1,57 @@
+{
+  "campaign_code": "coating-protect-2026-07",
+  "mode": "dry-run",
+  "scenes_requested": [
+    "scene-99"
+  ],
+  "skip_existing": false,
+  "skip_selected": true,
+  "stop_on_error": true,
+  "scene_reports": [
+    {
+      "scene_id": "scene-99",
+      "status": "not_configured",
+      "reason": "scene-99 is not in product_reference_only_runner.SCENE_PROMPTS_V2"
+    }
+  ],
+  "max_calls_per_scene": 1,
+  "retries": 0,
+  "hard_cap_usd_per_scene": 0.5,
+  "campaign_total_hard_cap_usd": 5.0,
+  "total_estimated_spend_usd": 0.0,
+  "total_actual_spend_usd": 0,
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "image_generation_timeout_seconds": 900,
+  "reference_policy": {
+    "mandatory_product_reference": "real-product-v1",
+    "allowed_reference_images": [
+      "real-product-v1:product_45deg_master",
+      "real-product-v1:product_top_master",
+      "real-product-v1:both_handles_master",
+      "real-product-v1:bottom_loop_master"
+    ],
+    "forbidden_product_lock_assets": [
+      "real-v1/airfryer/airfryer_front_master.png",
+      "real-v1/airfryer/clean_basket_master.png",
+      "real-v1/motion/product_in_basket_master.png",
+      "real-v1/motion/grip_motion_master.png"
+    ],
+    "forbidden_reference_sources": [
+      "C1",
+      "C2",
+      "C3",
+      "generated_plates",
+      "previous_candidate_composites",
+      "kitchen",
+      "air_fryer",
+      "basket",
+      "food",
+      "hands",
+      "person",
+      "clothing",
+      "lighting"
+    ]
+  },
+  "candidate_status_note": "per-scene candidate_status after a real apply is always one of pending_manual_review, rejected, no_candidate_timeout, or rejected_api_error -- never accepted automatically."
+}

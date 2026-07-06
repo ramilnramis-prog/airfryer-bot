@@ -54,9 +54,11 @@ class TestScene05V2UnchangedAfterGeneralization(unittest.TestCase):
 
 class TestUnconfiguredSceneFailsClosed(unittest.TestCase):
     def test_unconfigured_scene_raises_before_network(self):
+        # scene-01..07 are now all configured (campaign rollout) -- use a
+        # genuinely unknown scene id to exercise the fail-closed path.
         with urlopen_raises():
             with self.assertRaises(runner.ProductReferenceOnlyRunnerError) as ctx:
-                runner.build_request_contract_v2(str(CAMPAIGN_DIR), "scene-03")
+                runner.build_request_contract_v2(str(CAMPAIGN_DIR), "scene-99")
         self.assertEqual(ctx.exception.code, "SCENE_NOT_CONFIGURED_FOR_V2")
 
     def test_unconfigured_scene_apply_also_fails_closed(self):

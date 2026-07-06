@@ -1,0 +1,23 @@
+{
+  "status": "registry_of_selected_working_candidates",
+  "campaign_code": "coating-protect-2026-07",
+  "policy_note": "Entries here are working candidates selected for the current video. They are NEVER promoted to reference, NEVER added to product-lock, and NEVER used as a source for any future generation. The only permanent visual reference in this project is real-product-v1 (product-lock/real-v1/{product,handles,bottom}). candidate_status inside each scene's own QA report remains pending_manual_review -- listing a scene here means the campaign batch runner should skip regenerating it when --skip-selected is passed, nothing more.",
+
+  "scene-05": {
+    "status": "working_candidate_selected",
+    "status_detail": "pending_final_owner_approval",
+    "candidate_file": "generated/product-reference-only-scene-v2/scene-05/scene-05-product-reference-only-v2-candidate.png",
+    "qa_report": "generated/product-reference-only-scene-v2/scene-05/scene-05-product-reference-only-v2-qa-report.json",
+    "not_promoted_to_reference": true
+  },
+
+  "scene-07": {
+    "status": "working_candidate_selected",
+    "status_detail": "pending_final_owner_approval",
+    "candidate_file": "generated/product-reference-only-scene-v2/scene-07/scene-07-product-reference-only-v2-candidate.png",
+    "qa_report": "generated/product-reference-only-scene-v2/scene-07/scene-07-product-reference-only-v2-qa-report.json",
+    "not_promoted_to_reference": true
+  },
+
+  "created_at": "2026-07-06"
+}

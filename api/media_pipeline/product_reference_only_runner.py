@@ -277,13 +277,177 @@ QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE07 = (
      "check": "manual_review_required: true -- accepted никогда не проставляется автоматически"},
 )
 
+# -- campaign rollout: scene-01, 02, 03, 04, 06 (scene-05/07 already exist
+# above, kept exactly as-is). Same mechanism throughout the whole campaign:
+# mode="edit", the SAME 4 product-only reference images
+# (PRODUCT_REFERENCE_IMAGES_V2) for every scene -- only the scene text
+# changes. No scene ever gets an image reference other than the product.
+_COMMON_QA_GATE_PREFIX = (
+    {"id": 1, "name": "only_product_references_used",
+     "check": "reference_images содержит ТОЛЬКО изображения из PRODUCT_REFERENCE_ASSET_PATHS, ничего из FORBIDDEN_PRODUCT_LOCK_ASSETS/FORBIDDEN_REFERENCE_SOURCES"},
+    {"id": 2, "name": "reference_images_length_exactly_4",
+     "check": "reference_images содержит РОВНО 4 элемента"},
+    {"id": 3, "name": "every_reference_under_real_v1_product_only",
+     "check": "каждый reference image находится под real-v1/(product|handles|bottom) и показывает ТОЛЬКО товар"},
+    {"id": 4, "name": "no_airfryer_basket_motion_generated_refs",
+     "check": "нет airfryer/basket/motion референсов и нет generated/ референсов"},
+    {"id": 5, "name": "no_c1_c2_c3_refs",
+     "check": "нет ссылок на любой previous candidate/generated output"},
+    {"id": 6, "name": "product_visually_matches_references",
+     "check": "square dark grey matte silicone, flat corner handle tabs, short horizontal handle slots, ribbed bottom; no loop handles; no vertical oval holes"},
+)
+_COMMON_QA_GATE_SUFFIX = (
+    {"name": "no_duplicate_product_or_tray", "check": "нет дублирующего товара/лотка"},
+    {"name": "realistic_photo", "check": "реалистичное фото, не CGI/иллюстрация/3D render"},
+    {"name": "no_text_or_watermark", "check": "нет текста/watermark/логотипа в кадре"},
+    {"name": "manual_review_required",
+     "check": "manual_review_required: true -- accepted никогда не проставляется автоматически"},
+)
+
+
+def _build_scene_qa_gates(scene_specific: tuple) -> tuple:
+    """COMMON_PREFIX + scene-specific gates + COMMON_SUFFIX, auto-numbered.
+    Used for scene-01/02/03/04/06 -- scene-05/07's gate tuples predate this
+    helper and are kept as literal tuples (unchanged) for zero risk."""
+    gates = [dict(g) for g in _COMMON_QA_GATE_PREFIX]
+    next_id = len(gates) + 1
+    for g in scene_specific:
+        gates.append({"id": next_id, **g})
+        next_id += 1
+    for g in _COMMON_QA_GATE_SUFFIX:
+        gates.append({"id": next_id, **g})
+        next_id += 1
+    return tuple(gates)
+
+
+_BASE_NEGATIVE_V2 = ("redesigned handles, loop handles, vertical oval holes, duplicate tray, "
+                    "second product, black extra insert, hands, fingers, person, text, "
+                    "watermark, logo, CGI, illustration, 3D render")
+
+# scene-01: hook / attention frame -- product recognizable next to the basket.
+MODEL_PROMPT_V2_SCENE01 = (
+    "Cozy clean white home kitchen, warm daylight from the left. Black air "
+    "fryer with open square basket on the countertop. The same silicone "
+    "form shown in the product reference images sits next to the open "
+    "basket, clearly recognizable: dark grey matte square silicone, flat "
+    "corner handle tabs with short horizontal slots, ribbed bottom facing "
+    "slightly toward camera. Keep the form shape and handle geometry "
+    "faithful to the product references. No hands, no arms, no fingers, "
+    "no person. Realistic home cooking photo, DSLR 50mm look, vertical "
+    "9:16, 720x1280. No text, no watermark, no logo."
+)
+NEGATIVE_PROMPT_V2_SCENE01 = _BASE_NEGATIVE_V2 + ", product not recognizable."
+FULL_MODEL_PROMPT_V2_SCENE01 = MODEL_PROMPT_V2_SCENE01 + "\n\nNegative prompt (avoid): " + NEGATIVE_PROMPT_V2_SCENE01
+QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE01 = _build_scene_qa_gates((
+    {"name": "product_recognizable_in_frame", "check": "товар узнаваем в кадре рядом с корзиной"},
+    {"name": "no_hands_no_person", "check": "нет рук/человека в кадре"},
+))
+
+# scene-02: problem frame -- dirty basket / grease, form waits clean nearby
+# (never inside the dirty basket). Mild, not disgusting.
+MODEL_PROMPT_V2_SCENE02 = (
+    "Extreme close-up on a black air fryer basket sitting on a warm-lit "
+    "kitchen countertop: the scouring side of a sponge rests against the "
+    "dark non-stick coated bottom, a thin film of grease and a few soap "
+    "bubbles visible, warm daylight from the left. The same silicone form "
+    "shown in the product reference images sits just outside the basket "
+    "at the edge of the frame, dark grey matte square silicone, flat "
+    "corner handle tabs with short horizontal slots, ribbed bottom, clean "
+    "and unused nearby. Keep the form shape and handle geometry faithful "
+    "to the product references. No hands, no arms, no fingers, no person. "
+    "Realistic home cooking photo, DSLR 50mm look, vertical 9:16, "
+    "720x1280. No text, no watermark, no logo."
+)
+NEGATIVE_PROMPT_V2_SCENE02 = _BASE_NEGATIVE_V2 + (
+    ", silicone form inside the dirty basket, excessive or disgusting mess, deep gouges or scratches.")
+FULL_MODEL_PROMPT_V2_SCENE02 = MODEL_PROMPT_V2_SCENE02 + "\n\nNegative prompt (avoid): " + NEGATIVE_PROMPT_V2_SCENE02
+QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE02 = _build_scene_qa_gates((
+    {"name": "form_not_inside_dirty_basket", "check": "форма НЕ находится внутри грязной корзины -- лежит рядом, чистая"},
+    {"name": "mess_not_excessive", "check": "грязь/жир умеренные, не отталкивающие"},
+    {"name": "no_hands_no_person", "check": "нет рук/человека в кадре"},
+))
+
+# scene-03: product introduction -- form large in foreground, both handles
+# and ribbed bottom clearly shown, air fryer softly out of focus behind.
+MODEL_PROMPT_V2_SCENE03 = (
+    "Cozy clean white home kitchen, warm daylight from the left, black air "
+    "fryer with open square basket softly out of focus in the background. "
+    "In the foreground, the same silicone form shown in the product "
+    "reference images is presented clearly on the countertop: square dark "
+    "grey matte silicone, both flat corner handle tabs with short "
+    "horizontal slots clearly visible, ribbed bottom visible. Keep the "
+    "form shape and handle geometry faithful to the product references. "
+    "No hands, no arms, no fingers, no person. Realistic home cooking "
+    "photo, DSLR 50mm look, vertical 9:16, 720x1280. No text, no "
+    "watermark, no logo."
+)
+NEGATIVE_PROMPT_V2_SCENE03 = _BASE_NEGATIVE_V2 + ", handles or bottom ribs not visible."
+FULL_MODEL_PROMPT_V2_SCENE03 = MODEL_PROMPT_V2_SCENE03 + "\n\nNegative prompt (avoid): " + NEGATIVE_PROMPT_V2_SCENE03
+QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE03 = _build_scene_qa_gates((
+    {"name": "handles_and_ribs_clearly_visible", "check": "оба ручки-язычка и рёбра дна чётко видны -- hard fail, если не видны (кадр представления товара)"},
+    {"name": "no_hands_no_person", "check": "нет рук/человека в кадре"},
+))
+
+# scene-04: usage / cooking-in-progress -- form seen through the closed air
+# fryer's front window, warm glow, food inside, no hands (occlusion-safe).
+MODEL_PROMPT_V2_SCENE04 = (
+    "Cozy clean white home kitchen, warm daylight from the left. Front "
+    "view of the closed black air fryer working on the countertop; "
+    "through the front viewing window, the same silicone form shown in "
+    "the product reference images is visible holding food, warm cooking "
+    "glow inside, subtle heat shimmer: square dark grey matte silicone, "
+    "flat corner handle tabs with short horizontal slots, ribbed bottom. "
+    "Keep the form shape and handle geometry faithful to the product "
+    "references. Inside the form, exactly 3 roasted golden chicken thighs "
+    "with potato wedges are visible through the window. No hands, no "
+    "arms, no fingers, no person. Realistic home cooking photo, DSLR 50mm "
+    "look, vertical 9:16, 720x1280. No text, no watermark, no logo."
+)
+NEGATIVE_PROMPT_V2_SCENE04 = _BASE_NEGATIVE_V2 + ", food outside the form, not exactly 3 chicken thighs."
+FULL_MODEL_PROMPT_V2_SCENE04 = MODEL_PROMPT_V2_SCENE04 + "\n\nNegative prompt (avoid): " + NEGATIVE_PROMPT_V2_SCENE04
+QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE04 = _build_scene_qa_gates((
+    {"name": "food_count_exact", "check": "ровно 3 куриных бедра + картофельные дольки видны через окно"},
+    {"name": "no_food_outside_form", "check": "еда только внутри формы, не вне её"},
+    {"name": "no_hands_no_person", "check": "нет рук/человека в кадре"},
+))
+
+# scene-06: contrast/benefit -- form taken out (empty, clean) standing next
+# to the now-empty, perfectly clean basket. No hands required.
+MODEL_PROMPT_V2_SCENE06 = (
+    "Cozy clean white home kitchen, warm daylight from the left. The "
+    "black air fryer basket is pulled out, empty and perfectly clean, "
+    "smooth matte black interior with no grease or scratches, softly "
+    "reflecting the window light. Next to it on the countertop, the same "
+    "silicone form shown in the product reference images stands empty "
+    "and clean: square dark grey matte silicone, flat corner handle tabs "
+    "with short horizontal slots, ribbed bottom. Keep the form shape and "
+    "handle geometry faithful to the product references. No hands, no "
+    "arms, no fingers, no person. Realistic home cooking photo, DSLR 50mm "
+    "look, vertical 9:16, 720x1280. No text, no watermark, no logo."
+)
+NEGATIVE_PROMPT_V2_SCENE06 = _BASE_NEGATIVE_V2 + ", grease, scratches, dirty basket, food."
+FULL_MODEL_PROMPT_V2_SCENE06 = MODEL_PROMPT_V2_SCENE06 + "\n\nNegative prompt (avoid): " + NEGATIVE_PROMPT_V2_SCENE06
+QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE06 = _build_scene_qa_gates((
+    {"name": "basket_clean_no_grease_scratches", "check": "корзина идеально чистая, без жира/царапин"},
+    {"name": "form_empty_and_clean", "check": "форма пустая и чистая"},
+    {"name": "no_hands_no_person", "check": "нет рук/человека в кадре"},
+))
+
 # scene_id -> (full_model_prompt, qa_gates). v2 is fail-closed on unknown
 # scenes (raises SCENE_NOT_CONFIGURED_FOR_V2) rather than silently reusing
 # scene-05's prompt for an unconfigured scene.
 SCENE_PROMPTS_V2 = {
+    "scene-01": (FULL_MODEL_PROMPT_V2_SCENE01, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE01),
+    "scene-02": (FULL_MODEL_PROMPT_V2_SCENE02, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE02),
+    "scene-03": (FULL_MODEL_PROMPT_V2_SCENE03, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE03),
+    "scene-04": (FULL_MODEL_PROMPT_V2_SCENE04, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE04),
     "scene-05": (FULL_MODEL_PROMPT_V2, QA_GATES_PRODUCT_REFERENCE_ONLY_V2),
+    "scene-06": (FULL_MODEL_PROMPT_V2_SCENE06, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE06),
     "scene-07": (FULL_MODEL_PROMPT_V2_SCENE07, QA_GATES_PRODUCT_REFERENCE_ONLY_V2_SCENE07),
 }
+
+CAMPAIGN_SCENE_ORDER = ("scene-01", "scene-02", "scene-03", "scene-04",
+                       "scene-05", "scene-06", "scene-07")
 
 
 class ProductReferenceOnlyRunnerError(RuntimeError):
