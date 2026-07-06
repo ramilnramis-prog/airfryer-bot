@@ -58,6 +58,15 @@
                                         никогда не перезаписывает tracked
                                         dry-run путь); см.
                                         api.media_pipeline.product_reference_only_campaign_runner
+  render-content-factory-videos --campaign CODE [--limit 10] [--batch batch-001]
+                                        — локальный content-factory renderer:
+                                        MP4 из уже отревьюженных scene-01..07
+                                        PNG (zoom/pan/hold + подписи + CTA-
+                                        карточка в конце); 0 вызовов OpenAI/
+                                        Higgsfield; если ffmpeg недоступен,
+                                        пишет render-plan JSON + HTML preview
+                                        вместо падения; см.
+                                        api.media_pipeline.content_factory_renderer
 
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
@@ -82,6 +91,7 @@ from .product_reference_only_runner import (ProductReferenceOnlyRunnerError,
                                             run_product_reference_only_scene_v2)
 from .product_reference_only_campaign_runner import (
     ProductReferenceOnlyCampaignError, run_campaign)
+from .content_factory_renderer import render_batch
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -455,6 +465,19 @@ def cmd_product_reference_only_campaign_v2(args) -> int:
     return _emit(report)
 
 
+def cmd_render_content_factory_videos(args) -> int:
+    """Локальный content-factory renderer: собирает MP4 (zoom/pan/hold +
+    подписи + CTA-карточка в конце) из уже отревьюженных scene-01..07 PNG.
+    Не вызывает OpenAI/Higgsfield -- только PIL + imageio/ffmpeg локально.
+    Если ffmpeg недоступен, пишет render-plan JSON + HTML preview вместо
+    падения; см. api.media_pipeline.content_factory_renderer."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = render_batch(campaign_dir, limit=args.limit, batch_name=args.batch,
+                          duration_min_seconds=args.duration_min,
+                          duration_max_seconds=args.duration_max)
+    return _emit(report)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -583,6 +606,23 @@ def main(argv=None) -> int:
                         "generated/product-reference-only-campaign/apply-summary.json "
                         "(apply НИКОГДА не перезаписывает tracked dry-run путь)")
     p.set_defaults(fn=cmd_product_reference_only_campaign_v2, skip_selected=True)
+
+    p = sub.add_parser("render-content-factory-videos",
+                       help="локальный content-factory renderer: MP4 из уже отревьюженных "
+                            "scene-01..07 PNG (zoom/pan/hold + подписи + CTA-карточка); "
+                            "0 вызовов OpenAI/Higgsfield")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--limit", type=int, default=10,
+                   help="сколько вариантов рендерить из video-variant-plan.json (по умолчанию 10)")
+    p.add_argument("--batch", default="batch-001",
+                   help="имя подпапки в generated/content-factory/video-renders/ (по умолчанию batch-001)")
+    p.add_argument("--duration-min", type=float, default=None,
+                   help="исключить варианты короче этого числа секунд")
+    p.add_argument("--duration-max", type=float, default=None,
+                   help="исключить варианты длиннее этого числа секунд")
+    p.set_defaults(fn=cmd_render_content_factory_videos)
 
     args = parser.parse_args(argv)
     try:
