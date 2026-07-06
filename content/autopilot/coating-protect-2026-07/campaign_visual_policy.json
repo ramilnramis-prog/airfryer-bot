@@ -1,0 +1,51 @@
+{
+  "policy_version": "product-only-v1",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+
+  "rationale": "Пивот после scene-05-hands-experiment-retrospective.md: reference-based hands/person image locks оказались структурно слишком хрупкими для production (см. CALL 1 HANDS V1-V4 — швы / отсутствие пальцев / оторванная кисть / артефакты, каждая итерация чинила один класс дефектов и открывала новый). Единственный image lock, который реально нужен и реально держит continuity надёжно, — сам товар.",
+
+  "global_visual_reference": {
+    "product_canon": "real-product-v1",
+    "product_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+    "must_preserve": [
+      "silhouette",
+      "flat_corner_handle_tabs",
+      "short_horizontal_handle_slots",
+      "matte_dark_grey_silicone",
+      "ribbed_bottom",
+      "proportions",
+      "scale_rotation_translation"
+    ]
+  },
+
+  "not_image_locked": [
+    "hands",
+    "person",
+    "kitchen",
+    "airfryer",
+    "clothing",
+    "lighting",
+    "food",
+    "camera_style"
+  ],
+
+  "continuity_source": "text_prompt_block",
+  "continuity_block_file": "content/autopilot/coating-protect-2026-07/video-continuity-block.md",
+  "shared_across_hooks": true,
+  "shared_across_scenes_in_this_video": true,
+  "cross_campaign_inheritance": false,
+
+  "per_video_rule": "Для одного видео все сцены и все hooks (A/B/C) используют один и тот же текстовый continuity block (кухня, аэрогриль, руки, одежда, свет, стиль камеры описаны текстом одинаково для всех сцен/хуков этого видео). Между сценами меняется только действие/композиция/food state. Для следующего видео можно выбрать другой continuity block — товар (real-product-v1) остаётся неизменным всегда, независимо от видео/кампании.",
+
+  "superseded_files": {
+    "campaign_visual_lock.json": "содержит image-based appearance lock (person-b-exhausted-01 и т.д.) из отклонённого reference-based эксперимента; помечен полем superseded_by_product_only_policy внутри самого файла, НЕ удалён (существующий resolver/тесты его используют)",
+    "campaign_visual_lock_v1.historical.json": "уже исторический до этого пивота, без изменений",
+    "campaign_visual_lock_v2.proposed.json": "уже rejected alternative до этого пивота, без изменений"
+  },
+
+  "retrospective": "content/autopilot/coating-protect-2026-07/scene-05-hands-experiment-retrospective.md",
+
+  "created_at": "2026-07-06",
+  "status": "active"
+}

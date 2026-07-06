@@ -135,5 +135,8 @@
   },
 
   "created_at": "2026-07-03",
-  "updated_at": "2026-07-06"
+  "updated_at": "2026-07-06",
+
+  "superseded_by_product_only_policy": "content/autopilot/coating-protect-2026-07/campaign_visual_policy.json",
+  "superseded_note": "После scene-05-hands-experiment-retrospective.md (CALL 1 HANDS V1-V4 rejected) кампания перешла на product-only visual policy: единственный обязательный image lock — real-product-v1, appearance (руки/персонаж/кухня/одежда/свет из этого файла) заменена текстовым continuity block (video-continuity-block.md). Этот файл НЕ удалён и остаётся резолвимым (resolve_campaign/тесты его используют как историческую/legacy схему), но НЕ является активной стратегией генерации scene-05 и далее — см. scene-05-product-only-plan.json."
 }

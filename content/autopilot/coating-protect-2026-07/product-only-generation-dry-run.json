@@ -1,0 +1,54 @@
+{
+  "status": "dry_run_only",
+  "plan_version": "product-only-v1",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+
+  "execution_summary": {
+    "openai_images_api_calls_executed": 0,
+    "higgsfield_api_calls_executed": 0,
+    "food_calls_executed": 0,
+    "any_network_call_executed": 0,
+    "api_spend_usd_executed": 0
+  },
+
+  "strategy": {
+    "ai_may_generate": ["background", "hands", "food", "environment", "kitchen", "lighting", "camera_style"],
+    "ai_must_not_generate_or_edit": ["product_pixels", "handle_pixels"],
+    "product_layer_source": "real-product-v1, всегда через deterministic RigidTransform (APPROVED_TRANSFORM_B)",
+    "product_layer_compositor": "api/media_pipeline/compositor/layer_compositor.py:compose (background -> back_hand -> product -> front_hand -> effects)",
+    "rule": "product compositing детерминирован и не зависит от того, что сгенерировал AI-слой в этом месте кадра — product/handle слой накладывается поверх AI-генерации на этапе финального composite, а не редактируется вместе с ней.",
+    "if_ai_generated_a_similar_form": "AI-сгенерированная форма-двойник (если модель её всё равно нарисует в фоновом слое) ЗАМЕНЯЕТСЯ real-product-v1 layer при финальной сборке — AI-версия формы никогда не остаётся в кадре как источник товарных пикселей."
+  },
+
+  "product_lock_qa": {
+    "validator": "api/media_pipeline/compositor/product_lock_validator.py:validate_composite",
+    "checks": ["silhouette", "handle_geometry", "aspect_ratio", "pixel_similarity", "no_local_warp"],
+    "reject_if": [
+      "форма отличается от real-product-v1 (pixel_similarity/silhouette fail)",
+      "ручки не плоские (handle_geometry_mismatch)",
+      "прорези ручек не горизонтальные",
+      "форма перекрашена (не matte dark grey silicone)",
+      "продукт warped (no_local_warp fail)",
+      "еда/пальцы ломают геометрию товара (пересекают силуэт формы)"
+    ]
+  },
+
+  "scope_this_stage": {
+    "scenes": ["scene-01", "scene-02", "scene-03", "scene-04", "scene-05", "scene-06", "scene-07"],
+    "hooks": ["A", "B", "C"],
+    "prompt_source": "content/autopilot/coating-protect-2026-07/video-scene-prompts-product-only.md",
+    "continuity_source": "content/autopilot/coating-protect-2026-07/video-continuity-block.md",
+    "note": "план и текстовые prompts подготовлены для всех 7 сцен; реальная генерация НЕ запускается на этом шаге ни для одной сцены."
+  },
+
+  "food_status": "BLOCKED — не запускается на этом этапе (только scene-04/scene-05 требуют еду по сценарию, но сама генерация не выполняется)",
+  "higgsfield_status": "BLOCKED — не запускается на этом этапе",
+
+  "next_step_requires_owner_approval": "любой реальный OpenAI/Higgsfield вызов по этому плану требует отдельного явного подтверждения владельца, отдельно для каждой сцены/hook, с hard cap на каждый вызов — так же, как это уже было для CALL 1 HANDS pilot.",
+
+  "push": "NO", "production": "NO",
+  "openai_calls": 0, "higgsfield_calls": 0, "food_calls": 0, "api_spend_usd": 0,
+
+  "created_at": "2026-07-06"
+}
