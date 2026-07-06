@@ -1,0 +1,312 @@
+{
+  "status": "dry_run_only",
+  "plan_version": "product-only-v1",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "execution_summary": {
+    "openai_images_api_calls_executed": 0,
+    "higgsfield_api_calls_executed": 0,
+    "food_calls_executed": 0,
+    "any_network_call_executed": 0,
+    "api_spend_usd_executed": 0
+  },
+  "strategy": {
+    "ai_may_generate": [
+      "background",
+      "hands",
+      "food",
+      "environment",
+      "kitchen",
+      "lighting",
+      "camera_style"
+    ],
+    "ai_must_not_generate_or_edit": [
+      "product_pixels",
+      "handle_pixels"
+    ],
+    "product_layer_source": "real-product-v1, всегда через deterministic RigidTransform (APPROVED_TRANSFORM_B)",
+    "product_layer_compositor": "api/media_pipeline/compositor/layer_compositor.py:compose (background -> back_hand -> product -> front_hand -> effects)",
+    "rule": "product compositing детерминирован и не зависит от того, что сгенерировал AI-слой в этом месте кадра — product/handle слой накладывается поверх AI-генерации на этапе финального composite, а не редактируется вместе с ней.",
+    "if_ai_generated_a_similar_form": "AI-сгенерированная форма-двойник (если модель её всё равно нарисует в фоновом слое) ЗАМЕНЯЕТСЯ real-product-v1 layer при финальной сборке — AI-версия формы никогда не остаётся в кадре как источник товарных пикселей."
+  },
+  "product_lock_qa": {
+    "validator": "api/media_pipeline/compositor/product_lock_validator.py:validate_composite",
+    "checks": [
+      "silhouette",
+      "handle_geometry",
+      "aspect_ratio",
+      "pixel_similarity",
+      "no_local_warp"
+    ],
+    "reject_if": [
+      "форма отличается от real-product-v1 (pixel_similarity/silhouette fail)",
+      "ручки не плоские (handle_geometry_mismatch)",
+      "прорези ручек не горизонтальные",
+      "форма перекрашена (не matte dark grey silicone)",
+      "продукт warped (no_local_warp fail)",
+      "еда/пальцы ломают геометрию товара (пересекают силуэт формы)"
+    ]
+  },
+  "scope_this_stage": {
+    "scenes": [
+      "scene-01",
+      "scene-02",
+      "scene-03",
+      "scene-04",
+      "scene-05",
+      "scene-06",
+      "scene-07"
+    ],
+    "hooks": [
+      "A",
+      "B",
+      "C"
+    ],
+    "prompt_source": "content/autopilot/coating-protect-2026-07/video-scene-prompts-product-only.md",
+    "continuity_source": "content/autopilot/coating-protect-2026-07/video-continuity-block.md",
+    "note": "план и текстовые prompts подготовлены для всех 7 сцен; реальная генерация НЕ запускается на этом шаге ни для одной сцены."
+  },
+  "food_status": "BLOCKED — не запускается на этом этапе (только scene-04/scene-05 требуют еду по сценарию, но сама генерация не выполняется)",
+  "higgsfield_status": "BLOCKED — не запускается на этом этапе",
+  "next_step_requires_owner_approval": "любой реальный OpenAI/Higgsfield вызов по этому плану требует отдельного явного подтверждения владельца, отдельно для каждой сцены/hook, с hard cap на каждый вызов — так же, как это уже было для CALL 1 HANDS pilot.",
+  "push": "NO",
+  "production": "NO",
+  "openai_calls": 0,
+  "higgsfield_calls": 0,
+  "food_calls": 0,
+  "api_spend_usd": 0,
+  "created_at": "2026-07-06",
+  "generation_mode": "product_only",
+  "uses_campaign_visual_lock": false,
+  "uses_reference_library_for_appearance": false,
+  "global_visual_reference": "real-product-v1",
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "planner_module": "api.media_pipeline.product_only_policy:plan_scene_request",
+  "planner_verified": {
+    "note": "каждый scene_id ниже прогнан реально через plan_scene_request() при генерации этого файла (не вручную напечатан) -- continuity_block_text идентичен для всех 7 сцен (проверено ассертом), appearance/hands/kitchen/airfryer refs пусты для каждой сцены.",
+    "scenes_planned": [
+      "scene-01",
+      "scene-02",
+      "scene-03",
+      "scene-04",
+      "scene-05",
+      "scene-06",
+      "scene-07"
+    ],
+    "all_scenes_have_empty_appearance_refs": true,
+    "all_scenes_have_product_lock_instruction": true
+  },
+  "per_scene_plans": {
+    "scene-01": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-01",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "проблема — грязная/зажаренная корзина после готовки.",
+      "scene_action_prompt": "At the kitchen sink, the woman's hands scrub the removable black air fryer basket with a sponge, soap foam, greasy smears visible inside the basket, a tired slow scrubbing motion. The silicone liner is NOT in this shot.",
+      "product_lock_instruction": "не применяется (товара в кадре нет).",
+      "negative_prompt": "no silicone liner/form in frame, no text, no watermark, no logo, no CGI look, no illustration, no 3D render.",
+      "hooks_usage": "shared body — hook opener подставляется первыми 1-3 секундами перед этой сценой.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    },
+    "scene-02": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-02",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "боль — макро губки по антипригарному покрытию.",
+      "scene_action_prompt": "Extreme close-up inside the black air fryer basket: the scouring side of a sponge drags slowly across the dark non-stick coated bottom, smearing a thin film of grease, tiny soap bubbles.",
+      "product_lock_instruction": "не применяется (товара в кадре нет).",
+      "negative_prompt": "no silicone liner/form, no deep gouges/scratches (только лёгкий износ, не запугивание), no text, no watermark.",
+      "hooks_usage": "shared body.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    },
+    "scene-03": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-03",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "решение — рука опускает форму в чашу.",
+      "scene_action_prompt": "The woman's hand lowers the empty silicone liner into the clean black air fryer basket on the countertop; the liner settles in neatly, ribbed bottom visible, both handles visible. No food yet.",
+      "product_lock_instruction": "product/handle pixels вставляются из real-product-v1 через APPROVED_TRANSFORM_B (deterministic compositing), НЕ генерируются AI. Плоские угловые ручки-язычки, короткая горизонтальная прорезь — обязательны, форма/ручки никогда не перерисовываются.",
+      "negative_prompt": "no tall vertical loop handle, no vertical oval cut-out (legacy AI shape, obsolete), no food yet, no glossy finish, no colour other than matte dark grey, no text, no watermark.",
+      "hooks_usage": "shared body.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    },
+    "scene-04": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-04",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "готовка — окно работающего аэрогриля с блюдом внутри формы.",
+      "scene_action_prompt": "Front view of the closed air fryer working on the countertop; through the front viewing window the square silicone liner is visible holding exactly 3 golden chicken thighs and potato wedges, warm cooking glow inside, subtle heat shimmer. No steam outside.",
+      "product_lock_instruction": "форма внутри окна — real-product-v1 через product-lock compositing, геометрия ручек (если видны) не редактируется AI.",
+      "negative_prompt": "not exactly 3 chicken thighs is a hard fail, no food outside the liner, no text, no watermark, no CGI look.",
+      "hooks_usage": "shared body.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    },
+    "scene-05": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-05",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "\"денежный\" кадр — руки достают форму за плоские ручки, блюдо внутри, корзина чистая.",
+      "scene_action_prompt": "The woman lifts the square silicone liner out of the open air fryer basket by its two flat corner handle tabs, thumbs resting on top of each handle; inside the liner exactly 3 roasted golden chicken thighs and potato wedges, light steam rising; below, the inside of the black basket is visibly clean and dry, untouched by grease.",
+      "product_lock_instruction": "product/handle pixels — исключительно из real-product-v1 (APPROVED_TRANSFORM_B), никогда не из AI-редактирования. Хват строго за flat corner handle tabs (не за борт формы/корзины), большие пальцы сверху, короткая горизонтальная прорезь ручки частично видна сквозь хват, пальцы не проходят сквозь силикон. См. `scene-05-product-only-plan.json` для полного плана и QA reject conditions.",
+      "negative_prompt": "not exactly 3 chicken thighs is a hard fail, grip on basket rim instead of handle tab is a hard fail, handle geometry other than real-product-v1 (tall loop handle, vertical oval cut-out) is a hard fail, dirty basket under the liner is a hard fail, excessive steam covering the product, no text, no watermark.",
+      "hooks_usage": "shared body — это ГЛАВНЫЙ кадр ролика (\"денежный\" кадр), одинаков для всех 3 hooks.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    },
+    "scene-06": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-06",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "контраст — пустая чистая чаша к камере.",
+      "scene_action_prompt": "The woman's hands tilt the empty black air fryer basket toward the camera: the dark non-stick interior is perfectly clean, smooth and evenly matte, no grease, no scratches, softly reflecting the window light. No liner in this shot.",
+      "product_lock_instruction": "не применяется (товара в кадре нет).",
+      "negative_prompt": "no liner/form in frame, no grease or scratches, no text, no watermark.",
+      "hooks_usage": "shared body.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    },
+    "scene-07": {
+      "generation_mode": "product_only",
+      "scene_id": "scene-07",
+      "campaign_code": "coating-protect-2026-07",
+      "content_code": "coating-protect-ad",
+      "uses_campaign_visual_lock": false,
+      "uses_reference_library_for_appearance": false,
+      "global_visual_reference": "real-product-v1",
+      "refs_passed_in_order": [
+        {
+          "role": "product_canon",
+          "source": "real-product-v1",
+          "manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+          "resolution": "repository_only (never reference library)"
+        }
+      ],
+      "appearance_image_refs": [],
+      "hands_image_refs": [],
+      "kitchen_image_refs": [],
+      "airfryer_image_refs": [],
+      "scene_goal": "CTA — beauty shot товара рядом с чистым аэрогрилем.",
+      "scene_action_prompt": "Clean product composition on the countertop: the empty silicone liner in front, both handles and ribbed bottom ridges clearly visible; the air fryer slightly behind at camera-right, soft daylight. Styled like an e-commerce listing card.",
+      "product_lock_instruction": "форма и ручки — 100% real-product-v1 через product-lock compositing, ручки и рёбра дна должны быть чётко видны (это витринный кадр товара), не перерисовываются AI ни при каких обстоятельствах.",
+      "negative_prompt": "handles or bottom ribs not visible is a hard fail, handle geometry other than real-product-v1 is a hard fail, no food in frame, composition must leave room for a CTA overlay at the bottom, no text, no watermark, no logo.",
+      "hooks_usage": "shared body — последний кадр ролика, одинаков для всех 3 hooks; поверх на монтаже накладывается CTA-плашка.\n\n---\n\n## hook_openers (первые 1-3 секунды, варианты A/B/C для ЭТОЙ кампании)\n\nЭти три варианта используются ТОЛЬКО как открывающая фраза/первый кадр\nперед scene-01 этого видео. Основное тело ролика (scene-01…scene-07) и\n`video-continuity-block.md` — общие для всех трёх. Старые утверждённые\nhooks в `hooks.json` (video2) этим НЕ заменяются и не изменяются.",
+      "openai_calls_executed": 0,
+      "higgsfield_calls_executed": 0,
+      "food_calls_executed": 0,
+      "api_spend_usd": 0
+    }
+  }
+}

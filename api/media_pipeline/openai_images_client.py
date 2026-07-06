@@ -30,6 +30,7 @@ import uuid
 from pathlib import Path
 
 from .budget import SpendTracker, actual_from_usage
+from .image_mask import validate_mask_file
 from .models import ImageProvider, ImageRequest, ImageResult
 
 API_BASE = "https://api.openai.com/v1"
@@ -133,15 +134,19 @@ class OpenAIImagesProvider(ImageProvider):
             params["quality"] = req.quality
         if req.mode == "edit" and req.input_fidelity and caps.get("input_fidelity"):
             params["input_fidelity"] = req.input_fidelity
+        if req.output_format:
+            params["output_format"] = req.output_format
         return params
 
-    def _planned_payload(self, req: ImageRequest) -> dict:
+    def _planned_payload(self, req: ImageRequest, mask_audit: dict | None = None) -> dict:
         """Payload для журнала/dry-run. Секретов не содержит по построению."""
         planned = dict(self._payload_params(req))
         planned["endpoint"] = ("/images/edits" if req.mode == "edit"
                                else "/images/generations")
         if req.mode == "edit":
             planned["reference_images"] = list(req.reference_images)
+            if req.mask_path:
+                planned["mask"] = mask_audit
         return planned
 
     # -- ImageProvider ------------------------------------------------------
@@ -153,12 +158,21 @@ class OpenAIImagesProvider(ImageProvider):
                 f"n={request.n} > лимита {MAX_CANDIDATES_PER_REQUEST} кандидатов")
         if request.mode not in ("generate", "edit"):
             raise MediaPipelineError(f"неизвестный mode: {request.mode}")
+        if request.mask_path and request.mode != "edit":
+            raise MediaPipelineError("mask_path разрешён только при mode='edit'")
         if request.mode == "edit" and not request.reference_images:
             raise MediaPipelineError("mode=edit требует reference_images")
 
+        # Валидация mask — ДО любого сетевого вызова (и в dry-run тоже, чтобы
+        # dry-run показывал реальные dimensions/SHA256/alpha-статистику, а не
+        # угадывал их).
+        mask_audit = None
+        if request.mask_path:
+            mask_audit = validate_mask_file(request.mask_path, request.reference_images[0])
+
         est = round(request.n * self.price_per_image_usd, 4)
         self.tracker.check("image_generation", est)
-        planned = self._planned_payload(request)
+        planned = self._planned_payload(request, mask_audit)
 
         if not apply:
             # DRY-RUN: никакой сети, ключ даже не читается, spend не копится.
@@ -175,6 +189,8 @@ class OpenAIImagesProvider(ImageProvider):
         if request.mode == "edit":
             files = [("image[]", ref, Path(ref).read_bytes())
                      for ref in request.reference_images]
+            if request.mask_path:
+                files.append(("mask", request.mask_path, Path(request.mask_path).read_bytes()))
             body, ctype = _multipart(params, files)
             http_req = urllib.request.Request(
                 f"{API_BASE}/images/edits", data=body,

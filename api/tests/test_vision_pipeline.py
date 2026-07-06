@@ -213,13 +213,27 @@ class TestBudget(unittest.TestCase):
 
 
 class TestPilot(unittest.TestCase):
+    """Пилот тестируется на КОПИИ scene-specs без campaign_visual_policy.json:
+    content/autopilot/coating-protect-2026-07 сама теперь на product-only-v1
+    policy (см. test_product_only_generation_planner.py) и её реальный
+    pilot-путь сознательно заблокирован (BLOCKED_BY_PRODUCT_ONLY_POLICY) --
+    эти тесты остаются про generic-механику cli.py pilot (dry-run payload,
+    scene-05-only guard), не привязанную к какой-то конкретной кампании."""
+
+    def setUp(self):
+        import shutil
+        real_campaign = Path("content/autopilot/coating-protect-2026-07")
+        self._tmp = tempfile.TemporaryDirectory()
+        tmp_campaign = Path(self._tmp.name) / "coating-protect-2026-07"
+        shutil.copytree(real_campaign / "scene-specs", tmp_campaign / "scene-specs")
+        self.CAMPAIGN = str(tmp_campaign)
+        self.addCleanup(self._tmp.cleanup)
+
     def _run_cli(self, argv):
         buf = io.StringIO()
         with redirect_stdout(buf):
             code = cli.main(argv)
         return code, json.loads(buf.getvalue())
-
-    CAMPAIGN = "content/autopilot/coating-protect-2026-07"
 
     def test_pilot_rejects_all_other_scenes(self):
         for scene in ["scene-01", "scene-02", "scene-03", "scene-04",

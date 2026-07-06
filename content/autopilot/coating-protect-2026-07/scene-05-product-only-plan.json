@@ -1,0 +1,89 @@
+{
+  "status": "dry_run_only",
+  "plan_version": "product-only-v1",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+  "supersedes": [
+    "content/autopilot/coating-protect-2026-07/scene-05-locked-assets-plan.json",
+    "content/autopilot/coating-protect-2026-07/scene-05-generation-dry-run.json",
+    "content/autopilot/coating-protect-2026-07/scene-05-layer-prompts.md"
+  ],
+  "supersede_reason": "reference-based hands extraction (CALL 1 HANDS V1-V4) rejected — см. scene-05-hands-experiment-retrospective.md. Старые файлы НЕ удалены (историческая ценность), но неактивны как стратегия генерации.",
+
+  "inputs": {
+    "product_canon": "real-product-v1",
+    "product_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+    "product_transform": "api/media_pipeline/compositor/scene05_baseplate.py:APPROVED_TRANSFORM_B",
+    "text_continuity_block": "content/autopilot/coating-protect-2026-07/video-continuity-block.md",
+    "scene_specific_action_text": "content/autopilot/coating-protect-2026-07/video-scene-prompts-product-only.md (scene-05 entry)"
+  },
+
+  "not_used": {
+    "note": "Ни один из следующих asset_id/reference БОЛЬШЕ НЕ ЯВЛЯЕТСЯ обязательным input для scene-05 generation. Continuity рук/персонажа/кухни обеспечивается текстом (video-continuity-block.md), не image reference.",
+    "excluded_asset_ids": [
+      "person-b-exhausted-01",
+      "real-grip-motion-01",
+      "v2-hand-hold-01",
+      "v2-form-in-basket-01",
+      "food-wings-01"
+    ],
+    "excluded_image_ref_categories": ["hands", "person", "kitchen", "clothing", "lighting"]
+  },
+
+  "scene_prompt_requirements": [
+    "та же кухня и аэрогриль, что в video-continuity-block.md",
+    "женские руки в сером ребристом свитере (текстом, не image ref)",
+    "руки держат форму строго за плоские боковые ручки (flat corner handle tabs)",
+    "большие пальцы сверху ручек",
+    "пальцы не проходят сквозь силикон формы",
+    "короткие горизонтальные прорези ручек частично видны",
+    "форма real-product-v1 вставляется/сохраняется 1:1 (deterministic product-lock compositing, не AI-генерация товара)",
+    "внутри формы: ровно 3 куриных бёдрышка и картофельные дольки, та же раскладка и румяность что в scene-04",
+    "корзина аэрогриля чистая",
+    "рекламный смысл кадра: форма защищает чашу и упрощает мытьё"
+  ],
+
+  "product_lock_compositing": {
+    "rule": "product/handle pixels ВСЕГДА берутся из real-product-v1 через RigidTransform (APPROVED_TRANSFORM_B), никогда не генерируются и не редактируются AI",
+    "validator": "api/media_pipeline/compositor/product_lock_validator.py:validate_composite",
+    "checks": ["silhouette", "handle_geometry", "aspect_ratio", "pixel_similarity", "no_local_warp"]
+  },
+
+  "qa_reject_conditions": [
+    "форма отличается от real-product-v1 (pixel_similarity/silhouette fail)",
+    "ручки не плоские (handle_geometry_mismatch)",
+    "прорези ручек не горизонтальные",
+    "форма перекрашена (цвет/материал отличается от matte dark grey silicone)",
+    "продукт деформирован/warped (no_local_warp fail)",
+    "еда/пальцы ломают геометрию товара (пересекают силуэт формы)",
+    "бёдрышек не ровно 3 или раскладка не как в scene-04",
+    "корзина под формой грязная"
+  ],
+
+  "hand_requirements": {
+    "gender": "female",
+    "in_frame": true,
+    "jewelry": "none",
+    "grip": "строго за две плоские угловые ручки-язычки, большие пальцы сверху, обе руки",
+    "source": "text continuity block, не image reference"
+  },
+
+  "camera_requirements": {
+    "framing": "средний план, лёгкий подъём вслед за формой",
+    "aspect": "9:16",
+    "size": "720x1280"
+  },
+
+  "relationship_to_previous": "прямое продолжение scene-04: корзина выдвинута, блюдо то же",
+  "relationship_to_next": "scene-06 — форма уже вынута, показываем пустую чистую корзину",
+
+  "generation_calls_planned": {
+    "openai_calls": 0,
+    "higgsfield_calls": 0,
+    "food_calls": 0,
+    "note": "этот файл — план/стратегия, не запуск генерации. Реальные вызовы — отдельный будущий шаг с явным подтверждением владельца."
+  },
+
+  "created_at": "2026-07-06"
+}

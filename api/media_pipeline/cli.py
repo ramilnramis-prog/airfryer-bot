@@ -30,6 +30,8 @@ from .models import CandidateObservation, ImageRequest, SceneSpec
 from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
                                    OpenAIImagesProvider)
 from .openai_vision_evaluator import OpenAIVisionEvaluator
+from .product_only_policy import (ProductOnlyPolicyError,
+                                  assert_legacy_generation_allowed)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -119,6 +121,7 @@ def cmd_plan(args) -> int:
 
 
 def cmd_generate(args) -> int:
+    assert_legacy_generation_allowed(args.campaign_dir)
     specs = {s.scene_id: s for s in _load_specs(args.campaign_dir)}
     spec = specs.get(args.scene)
     if spec is None:
@@ -146,6 +149,7 @@ def cmd_pilot(args) -> int:
     portrait 1024x1536, все референсы сцены, 0 перегенераций, cap $2.00,
     после генерации — автоматически реальный VisionEvaluator. Higgsfield
     остаётся заблокированным независимо от результата."""
+    assert_legacy_generation_allowed(args.campaign_dir)
     if args.scene != PILOT_SCENE:
         return _emit({"error": f"пилот разрешён ТОЛЬКО для {PILOT_SCENE}; "
                                f"запрошена {args.scene}. Сцены 01-04 и 06-07 "
@@ -408,6 +412,8 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
+    except ProductOnlyPolicyError as e:
+        return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (MissingAPIKeyError, BudgetExceededError, BudgetStop,
             VisionSchemaError, FileNotFoundError, ValueError, KeyError) as e:
         return _emit({"error": str(e)}, 1)

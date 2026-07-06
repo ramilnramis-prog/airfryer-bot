@@ -1,0 +1,177 @@
+{
+  "status": "dry_run_only",
+  "generated_at": "2026-07-07",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "visual_set_id": "coating-protect-visual-set-01",
+  "selected_set": "A",
+  "owner_approved": true,
+
+  "execution_summary": {
+    "openai_images_api_calls_executed": 0,
+    "higgsfield_api_calls_executed": 0,
+    "any_network_call_executed": 0,
+    "api_spend_usd_executed": 0
+  },
+
+  "planned_generation": {
+    "pilot_call": {
+      "call_count": 1,
+      "scope": "HANDS ONLY (masked image edit of baseplate B)",
+      "mode": "edit",
+      "model": "gpt-image-2",
+      "size": "720x1280",
+      "n": 1,
+      "output_format": "png",
+      "retries": 0,
+      "arbiter": "OFF",
+      "food_status": "BLOCKED",
+      "higgsfield_status": "BLOCKED",
+      "note": "Единственный будущий вызов — masked edit approved baseplate B (см. scene-05-layer-prompts.md CALL 1). Прежний free isolated-RGBA-layer prompt для рук НЕ используется. FOOD в этот pilot НЕ входит — отдельный будущий шаг после подтверждения результата CALL 1."
+    },
+    "not_requiring_generation": [
+      "CAST_SHADOW — уже внутри baseplate B / его чистой пересборки (процедурный shadow_overlay, не требует отдельного вызова)",
+      "STEAM_EFFECTS — процедурный (api/media_pipeline/compositor/cli.py:_steam_overlay), добавляется после pilot отдельно, без API",
+      "PRODUCT_BASE / handles — real-product-v1, защищены edit-маской (без генерации)",
+      "BACKGROUND / DE'MIAND / корзина / кухня — защищены edit-маской (без генерации)"
+    ]
+  },
+
+  "model": {
+    "provider": "OpenAI Images",
+    "name": "gpt-image-2",
+    "mode": "edit",
+    "endpoint": "/v1/images/edits",
+    "config_source": "api/media_pipeline/openai_images_client.py:PRIMARY_MODEL",
+    "override_env_var": "OPENAI_IMAGE_MODEL",
+    "animation_model": "Higgsfield — BLOCKED на этом этапе (только после sequence approval и явного подтверждения владельца)"
+  },
+
+  "estimated_spend": {
+    "price_per_image_usd_estimate": 0.30,
+    "price_source": "api/media_pipeline/openai_images_client.py:DEFAULT_PRICE_ESTIMATE_USD",
+    "pilot_call_estimate_usd": 0.30,
+    "candidates_assumed": 1,
+    "note": "оценка ориентировочная (реальная стоимость зависит от usage/quality-параметров API), фактический вызов НЕ выполнялся"
+  },
+  "hard_cap": {
+    "max_spend_usd_this_stage": 0.50,
+    "max_api_calls_executed_this_stage": 0,
+    "rule": "На этом этапе (dry-run plan) API-вызовы запрещены полностью. Единственный будущий пилотный вызов (HANDS, edit mode) ограничен hard cap $0.50 и требует отдельного явного подтверждения владельца перед --apply. FOOD и Higgsfield остаются BLOCKED независимо от результата этого pilot."
+  },
+
+  "primary_input": {
+    "source": "clean (no watermark) rebuild of baseplate B",
+    "function": "api/media_pipeline/compositor/scene05_debug_preview.py:rebuild_layered_scene",
+    "verified_against": "content/autopilot/coating-protect-2026-07/generated/scene-05-real-baseplate/baseplate-B.png",
+    "verified_sha256": "65be9fc5c869a26abed23b852f484ad81b0558c34d3a3774115c40a6b62ab7e6",
+    "verification_method": "api/media_pipeline/compositor/scene05_debug_preview.py:compare_to_approved_baseplate (tolerance=6, max_bad_fraction=0.01, вне полосы watermark)",
+    "canvas_size": [720, 1280],
+    "transform": {"scale": 0.56, "rotation_deg": -1.0, "translate": [137.24, 20.48], "perspective": 0.0}
+  },
+
+  "edit_mask": {
+    "function": "api/media_pipeline/compositor/scene05_layer_masks.py:call1_edit_mask_zones",
+    "mask_image_builder": "api/media_pipeline/compositor/scene05_edit_mask.py:build_call1_edit_mask_image",
+    "mask_file": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask.png",
+    "mask_sha256": "85c0dfe30d3050c38d6362ab8815628460d4818682111b27745d2107382caf23",
+    "mask_dimensions": [720, 1280],
+    "mask_file_size_bytes": 6393,
+    "mask_alpha_semantics": "alpha=0 -> EDIT, alpha=255 -> PROTECT",
+    "mask_transparent_pixel_count": 67425,
+    "mask_opaque_pixel_count": 854175,
+    "mask_editable_fraction": 0.073161,
+    "zones": {
+      "left_forearm_hand": [80, 36, 266, 268],
+      "right_forearm_hand": [554, 152, 655, 380],
+      "left_fingers_over_handle": [190, 44, 275, 72],
+      "right_fingers_over_handle": [549, 166, 595, 212]
+    },
+    "clipped_from_original": {
+      "right_forearm_hand": {"original_y1": 538, "clipped_y1": 380,
+                             "reason": "back_hand_right_zone спроектирована для слоистой компоновки; в плоском edit заходила бы в открытую корзину — подтверждено визуальной сверкой"}
+    },
+    "protected_outside_mask": ["real-product-v1 (форма, ручки)", "DE'MIAND", "корзина", "фон", "кухня"],
+    "no_feathering": true,
+    "zones_not_auto_expanded": true
+  },
+
+  "request_contract": {
+    "endpoint": "/v1/images/edits",
+    "model": "gpt-image-2",
+    "size": "720x1280",
+    "n": 1,
+    "output_format": "png",
+    "retries": 0,
+    "input_fidelity": "не передаётся явно для gpt-image-2 (capability map)",
+    "background": "не запрашивается для gpt-image-2",
+    "multipart_fields": ["image[]", "image[]", "image[]", "image[]", "image[]", "mask",
+                        "model", "prompt", "size", "n", "output_format"],
+    "mask_field_name": "mask",
+    "mask_applies_to": "images[0] (primary image) ТОЛЬКО",
+    "images": [
+      {"index": 0, "ref": "clean rebuild of baseplate-B (primary image, edit target)", "role": "primary_image"},
+      {"index": 1, "asset_id": "person-b-exhausted-01", "role": "appearance_only"},
+      {"index": 2, "asset_id": "real-grip-motion-01", "role": "pose_mechanics_only"},
+      {"index": 3, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png", "role": "geometry_contact_only"},
+      {"index": 4, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/right_handle_master.png", "role": "geometry_contact_only"}
+    ]
+  },
+
+  "refs_passed_in_order": [
+    {"order": 1, "ref": "clean rebuild of baseplate-B (primary input, edit target)"},
+    {"order": 2, "asset_id": "person-b-exhausted-01", "role": "appearance: кожа, ногти, серый кардиган"},
+    {"order": 3, "asset_id": "real-grip-motion-01", "role": "mechanics_only: только поза/траектория"},
+    {"order": 4, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/left_handle_master.png",
+     "role": "только геометрия левой ручки и точки контакта, не источник рук/кожи"},
+    {"order": 5, "ref": "assets/product-lock/airfryer-silicone-form/references/real-v1/handles/right_handle_master.png",
+     "role": "только геометрия правой ручки и точки контакта, не источник рук/кожи"}
+  ],
+  "excluded_from_refs": [
+    {"asset_id": "v2-form-in-basket-01", "reason": "положение формы уже зафиксировано approved baseplate B; аэрогриль/товар на фото не соответствуют активным канонам"},
+    {"asset_id": "food-wings-01", "reason": "FOOD BLOCKED в этом pilot — крылья могут загрязнить состав сцены, используется только scene-spec, и то не в этом вызове"},
+    {"asset_id": "v2-hand-hold-01", "reason": "не входит в утверждённый Set A"},
+    {"asset_id": "person-c-frustrated-01", "reason": "rejected alternative, не Set A"},
+    {"asset_id": "person-pain-01", "reason": "rejected alternative (Set B), не используется одновременно с Set A"},
+    {"asset_id": "person-rinse-01", "reason": "rejected alternative (Set C), не используется одновременно с Set A"}
+  ],
+
+  "prompts_file": "content/autopilot/coating-protect-2026-07/scene-05-layer-prompts.md",
+  "locked_assets_file": "content/autopilot/coating-protect-2026-07/scene-05-locked-assets-plan.json",
+
+  "planned_output_paths": {
+    "edit_mask": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask.png",
+    "edit_mask_preview": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask-preview.png",
+    "edit_mask_overlay": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask-overlay.png",
+    "edit_mask_audit": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-edit-mask-audit.json",
+    "hands_raw_edit_output": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-hands-raw-edit.png",
+    "outside_mask_diff": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-outside-mask-diff.png",
+    "hands_extracted": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-hands-extracted.png",
+    "candidate_composite": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-candidate-composite.png",
+    "qa_report": "content/autopilot/coating-protect-2026-07/generated/scene-05-locked-layers/call1-qa-report.json",
+    "note": "edit_mask/preview/overlay/audit уже созданы локально (детерминированно, без API); остальные пути — под generated/, gitignored, создаются только реальным pilot-вызовом (пока НЕ выполнялся)"
+  },
+
+  "qa_criteria_hard_fail": [
+    "любой пиксель вне edit-маски отличается от чистой пересборки baseplate B",
+    "изменена геометрия товара или ручек (силуэт/пропорции/цвет real-product-v1)",
+    "изменён фон или DE'MIAND (аэрогриль/корзина/кухня)",
+    "руки не попадают на реальные handle bboxes (left [190,44,275,100] / right [549,166,595,259])",
+    "другие руки/кожа/одежда, не совпадающие с person-b-exhausted-01",
+    "часы/кольца/браслеты на руках",
+    "неправильное количество пальцев (не 5 на видимую кисть)",
+    "морфинг/слияние пальцев",
+    "пальцы проходят сквозь пиксели товара",
+    "рука держит верхний борт формы/корзины вместо реальной плоской ручки",
+    "геометрия ручек не FLAT CORNER TAB + SHORT HORIZONTAL cut-out",
+    "watermark или посторонний текст в кадре",
+    "food присутствует в кадре (FOOD BLOCKED в этом pilot)"
+  ],
+  "qa_pipeline": ["visual-director (per-scene candidate judge)",
+                 "sequence-director (continuity across scenes 1-7)",
+                 "animation-qa (после Higgsfield, отдельный этап)"],
+
+  "next_step_requires_owner_approval": "требуется отдельное подтверждение непосредственно перед --apply (owner_approved у visual lock уже true, но это НЕ разрешение на трату — это отдельный шаг). FOOD и Higgsfield остаются BLOCKED до отдельного решения владельца после оценки результата HANDS pilot.",
+  "push": "NO", "production": "NO",
+  "openai_calls": 0, "higgsfield_calls": 0, "api_spend_usd": 0
+}

@@ -1,182 +1,96 @@
 {
+  "visual_set_id": "coating-protect-visual-set-01",
+  "selected_set": "A",
+  "status": "active",
+  "owner_approved": true,
+  "approved_at": "2026-07-06T00:00:00Z",
+
   "campaign_code": "coating-protect-2026-07",
   "content_code": "coating-protect-ad",
+
   "product_canon": "real-product-v1",
   "product_canon_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
   "product_canon_resolution": "repository_only",
-  "product_canon_rule": "Единственный элемент, зафиксированный ГЛОБАЛЬНО на все кампании. Резолвится ИСКЛЮЧИТЕЛЬНО из репозитория (product_asset_manifest.json) — НИКОГДА через reference library/asset_id/REFERENCE_LIBRARY_ROOT. Никогда не перерисовывается, не заменяется, не подгоняется под сцену.",
-  "locked_elements": [
-    {
-      "role": "hands",
-      "asset_id": "person-rinse-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
-      "reference_only": true,
-      "restrictions": []
+  "product_canon_rule": "Единственный элемент, зафиксированный ГЛОБАЛЬНО на все кампании. Резолвится ИСКЛЮЧИТЕЛЬНО из репозитория (product_asset_manifest.json) — НИКОГДА через reference library/asset_id/REFERENCE_LIBRARY_ROOT. Никакие appearance или mechanics references не могут изменять товар. Никогда не перерисовывается, не заменяется, не подгоняется под сцену.",
+
+  "appearance": {
+    "primary_person_asset_id": "person-b-exhausted-01",
+    "primary_hands_asset_id": "person-b-exhausted-01",
+    "primary_clothing_asset_id": "person-b-exhausted-01",
+    "primary_kitchen_asset_id": "person-b-exhausted-01",
+    "primary_lighting_asset_id": "person-b-exhausted-01",
+    "primary_airfryer_asset_id": "real-airfryer-front-01",
+    "continuity_group_id": "coating-protect-appearance-group-A",
+    "defines": {
+      "person-b-exhausted-01": ["внешний вид девушки", "тон кожи и общий вид рук",
+                                "причёска с пучком", "серый рубчатый кардиган",
+                                "белая кухня с плиткой-кабанчиком",
+                                "направление и характер дневного света (слева)"],
+      "real-airfryer-front-01": ["внешний вид единственного аэрогриля в ролике (реальный DE'MIAND)"]
     },
+    "internal_consistency_basis": "все primary_* (кроме airfryer) взяты из ОДНОГО исходного изображения (person-b-exhausted-01) — согласованность гарантирована конструктивно, а не выведена сопоставлением разных изображений"
+  },
+
+  "supporting_views": [],
+  "supporting_views_note": "Пусто намеренно: одинаковость других людей/рук с person-b-exhausted-01 не подтверждена (см. campaign_visual_lock_v2.proposed.json / visual-lock-audit.json) — supporting views не добавляются без доказательства.",
+
+  "rejected_alternatives_for_history": {
+    "note": "НЕ активные appearance blocks — хранятся только для истории аудита, НЕ используются одновременно с Set A",
+    "Set_B": {"anchor": "person-pain-01", "continuity_group_id": "coating-protect-appearance-group-B",
+             "status": "rejected_alternative_kept_for_audit_history"},
+    "Set_C": {"anchor": "person-rinse-01", "continuity_group_id": "coating-protect-appearance-group-C",
+             "status": "rejected_alternative_kept_for_audit_history"},
+    "source_file": "content/autopilot/coating-protect-2026-07/campaign_visual_lock_v2.proposed.json"
+  },
+
+  "mechanics_only": [
     {
-      "role": "hands",
-      "asset_id": "v2-hand-hold-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "ef4c3ee478e3985c5fe91e0d715197461b7fddfa1f0aa94460530512da3da7a6",
-      "reference_only": true,
-      "restrictions": [
-        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
-      ]
-    },
-    {
-      "role": "hands_grip_mechanics_reference",
       "asset_id": "real-grip-motion-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "4ec10f2491a59a5ad1354614b6bf6f33b82b7975550047fcd443c647d5a879e4",
-      "reference_only": true,
-      "restrictions": [
-        "Мужская рука в этом кадре — референс ТОЛЬКО по механике движения/хвата, НЕ финальный hands_reference кампании (пол/образ модели выбираются отдельно на кампанию)."
-      ],
-      "note": "механика хвата/подъёма, НЕ финальный внешний вид рук кампании"
+      "influence_scope": "hand_pose_only",
+      "defines": ["только траекторию и механику захвата (обе ручки, большие пальцы сверху)"],
+      "must_not_influence": ["пол", "кожу", "одежду", "часы", "украшения", "внешний вид рук"],
+      "must_not_influence_hand_appearance": true,
+      "note": "реальный кадр движения (мужская рука) — используется ТОЛЬКО как pose/motion reference"
     },
     {
-      "role": "person",
-      "asset_id": "person-b-exhausted-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "person",
-      "asset_id": "person-c-frustrated-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "person",
-      "asset_id": "person-pain-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "person",
-      "asset_id": "person-rinse-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "58c5f5872e0e7e6b27162cabbc9af44cb8c1dc2a5360fc798791499fed3a9763",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "airfryer",
-      "asset_id": "real-airfryer-front-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "a2671a90b36abdcd572386ffd52088dc935befaae6768dbf991edca688b5ac78",
-      "reference_only": true,
-      "restrictions": [
-        "Это РЕАЛЬНЫЙ кадр устройства (не AI) — приоритетный airfryer_reference, но airfryer всё равно не глобальный канон: для другой кампании можно выбрать другой аэрогриль."
-      ]
-    },
-    {
-      "role": "airfryer_placement_mechanics_reference",
       "asset_id": "v2-form-in-basket-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "1defaf9ed841654454eaaadf25890e5c4158b4b23a21620703273a059fd51835",
-      "reference_only": true,
-      "restrictions": [
-        "Продукт на этом фото — устаревшая/некорректная форма ручек (AI-рендер или ранний макет), НЕ соответствует канону real-product-v1. Никогда не использовать это фото как источник геометрии/силуэта продукта. Годится только для сцены/рук/кухни/освещения вокруг продукта."
-      ],
-      "note": "механика размещения формы в корзине, геометрия формы на фото игнорируется"
-    },
-    {
-      "role": "kitchen",
-      "asset_id": "person-b-exhausted-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "kitchen",
-      "asset_id": "person-c-frustrated-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "kitchen",
-      "asset_id": "person-pain-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "clothing",
-      "asset_id": "person-b-exhausted-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "clothing",
-      "asset_id": "person-pain-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "3cb5871316add803caf56d2b196d7283c7258661901751a75c8e4d8d966b12e1",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "lighting",
-      "asset_id": "person-b-exhausted-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "f86e72661bb8b065b13a1de9c965c3557530bb6847dae182f57e3980d0e1feac",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "lighting",
-      "asset_id": "person-c-frustrated-01",
-      "locked_for_all_scenes": true,
-      "shared_across_hooks": true,
-      "expected_sha256": "d1fbc32690526299f4010363f66db227e11e35d58833050e4b4d492f87d5f6b6",
-      "reference_only": true,
-      "restrictions": []
-    },
-    {
-      "role": "food",
-      "asset_id": "food-wings-01",
-      "locked_for_all_scenes": false,
-      "shared_across_hooks": true,
-      "expected_sha256": "1d9f87674e51f2ee8e8813adcd5a77ed47efffb4b0606e1674e3424b44add8d5",
-      "reference_only": true,
-      "restrictions": [],
-      "note": "food НЕ обязан быть одинаковым во всех сценах (может отсутствовать/быть сырым/готовым по сценарию), но одна и та же кампания не подставляет разные блюда без причины — см. scene-specs"
+      "influence_scope": "placement_only",
+      "must_not_influence_airfryer_appearance": true,
+      "must_not_influence_product_geometry": true,
+      "do_not_pass_to_scene_05_generation": true,
+      "reason_excluded_from_scene_05": "положение формы уже зафиксировано утверждённым baseplate B; аэрогриль и товар на этом reference не соответствуют активным канонам (визуально другой аэрогриль, устаревшая геометрия формы)"
     }
   ],
+
+  "style_only": [
+    {
+      "asset_id": "food-wings-01",
+      "influence_scope": "food_style_only",
+      "must_not_define_recipe": true,
+      "must_not_define_food_count": true,
+      "do_not_pass_to_scene_05_generation": true,
+      "reason_excluded_from_scene_05": "крылья могут загрязнить состав сцены (scene-05 требует ровно 3 куриных бедра + картофель, не крылья)"
+    }
+  ],
+
+  "scene_specific": {
+    "food": {
+      "is_global_visual_lock": false,
+      "rule": "Состав и количество еды задаются ТОЛЬКО scene spec конкретной сцены, не этим visual lock. food-wings-01 в генерацию сцен НЕ передаётся.",
+      "scene-05": {"item": "chicken thigh", "count": 3,
+                  "extras": "картофельные дольки, та же раскладка и румяность что в scene-04",
+                  "source": "content/autopilot/coating-protect-2026-07/scene-specs/scene-05.json"}
+    }
+  },
+
   "camera_style": {
     "description": "45-градусный верхний ракурс над корзиной для сцен продукта, средний план для hook-сцен рук, вертикальный 9:16, статика с лёгким handheld на hook-кадрах.",
     "asset_id": null
   },
+
   "locked_for_all_scenes": true,
   "shared_across_hooks": true,
+
   "allowed_scene_changes": [
     "угол наклона формы в момент опускания/подъёма",
     "количество пены и положение губки",
@@ -194,25 +108,35 @@
     "смена схемы освещения между сценами одной кампании",
     "любое изменение геометрии/пропорций/цвета real-product-v1 — запрещено всегда, вне зависимости от кампании"
   ],
+
   "hooks": {
     "content_code": "coating-protect-ad",
     "shared_main_body": true,
+    "shared_visual_set_id": true,
+    "visual_set_id": "coating-protect-visual-set-01",
     "shared_storyboard": "content/autopilot/coating-protect-2026-07/storyboard.md",
     "shared_visual_lock": "content/autopilot/coating-protect-2026-07/campaign_visual_lock.json",
-    "variants": [
-      "A",
-      "B",
-      "C"
-    ],
+    "variants": ["A", "B", "C"],
     "variant_file": "content/autopilot/coating-protect-2026-07/hooks.json",
-    "rule": "Хуки A/B/C отличаются ТОЛЬКО первыми 1-3 секундами (первый кадр, первая фраза, caption, voice-over hook). Основное тело ролика, product_canon и весь этот campaign_visual_lock (тот же resolved-набор asset_id) — общие для всех трёх хуков."
+    "rule": "Хуки A/B/C отличаются ТОЛЬКО первыми 1-3 секундами (первый кадр, первая фраза, caption, voice-over hook, первый монтажный акцент). Основная девушка, руки, одежда, кухня, свет, аэрогриль, основное тело ролика и product_canon (real-product-v1) — общие для всех трёх хуков, все они используют один и тот же visual_set_id: coating-protect-visual-set-01."
   },
-  "cross_campaign_rule": "Другая (будущая) кампания может выбрать другой набор asset_id для hands/person/airfryer/kitchen/clothing/lighting/food_reference — это РАЗРЕШЕНО и ожидаемо. Единственное, что не меняется НИКОГДА и ни в одной кампании — product_canon: real-product-v1, и он никогда не резолвится через reference library.",
+
+  "cross_campaign_rule": "Этот visual set (coating-protect-visual-set-01, Set A) НЕ переносится автоматически в следующий ролик/кампанию. Другая (будущая) кампания выбирает свой набор asset_id заново — единственное, что не меняется НИКОГДА и ни в одной кампании, — product_canon: real-product-v1, и он никогда не резолвится через reference library.",
+
   "reference_library_root_env_var": "REFERENCE_LIBRARY_ROOT",
   "reference_library_index": "assets/reference-library/reference_library_index.json",
   "resolver_module": "api/media_pipeline/reference_library",
   "resolve_cli": "python -m api.media_pipeline.reference_library.cli resolve-campaign content/autopilot/coating-protect-2026-07/campaign_visual_lock.json",
+
+  "history": {
+    "v1_reference_pool": "content/autopilot/coating-protect-2026-07/campaign_visual_lock_v1.historical.json",
+    "v2_proposal": "content/autopilot/coating-protect-2026-07/campaign_visual_lock_v2.proposed.json",
+    "audit": "content/autopilot/coating-protect-2026-07/generated/campaign-visual-lock-review/visual-lock-audit.json"
+  },
+
   "created_at": "2026-07-03",
-  "updated_at": "2026-07-03",
-  "status": "active"
+  "updated_at": "2026-07-06",
+
+  "superseded_by_product_only_policy": "content/autopilot/coating-protect-2026-07/campaign_visual_policy.json",
+  "superseded_note": "После scene-05-hands-experiment-retrospective.md (CALL 1 HANDS V1-V4 rejected) кампания перешла на product-only visual policy: единственный обязательный image lock — real-product-v1, appearance (руки/персонаж/кухня/одежда/свет из этого файла) заменена текстовым continuity block (video-continuity-block.md). Этот файл НЕ удалён и остаётся резолвимым (resolve_campaign/тесты его используют как историческую/legacy схему), но НЕ является активной стратегией генерации scene-05 и далее — см. scene-05-product-only-plan.json."
 }
