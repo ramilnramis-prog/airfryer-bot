@@ -74,6 +74,21 @@ def urlopen_raises():
     return mock.patch("urllib.request.urlopen", side_effect=AssertionError("network call!"))
 
 
+def make_temp_campaign_dir():
+    """Isolated campaign_dir (copies only the registry file run_campaign
+    needs) -- never the real tracked CAMPAIGN_DIR, so tests can exercise
+    apply=True's default-path behavior without ever touching a real repo
+    file (gitignored or tracked)."""
+    global _scratch_counter
+    _scratch_counter += 1
+    temp_dir = _SCRATCH_DIR / f"fake_campaign_dir_{_scratch_counter}"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    registry_src = CAMPAIGN_DIR / campaign.SELECTED_CANDIDATES_FILENAME
+    (temp_dir / campaign.SELECTED_CANDIDATES_FILENAME).write_text(
+        registry_src.read_text(encoding="utf-8"), encoding="utf-8")
+    return temp_dir
+
+
 class TestCampaignDryRunExists(unittest.TestCase):
     def test_file_exists(self):
         self.assertTrue(CAMPAIGN_DRY_RUN_PATH.is_file())
@@ -367,6 +382,80 @@ class TestScopedScenesSelection(unittest.TestCase):
                                            apply=False)
         self.assertEqual(report["scenes_requested"], ["scene-01", "scene-02", "scene-03"])
         self.assertEqual(len(report["scene_reports"]), 3)
+
+
+class TestModeSpecificDefaultOutputPaths(unittest.TestCase):
+    """Regression coverage for the apply run that clobbered the tracked
+    campaign-product-reference-only-v2-dry-run.json in production: dry-run
+    and apply must never target the same default path."""
+
+    def test_dry_run_writes_tracked_dry_run_path(self):
+        temp_dir = make_temp_campaign_dir()
+        with urlopen_raises():
+            report = campaign.run_campaign(str(temp_dir), apply=False)
+        expected = temp_dir / "campaign-product-reference-only-v2-dry-run.json"
+        self.assertEqual(Path(report["report_path"]).resolve(), expected.resolve())
+        self.assertTrue(expected.is_file())
+
+    def test_apply_writes_generated_apply_summary_path(self):
+        temp_dir = make_temp_campaign_dir()
+        # scene-99 is not_configured -- exercises the apply=True default-path
+        # logic without needing a real OPENAI_API_KEY or making any call.
+        with mock.patch.dict("os.environ", {}, clear=False):
+            import os
+            os.environ.pop("OPENAI_API_KEY", None)
+            with urlopen_raises():
+                report = campaign.run_campaign(str(temp_dir), scenes=["scene-99"], apply=True)
+        expected = temp_dir / "generated" / "product-reference-only-campaign" / "apply-summary.json"
+        self.assertEqual(Path(report["report_path"]).resolve(), expected.resolve())
+        self.assertTrue(expected.is_file())
+
+    def test_apply_never_touches_tracked_dry_run_doc(self):
+        temp_dir = make_temp_campaign_dir()
+        # Pre-seed a tracked-style dry-run file to prove apply leaves it alone.
+        tracked_path = temp_dir / "campaign-product-reference-only-v2-dry-run.json"
+        tracked_path.write_text('{"sentinel": "untouched"}', encoding="utf-8")
+        before = tracked_path.read_text(encoding="utf-8")
+        with mock.patch.dict("os.environ", {}, clear=False):
+            import os
+            os.environ.pop("OPENAI_API_KEY", None)
+            with urlopen_raises():
+                campaign.run_campaign(str(temp_dir), scenes=["scene-99"], apply=True)
+        after = tracked_path.read_text(encoding="utf-8")
+        self.assertEqual(before, after)
+
+    def test_out_path_overrides_default_for_dry_run(self):
+        temp_dir = make_temp_campaign_dir()
+        custom_path = _SCRATCH_DIR / "custom-dry-run-report.json"
+        with urlopen_raises():
+            report = campaign.run_campaign(str(temp_dir), apply=False, out_path=str(custom_path))
+        self.assertEqual(Path(report["report_path"]).resolve(), custom_path.resolve())
+
+    def test_out_path_overrides_default_for_apply(self):
+        temp_dir = make_temp_campaign_dir()
+        custom_path = _SCRATCH_DIR / "custom-apply-report.json"
+        with mock.patch.dict("os.environ", {}, clear=False):
+            import os
+            os.environ.pop("OPENAI_API_KEY", None)
+            with urlopen_raises():
+                report = campaign.run_campaign(str(temp_dir), scenes=["scene-99"],
+                                               apply=True, out_path=str(custom_path))
+        self.assertEqual(Path(report["report_path"]).resolve(), custom_path.resolve())
+
+    def test_generated_output_path_stays_gitignored(self):
+        gitignore_path = REPO_ROOT / ".gitignore"
+        gitignore_text = gitignore_path.read_text(encoding="utf-8")
+        self.assertIn("content/autopilot/*/generated/", gitignore_text)
+        # And confirm git actually treats the real apply-summary directory
+        # as ignored (not merely a textual match in .gitignore).
+        import subprocess
+        result = subprocess.run(
+            ["git", "check-ignore",
+             "content/autopilot/coating-protect-2026-07/generated/"
+             "product-reference-only-campaign/apply-summary.json"],
+            cwd=str(REPO_ROOT), capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0,
+                         "apply-summary.json path is NOT gitignored -- git check-ignore failed")
 
 
 if __name__ == "__main__":

@@ -29,6 +29,14 @@ contract as product_reference_only_runner: MAX_CALLS=1, RETRIES=0,
 HARD_CAP_USD=0.50 per scene), plus a campaign-wide spend ceiling
 (CAMPAIGN_TOTAL_HARD_CAP_USD). apply=False (dry-run) makes ZERO network
 calls, ever -- even when scenes=None (whole campaign).
+
+Report output path (mode-specific default, overridable via out_path):
+- apply=False (dry-run, default): <campaign_dir>/campaign-product-reference-only-v2-dry-run.json
+- apply=True (default):           <campaign_dir>/generated/product-reference-only-campaign/apply-summary.json
+An apply run NEVER writes to the tracked dry-run path, and a dry-run run
+NEVER writes to the (gitignored) generated/ apply-summary path -- the two
+modes always target different files unless the caller passes an explicit
+out_path.
 """
 from __future__ import annotations
 
@@ -273,9 +281,14 @@ def run_campaign(campaign_dir, scenes=None, apply: bool = False,
     }
 
     out_dir = Path(campaign_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    report_path = Path(out_path) if out_path else (
-        out_dir / "campaign-product-reference-only-v2-dry-run.json")
+    if out_path:
+        report_path = Path(out_path)
+    elif apply:
+        report_path = (out_dir / "generated" / "product-reference-only-campaign"
+                       / "apply-summary.json")
+    else:
+        report_path = out_dir / "campaign-product-reference-only-v2-dry-run.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     report["report_path"] = str(report_path)
     return report

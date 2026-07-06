@@ -50,7 +50,13 @@
                                         из campaign-selected-working-candidates.json
                                         (scene-05/scene-07); stop_on_error по
                                         умолчанию; campaign_total_hard_cap_usd
-                                        $5.00; см.
+                                        $5.00; отчёт по умолчанию (mode-specific,
+                                        --out переопределяет): dry-run ->
+                                        campaign-product-reference-only-v2-dry-run.json,
+                                        --apply -> generated/product-reference-
+                                        only-campaign/apply-summary.json (apply
+                                        никогда не перезаписывает tracked
+                                        dry-run путь); см.
                                         api.media_pipeline.product_reference_only_campaign_runner
 
 Выход всегда — структурированный JSON в stdout.
@@ -444,7 +450,8 @@ def cmd_product_reference_only_campaign_v2(args) -> int:
     scenes = [s.strip() for s in args.scenes.split(",") if s.strip()] if args.scenes else None
     report = run_campaign(campaign_dir, scenes=scenes, apply=args.apply,
                           skip_existing=args.skip_existing,
-                          skip_selected=args.skip_selected)
+                          skip_selected=args.skip_selected,
+                          out_path=args.out)
     return _emit(report)
 
 
@@ -569,6 +576,12 @@ def main(argv=None) -> int:
     p.add_argument("--no-skip-selected", dest="skip_selected", action="store_false",
                    help="ОПАСНО: разрешить регенерацию сцен с уже выбранным working "
                         "candidate; не использовать без явного подтверждения владельца")
+    p.add_argument("--out", "--out-path", dest="out", default=None,
+                   help="явный путь для campaign-level отчёта; по умолчанию mode-specific: "
+                        "dry-run -> content/autopilot/<campaign>/campaign-product-reference-"
+                        "only-v2-dry-run.json, --apply -> content/autopilot/<campaign>/"
+                        "generated/product-reference-only-campaign/apply-summary.json "
+                        "(apply НИКОГДА не перезаписывает tracked dry-run путь)")
     p.set_defaults(fn=cmd_product_reference_only_campaign_v2, skip_selected=True)
 
     args = parser.parse_args(argv)
