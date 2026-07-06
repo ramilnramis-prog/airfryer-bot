@@ -24,11 +24,31 @@
     "person",
     "kitchen",
     "airfryer",
+    "basket",
     "clothing",
     "lighting",
     "food",
     "camera_style"
   ],
+
+  "mandatory_product_reference": "real-product-v1",
+
+  "forbidden_global_reference_categories": [
+    "kitchen",
+    "airfryer",
+    "basket",
+    "food",
+    "hands",
+    "person",
+    "clothing",
+    "lighting",
+    "generated_plates",
+    "previous_candidate_composites"
+  ],
+
+  "product_only_means_product_only_rule": "Owner decision (после C1/C2/C3 scene-05): в проекте существует ровно ОДИН постоянный визуальный reference/product lock -- real-product-v1. Ничего из forbidden_global_reference_categories (кухня/аэрогриль/корзина/еда/руки/человек/одежда/свет/generated plates/предыдущие candidate composites) не может стать reference asset, visual lock или обязательным image ref -- ни сейчас, ни в будущих видео. Всё, что не товар, генерируется по тексту заново для каждой сцены/видео и может отличаться между видео.",
+
+  "diagnostic_only_generated_outputs_rule": "Сгенерированные outputs scene-05 C1/C2/C3 (AI plates, composite PNG, debug/QA JSON в generated/product-only-scene/scene-05/) -- ТОЛЬКО diagnostic/rejected experiments. Их нельзя использовать как source reference, нельзя добавлять в product-lock, нельзя использовать как locked background для будущих видео, нельзя использовать как эталон аэрогриля/еды/кухни. Статус попыток и итоговое решение см. scene-05-generation-attempts-status.json. Новый подход (без local deterministic compositing generated air fryer plates) см. scene-05-product-reference-only-dry-run.json.",
 
   "continuity_source": "text_prompt_block",
   "continuity_block_file": "content/autopilot/coating-protect-2026-07/video-continuity-block.md",

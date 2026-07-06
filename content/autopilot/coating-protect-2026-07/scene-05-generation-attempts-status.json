@@ -1,0 +1,59 @@
+{
+  "status": "diagnostic_record_only",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+
+  "owner_decision": "Stop the C1/C2/C3 local deterministic compositing path for scene-05 (generated AI air fryer/basket/kitchen plates + real-product-v1 pasted on top via APPROVED_TRANSFORM_B or a per-plate rigid transform fallback). Every attempt in this path produced visible seams/artifacts or misalignment. New direction: PRODUCT ONLY MEANS PRODUCT ONLY -- see campaign_visual_policy.json (mandatory_product_reference, forbidden_global_reference_categories) and scene-05-product-reference-only-dry-run.json for the replacement approach.",
+
+  "attempts": {
+    "C1": {
+      "approach": "product_placement_plate: AI draws kitchen/hands/basket/food plate (frontal basket, level left/right hand tabs), real-product-v1 pasted on top via fixed APPROVED_TRANSFORM_B.",
+      "status": "rejected",
+      "reasons": ["duplicate_ai_product_visible", "product_placement_misaligned"],
+      "detail": "AI plate drew its own black liner/tray-like insert in the basket (a duplicate of the product itself); separately, APPROVED_TRANSFORM_B (calibrated against a fixed reference photo) landed the real product outside this plate's actual basket location entirely.",
+      "report": "generated/product-only-scene/scene-05/scene-05-qa-report.json"
+    },
+    "C2": {
+      "approach": "Same product_placement_plate approach, revised prompt: high 3/4 top-down camera, diagonal upper-left-to-lower-right axis, asymmetric hand heights matching product_45deg's own photographed angle, plus a rigid per-plate transform fallback.",
+      "status": "rejected",
+      "reasons": [
+        "hands_not_convincingly_near_real_handle_tabs",
+        "visible_hard_seam_at_product_ai_plate_boundary",
+        "stray_wire_rack_artifact_bleeding_through_near_seam",
+        "product_overlay_makes_hand_grip_read_as_disconnected"
+      ],
+      "detail": "Camera angle and hand asymmetry direction were correct this time, and no duplicate product was drawn, but hands still landed ~150-160px from the real handle tabs even with the best achievable rigid-transform fit (an occlusion-compositing problem: correct front/back occlusion around a hand gripping a handle tab cannot be solved by a global rigid transform).",
+      "report": "generated/product-only-scene/scene-05/scene-05-c2-qa-report.json"
+    },
+    "C3": {
+      "approach": "Same product_placement_plate approach, no-hands result shot: AI draws kitchen/basket/food only (no hands/person at all), real-product-v1 pasted on top via a per-plate rigid transform fallback (99.3% basket-opening footprint fit achieved).",
+      "status": "rejected_for_production_use",
+      "reasons": [
+        "product_layer_looks_pasted",
+        "visible_seam_near_top_left_handle",
+        "stray_wire_rack_artifact_bleeding_through_near_bottom_right_seam"
+      ],
+      "detail": "Best geometric fit of the three attempts (no duplicate product, no hands to misalign, 99.3% footprint match) -- but the real-product-v1 layer still visibly reads as pasted onto the AI plate: a hard seam and a background-bleed-through artifact from the product photo's own source image are visible on close inspection. Local deterministic pixel-compositing of a real photo onto a fresh AI plate keeps producing this class of defect regardless of transform accuracy.",
+      "report": "generated/product-only-scene/scene-05/scene-05-c3-qa-report.json",
+      "important": "C3's output PNGs (scene-05-c3-*.png) are diagnostic evidence of why this approach was rejected -- NOT a reference asset, NOT a locked background, NOT to be reused in any future generation or video."
+    }
+  },
+
+  "conclusions_kept": {
+    "no_hands_is_still_the_right_creative_direction": true,
+    "note": "C3's decision to drop hands/lifting from the scene concept remains correct -- the failure was in the pixel-compositing mechanism (pasting a real photo onto an AI plate produces seams no matter how well the transform is tuned), not in the no-hands scene concept itself."
+  },
+
+  "conclusions_discarded": {
+    "local_deterministic_compositing_of_generated_plates": "discontinued -- see forbidden_global_reference_categories in campaign_visual_policy.json (generated_plates, previous_candidate_composites)",
+    "using_c1_c2_c3_outputs_as_reference": "forbidden -- diagnostic only, see diagnostic_only_generated_outputs_rule in campaign_visual_policy.json"
+  },
+
+  "next_approach": "content/autopilot/coating-protect-2026-07/scene-05-product-reference-only-dry-run.json",
+
+  "openai_calls_executed_by_this_status_update": 0,
+  "higgsfield_calls_executed_by_this_status_update": 0,
+
+  "created_at": "2026-07-06"
+}
