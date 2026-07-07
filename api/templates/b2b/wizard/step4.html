@@ -1,12 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Onboarding -- Step 4{% endblock %}
+{% block title %}Шаг 4: AI-анализ{% endblock %}
 {% block content %}
-<h1>{{ product.product_name }} -- Шаг 4 из 6: Что AI понял про ваш товар</h1>
+{% set current_step = 4 %}
+{% include "wizard/_stepper.html" %}
+
+<h1>Что AI понял про ваш товар</h1>
 
 {% set r = intelligence.report %}
 <div class="card">
-  <p><span class="status-badge">{{ r.match_confidence }} confidence</span> &nbsp;
-     approved: {{ "yes" if intelligence.approved_by_owner else "no" }}</p>
+  <div class="card-title-row">
+    <span class="badge">{{ r.match_confidence }} confidence</span>
+    {% if intelligence.approved_by_owner %}
+    <span class="badge badge-success">approved</span>
+    {% else %}
+    <span class="badge badge-warning">не подтверждено</span>
+    {% endif %}
+  </div>
   <p class="muted">{{ r.confidence_notes }}</p>
 
   <p><b>Главная проблема, которую решает товар:</b> {{ r.core_problem_solved }}</p>
@@ -26,15 +35,16 @@
   <ul>{% for o in r.likely_objections %}<li>{{ o.objection }}</li>{% endfor %}</ul>
 
   <p><b>Идеи хуков:</b></p>
-  <ul>{% for h in r.hook_angles %}<li>[{{ h.angle_type }}] {{ h.hook }} {% if not h.enabled %}(disabled){% endif %}</li>{% endfor %}</ul>
+  <ul>{% for h in r.hook_angles %}<li>[{{ h.angle_type }}] {{ h.hook }} {% if not h.enabled %}<span class="badge badge-muted">disabled</span>{% endif %}</li>{% endfor %}</ul>
 
   <p><b>Идеи видео:</b></p>
   <ul>{% for v in r.video_message_angles %}<li>{{ v.angle }}</li>{% endfor %}</ul>
 
   <p><b>Мысль, которую должен поймать зритель:</b><br>
      &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
-  <p class="muted">Мы хотим, чтобы зритель подумал: &laquo;Да, у меня такая же проблема.
-     Мне это нужно.&raquo;</p>
+  <div class="alert alert-info">
+    Мы хотим, чтобы зритель подумал: &laquo;Да, у меня такая же проблема. Мне это нужно.&raquo;
+  </div>
 </div>
 
 <div class="card">
@@ -44,14 +54,14 @@
     <button type="submit">Approve AI analysis</button>
   </form>
   <form action="/b2b/seller/{{ product.product_id }}/step4/regenerate" method="post" style="display:inline">
-    <button type="submit">Regenerate from product info</button>
+    <button type="submit" class="btn-secondary">Regenerate from product info</button>
   </form>
 
   <form action="/b2b/seller/{{ product.product_id }}/step4/primary-problem" method="post">
     <label>Edit primary problem
       <textarea name="problem_text" rows="2">{{ r.core_problem_solved }}</textarea>
     </label>
-    <button type="submit">Save primary problem</button>
+    <button type="submit" class="btn-secondary">Save primary problem</button>
   </form>
 
   <form action="/b2b/seller/{{ product.product_id }}/step4/positioning-mode" method="post">
@@ -64,17 +74,20 @@
     </label>
   </form>
 
-  <p class="muted">Disable irrelevant hook:</p>
+  <p class="hint">Disable irrelevant hook:</p>
   {% for h in r.hook_angles %}
   <form action="/b2b/seller/{{ product.product_id }}/step4/hook-toggle" method="post" style="display:inline">
     <input type="hidden" name="index" value="{{ loop.index0 }}">
     <input type="hidden" name="enabled" value="{{ 'false' if h.enabled else 'true' }}">
-    <button type="submit" style="margin:2px;padding:2px 8px;">
+    <button type="submit" class="btn-secondary" style="margin:2px;padding:4px 10px;font-weight:400;">
       {{ "disable" if h.enabled else "enable" }}: {{ h.hook[:40] }}...
     </button>
   </form>
   {% endfor %}
 </div>
 
-<p><a href="/b2b/seller/{{ product.product_id }}/step5"><button type="button">Далее: Настройки контент-пакета &raquo;</button></a></p>
+<p>
+  <a href="/b2b/seller/{{ product.product_id }}/step3">&laquo; Назад</a> &nbsp;|&nbsp;
+  <a href="/b2b/seller/{{ product.product_id }}/step5"><button type="button">Далее: Настройки контент-пакета &raquo;</button></a>
+</p>
 {% endblock %}

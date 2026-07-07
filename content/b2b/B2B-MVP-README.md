@@ -41,6 +41,12 @@ FastAPI app is normally run) and open `/b2b` in a browser. The dashboard
 shows client/product/campaign counts and a link to the demo campaign once
 seeded.
 
+**Do not open files under `api/templates/` directly in a file explorer or
+text editor and expect them to look like a web page.** They are Jinja2
+templates -- raw `{% ... %}` / `{{ ... }}` markers are only resolved when
+FastAPI renders them through a route. Always start the app and open the
+actual URL (`/traffic-factory`, `/b2b`, etc.) in a browser.
+
 ## How to upload a product
 
 From the dashboard, click **+ Create new product** (`/b2b/products/new`).

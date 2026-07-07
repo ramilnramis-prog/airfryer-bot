@@ -1,26 +1,28 @@
 {% extends "base.html" %}
 {% block title %}{{ campaign.campaign_id }}{% endblock %}
 {% block content %}
-<h1>Campaign: {{ campaign.campaign_id }}</h1>
+<h1>Контент-пакет: {{ campaign.campaign_id }}</h1>
 <div class="card">
-  <p><b>product:</b> {% if product %}<a href="/b2b/products/{{ product.product_id }}">{{ product.product_name }}</a>{% endif %}</p>
-  <p><b>goal:</b> {{ campaign.campaign_goal }}</p>
-  <p><b>status:</b> <span class="status-badge">{{ campaign.status }}</span></p>
-  <p><b>platforms:</b> {{ campaign.platforms|join(", ") }}</p>
+  <div class="card-title-row">
+    <p><b>Товар:</b> {% if product %}<a href="/b2b/products/{{ product.product_id }}">{{ product.product_name }}</a>{% endif %}</p>
+    <span class="status-badge">{{ campaign.status }}</span>
+  </div>
+  <p><b>Цель:</b> {{ campaign.campaign_goal }}</p>
+  <p><b>Площадки:</b> {{ campaign.platforms|join(", ") }}</p>
 </div>
 
 <div class="card">
   <h2>Что создаст контент-завод</h2>
-  <ul>
-    <li>рекламные сцены</li>
-    <li>short video creatives</li>
-    <li>описания под площадки</li>
-    <li>статьи Дзена</li>
-    <li>картинки к статьям</li>
-    <li>план публикаций</li>
-    <li>performance tracker</li>
-    <li>ZIP delivery kit</li>
-  </ul>
+  <div class="grid grid-4">
+    <div class="card"><p class="muted">рекламные сцены</p></div>
+    <div class="card"><p class="muted">short video creatives</p></div>
+    <div class="card"><p class="muted">описания под площадки</p></div>
+    <div class="card"><p class="muted">статьи Дзена</p></div>
+    <div class="card"><p class="muted">картинки к статьям</p></div>
+    <div class="card"><p class="muted">план публикаций</p></div>
+    <div class="card"><p class="muted">таблица для отслеживания результатов</p></div>
+    <div class="card"><p class="muted">ZIP с материалами</p></div>
+  </div>
   {% if intelligence %}
   {% set r = intelligence.report %}
   <p><b>Контент будет строиться на основе главной проблемы товара:</b> {{ r.core_problem_solved }}</p>
@@ -36,8 +38,6 @@
 <div class="card">
   <h2>Как система будет делать контент</h2>
   <p>На основе анализа товара система будет делать контент так, чтобы зритель узнавал свою проблему.</p>
-  <p><b>Например, мы хотим, чтобы зритель подумал:</b><br>
-     &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
 
   <p><b>Suggested hook angles:</b></p>
   <ul>
@@ -55,50 +55,45 @@
   </ul>
   <p><a href="/b2b/products/{{ campaign.product_id }}/intelligence">Полный разбор товара &raquo;</a></p>
 </div>
-{% else %}
-<div class="card">
-  <h2>Как система будет делать контент</h2>
-  <p class="muted">Анализ товара ещё не запускался -- откройте страницу товара, чтобы построить гипотезы.</p>
-</div>
 {% endif %}
 
 <div class="card">
-  <h2>Generation</h2>
+  <h2>Проверить будущий контент-пакет</h2>
   {% if dry_run_exists %}
-  <p>campaign-dry-run.json уже создан: <code>{{ dry_run_path }}</code></p>
+  <p><span class="badge badge-success">готово</span> план уже создан</p>
   {% if dry_run_md_exists %}
-  <p>Человекочитаемый план: <code>{{ dry_run_md_path }}</code></p>
+  <p class="hint"><code>{{ dry_run_md_path }}</code></p>
   {% endif %}
   {% else %}
-  <p class="muted">Dry-run ещё не запускался.</p>
+  <p class="muted">Проверка ещё не запускалась.</p>
   {% endif %}
   <form action="/b2b/campaigns/{{ campaign.campaign_id }}/dry-run" method="post">
-    <button type="submit">Run dry-run</button>
+    <button type="submit">Проверить будущий контент-пакет</button>
   </form>
-  <p class="muted">Dry-run не делает вызовов OpenAI/Higgsfield -- только план. Реальная генерация
-     запускается вручную отдельной командой (см. CLI), не с этой страницы.</p>
+  <p class="hint">Ничего не генерирует и не тратит деньги -- это только план. Реальная генерация
+     запускается вручную отдельно, не с этой страницы.</p>
 </div>
 
 <div class="card">
-  <h2>Output folders</h2>
-  <p><code>{{ generated_dir }}</code></p>
-  <ul>
-    {% for sub in generated_subdirs %}<li>{{ sub }}/</li>{% endfor %}
-  </ul>
-</div>
-
-<div class="card">
-  <h2>Delivery kit</h2>
+  <h2>Готовый ZIP с материалами</h2>
   {% if delivery_kit_exists %}
-  <p>DELIVERY-KIT.zip готов: <code>{{ delivery_kit_path }}</code></p>
-  <p><a href="/b2b/campaigns/{{ campaign.campaign_id }}/delivery-kit.zip"><button type="button">Download delivery kit zip</button></a></p>
+  <p><span class="badge badge-success">готово</span> DELIVERY-KIT.zip собран</p>
+  <p><a href="/b2b/campaigns/{{ campaign.campaign_id }}/delivery-kit.zip"><button type="button" class="btn-orange">Скачать ZIP</button></a></p>
   {% else %}
-  <p class="muted">Delivery kit ещё не собран.</p>
+  <p class="muted">ZIP ещё не собран.</p>
   {% endif %}
   <form action="/b2b/campaigns/{{ campaign.campaign_id }}/build-delivery-kit" method="post">
-    <button type="submit">Build delivery kit</button>
+    <button type="submit">Собрать готовый ZIP с материалами</button>
   </form>
-  <p class="muted">Требует минимум {{ min_refs }} одобренных product references (та же
-     fail-closed политика, что и dry-run).</p>
+  <p class="hint">Требует минимум {{ min_refs }} одобренных фото товара (та же fail-closed
+     политика, что и проверка пакета).</p>
+</div>
+
+<div class="card">
+  <h2>Папки вывода</h2>
+  <p class="hint"><code>{{ generated_dir }}</code></p>
+  <ul class="hint">
+    {% for sub in generated_subdirs %}<li>{{ sub }}/</li>{% endfor %}
+  </ul>
 </div>
 {% endblock %}

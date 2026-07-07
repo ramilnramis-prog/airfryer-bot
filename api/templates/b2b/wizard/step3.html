@@ -1,44 +1,50 @@
 {% extends "base.html" %}
-{% block title %}Onboarding -- Step 3{% endblock %}
+{% block title %}Шаг 3: Покупатель{% endblock %}
 {% block content %}
-<h1>{{ product.product_name }} -- Шаг 3 из 6: Покупатель и позиционирование</h1>
+{% set current_step = 3 %}
+{% include "wizard/_stepper.html" %}
+
+<h1>Покупатель и позиционирование</h1>
 <p class="muted">Эти поля не обязательны -- если оставить пустыми, AI всё равно построит гипотезы
    автоматически по названию/категории/описанию. Но чем точнее вы заполните, тем точнее будет анализ.</p>
 
-<form action="/b2b/seller/{{ product.product_id }}/step3" method="post">
-  <label>Кто покупает этот товар? (who_is_this_for)
-    <textarea name="who_is_this_for" rows="2">{{ product.who_is_this_for }}</textarea>
-  </label>
-  <label>Какую бытовую проблему он решает? (what_problem_does_it_usually_solve)
-    <textarea name="what_problem_does_it_usually_solve" rows="2">{{ product.what_problem_does_it_usually_solve }}</textarea>
-  </label>
-  <label>Почему человек должен подумать "Да, мне это нужно"? (why_people_buy_it)
-    <textarea name="why_people_buy_it" rows="2">{{ product.why_people_buy_it }}</textarea>
-  </label>
-  <label>Топ-3 выгоды (top_3_benefits, через запятую)
-    <textarea name="top_3_benefits" rows="2">{{ product.top_3_benefits }}</textarea>
-  </label>
-  <label>Сценарии использования (use_cases, через запятую)
-    <textarea name="use_cases" rows="2">{{ product.use_cases }}</textarea>
-  </label>
-  <label>Частые вопросы (common_questions, через запятую)
-    <textarea name="common_questions" rows="2">{{ product.common_questions }}</textarea>
-  </label>
-  <label>Возражения покупателей (objections, через запятую)
-    <textarea name="objections" rows="2">{{ product.objections }}</textarea>
-  </label>
-  <label>Что нельзя обещать в рекламе? (forbidden_claims / what_should_not_be_claimed)
-    <textarea name="what_should_not_be_claimed" rows="2">{{ product.what_should_not_be_claimed }}</textarea>
-  </label>
-  <label>Тон коммуникации (tone_preference)
-    <select name="tone_preference">
-      <option value="">-- не указано --</option>
-      {% for t in tone_options %}
-      <option value="{{ t }}" {% if t == product.tone_preference %}selected{% endif %}>{{ t }}</option>
-      {% endfor %}
-    </select>
-  </label>
+<div class="card">
+  <form action="/b2b/seller/{{ product.product_id }}/step3" method="post">
+    <label>Кто покупает этот товар?
+      <textarea name="who_is_this_for" rows="2">{{ product.who_is_this_for }}</textarea>
+    </label>
+    <label>Какую бытовую проблему он решает?
+      <textarea name="what_problem_does_it_usually_solve" rows="2">{{ product.what_problem_does_it_usually_solve }}</textarea>
+    </label>
+    <label>Почему человек должен подумать &laquo;Да, мне это нужно&raquo;?
+      <textarea name="why_people_buy_it" rows="2">{{ product.why_people_buy_it }}</textarea>
+    </label>
+    <label>Топ-3 выгоды (через запятую)
+      <textarea name="top_3_benefits" rows="2">{{ product.top_3_benefits }}</textarea>
+    </label>
+    <label>Сценарии использования (через запятую)
+      <textarea name="use_cases" rows="2">{{ product.use_cases }}</textarea>
+    </label>
+    <label>Частые вопросы (через запятую)
+      <textarea name="common_questions" rows="2">{{ product.common_questions }}</textarea>
+    </label>
+    <label>Возражения покупателей (через запятую)
+      <textarea name="objections" rows="2">{{ product.objections }}</textarea>
+    </label>
+    <label>Что нельзя обещать в рекламе?
+      <textarea name="what_should_not_be_claimed" rows="2">{{ product.what_should_not_be_claimed }}</textarea>
+    </label>
+    <label>Тон коммуникации
+      <select name="tone_preference">
+        <option value="">-- не указано --</option>
+        {% for t in tone_options %}
+        <option value="{{ t }}" {% if t == product.tone_preference %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
 
-  <button type="submit">Далее: AI-анализ товара &raquo;</button>
-</form>
+    <button type="submit">Далее: AI-анализ товара &raquo;</button>
+  </form>
+</div>
+<p><a href="/b2b/seller/{{ product.product_id }}/step2">&laquo; Назад: Фото товара</a></p>
 {% endblock %}

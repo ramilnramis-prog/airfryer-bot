@@ -1,19 +1,23 @@
 {% extends "b2b/base.html" %}
 {% block title %}Доступ к сервису{% endblock %}
 {% block content %}
-<h1>Создать контент-пакет</h1>
+<div class="center-card-wrap">
+  <div class="card center-card">
+    <h1>Создать контент-пакет</h1>
+    <p class="muted">Введите код доступа, чтобы открыть beta-версию контент-завода.</p>
 
-{% if error %}
-<div class="card">
-  <p>Сейчас сервис работает в beta-режиме. Напишите нам, чтобы получить доступ.</p>
-</div>
-{% endif %}
+    {% if error %}
+    <div class="alert alert-error">
+      Сейчас сервис работает в beta-режиме. Напишите нам, чтобы получить доступ.
+    </div>
+    {% endif %}
 
-<div class="card">
-  <p>Введите код доступа</p>
-  <form action="/traffic-factory/start" method="post">
-    <label>Код доступа<input name="access_code" required></label>
-    <button type="submit">Продолжить</button>
-  </form>
+    <form action="/traffic-factory/start" method="post">
+      <label>Код доступа
+        <input name="access_code" required placeholder="Например: SELLER-BETA">
+      </label>
+      <button type="submit">Продолжить</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

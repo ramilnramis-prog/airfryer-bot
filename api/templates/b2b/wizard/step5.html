@@ -1,36 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Onboarding -- Step 5{% endblock %}
+{% block title %}Шаг 5: Настройки пакета{% endblock %}
 {% block content %}
-<h1>{{ product.product_name }} -- Шаг 5 из 6: Настройки контент-пакета</h1>
+{% set current_step = 5 %}
+{% include "wizard/_stepper.html" %}
 
-<form action="/b2b/seller/{{ product.product_id }}/step5" method="post">
-  <label>Площадки (platforms)</label>
-  {% for p in platforms %}
-  <label style="display:inline-block;margin-right:16px;">
-    <input type="checkbox" name="platforms" value="{{ p }}"
-      {% if p in settings.get('platforms', []) %}checked{% endif %} style="width:auto;"> {{ p }}
-  </label>
-  {% endfor %}
+<h1>Настройки контент-пакета</h1>
 
-  <label>Длительность пакета (package_duration)
-    <select name="package_duration">
-      {% for d in durations %}
-      <option value="{{ d }}" {% if d == settings.get('package_duration') %}selected{% endif %}>{{ d }}</option>
-      {% endfor %}
-    </select>
-  </label>
+<div class="card">
+  <form action="/b2b/seller/{{ product.product_id }}/step5" method="post">
+    <label>Площадки</label>
+    {% for p in platforms %}
+    <label style="display:inline-block;margin-right:16px;font-weight:400;">
+      <input type="checkbox" name="platforms" value="{{ p }}"
+        {% if p in settings.get('platforms', []) %}checked{% endif %} style="width:auto;"> {{ p }}
+    </label>
+    {% endfor %}
 
-  <label>Что включить в пакет (content_types)</label>
-  {% for c in content_types %}
-  <label style="display:inline-block;margin-right:16px;">
-    <input type="checkbox" name="content_types" value="{{ c }}"
-      {% if c in settings.get('content_types', []) %}checked{% endif %} style="width:auto;"> {{ c }}
-  </label>
-  {% endfor %}
+    <label>Длительность пакета
+      <select name="package_duration">
+        {% for d in durations %}
+        <option value="{{ d }}" {% if d == settings.get('package_duration') %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </label>
 
-  <p class="muted">Автопостинг будет доступен позже. Сейчас система готовит ZIP-пакет для
-     ручной публикации (manual_upload_ready_kit).</p>
+    <label>Что включить в пакет</label>
+    {% for c in content_types %}
+    <label style="display:inline-block;margin-right:16px;font-weight:400;">
+      <input type="checkbox" name="content_types" value="{{ c }}"
+        {% if c in settings.get('content_types', []) %}checked{% endif %} style="width:auto;"> {{ c }}
+    </label>
+    {% endfor %}
 
-  <button type="submit">Далее: Чеклист готовности &raquo;</button>
-</form>
+    <div class="alert alert-info">
+      Автопостинг будет доступен позже. Сейчас система готовит готовый ZIP с материалами для
+      ручной публикации (manual_upload_ready_kit).
+    </div>
+
+    <button type="submit">Далее: Чеклист готовности &raquo;</button>
+  </form>
+</div>
+<p><a href="/b2b/seller/{{ product.product_id }}/step4">&laquo; Назад</a></p>
 {% endblock %}

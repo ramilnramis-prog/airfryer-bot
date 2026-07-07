@@ -225,7 +225,7 @@ class TestCampaignPageShowsContentPackagePlan(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn("Что создаст контент-завод", r.text)
         for marker in ("рекламные сцены", "short video creatives", "статьи Дзена",
-                      "план публикаций", "performance tracker", "ZIP delivery kit"):
+                      "план публикаций", "таблица для отслеживания результатов", "ZIP с материалами"):
             self.assertIn(marker, r.text)
 
     def test_core_problem_and_viewer_thought_present(self):

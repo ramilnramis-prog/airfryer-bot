@@ -1,53 +1,45 @@
 {% extends "b2b/base.html" %}
 {% block title %}Крутая внешняя реклама{% endblock %}
 {% block content %}
-<h1>Крутая внешняя реклама для селлеров Ozon/WB</h1>
-<p>Загрузите фото товара и ссылку на карточку -- система сама поймёт, какую проблему решает
-   товар, и подготовит контент-пакет для внешнего трафика.</p>
+<div class="hero">
+  <h1>Крутая внешняя реклама для селлеров Ozon/WB</h1>
+  <p>Загрузите фото товара и ссылку на карточку -- система сама поймёт, какую проблему решает
+     товар, и подготовит контент-пакет для внешнего трафика.</p>
+  <div class="hero-actions">
+    <a href="/traffic-factory/start"><button type="button">Создать контент-пакет</button></a>
+    <a href="/traffic-factory/demo"><button type="button" class="btn-secondary">Посмотреть пример</button></a>
+  </div>
+</div>
 
-<p>
-  <a href="/traffic-factory/start"><button type="button">Создать контент-пакет</button></a>
-  &nbsp;
-  <a href="/traffic-factory/demo"><button type="button">Посмотреть пример</button></a>
-</p>
+<h2>Как это работает</h2>
+<div class="grid grid-3">
+  <div class="card"><b>Шаг 1</b><p class="muted">Загружаете товар</p></div>
+  <div class="card"><b>Шаг 2</b><p class="muted">AI понимает проблему и выгоды</p></div>
+  <div class="card"><b>Шаг 3</b><p class="muted">Система делает видео, статьи, картинки и описания</p></div>
+  <div class="card"><b>Шаг 4</b><p class="muted">Вы получаете ZIP и план публикаций</p></div>
+  <div class="card"><b>Шаг 5</b><p class="muted">Публикуете вручную и отслеживаете результат</p></div>
+</div>
 
-<div class="card">
-  <h2>Как это работает</h2>
-  <ol>
-    <li>Шаг 1. Загружаете товар</li>
-    <li>Шаг 2. AI понимает проблему и выгоды</li>
-    <li>Шаг 3. Система делает видео, статьи, картинки и описания</li>
-    <li>Шаг 4. Вы получаете ZIP и план публикаций</li>
-    <li>Шаг 5. Публикуете вручную и отслеживаете результат</li>
-  </ol>
+<h2>Что вы получите</h2>
+<div class="grid grid-4">
+  <div class="card"><span class="badge">видео</span><p>Short videos</p></div>
+  <div class="card"><span class="badge">площадки</span><p>Описания для YouTube Shorts / Reels / TikTok / VK Клипы</p></div>
+  <div class="card"><span class="badge">статьи</span><p>Статьи для Дзена</p></div>
+  <div class="card"><span class="badge">картинки</span><p>Картинки к статьям</p></div>
+  <div class="card"><span class="badge">план</span><p>План публикаций</p></div>
+  <div class="card"><span class="badge">трекер</span><p>Таблица для отслеживания результатов (performance tracker)</p></div>
+  <div class="card"><span class="badge">архив</span><p>ZIP с материалами (delivery ZIP)</p></div>
 </div>
 
 <div class="card">
-  <h2>Что вы получите</h2>
-  <p>После заполнения товара и фото вы получите:</p>
-  <ul>
-    <li>короткие видео (short videos)</li>
-    <li>описания для YouTube Shorts / Instagram Reels / TikTok / VK Клипы</li>
-    <li>статьи для Дзена</li>
-    <li>картинки к статьям</li>
-    <li>план публикаций</li>
-    <li>трекер результатов (performance tracker)</li>
-    <li>ZIP-архив со всеми материалами (delivery ZIP)</li>
-  </ul>
-</div>
-
-<div class="card">
-  <h2>Как мы это делаем</h2>
+  <h2>Почему это не просто генератор картинок</h2>
   <p><b>Мы не просто генерируем картинки.</b> Сначала система определяет, какую проблему решает
-     ваш товар, и строит контент так, чтобы зритель узнал свою ситуацию -- увидел то же самое,
-     что происходит у него, и подумал: &ldquo;Да, мне это нужно&rdquo;.</p>
+     товар, кому он нужен и какую мысль должен поймать зритель. Потом на этой основе строятся
+     хуки, видео, статьи и описания.</p>
 </div>
 
-<div class="card">
-  <h2>Важно знать</h2>
-  <p class="muted">Сейчас сервис работает в ручном beta-режиме. Автопостинг будет позже.
-     На первом этапе вы получаете готовый пакет материалов для ручной публикации.</p>
+<div class="alert alert-info">
+  Сейчас сервис работает в beta-режиме. Автопостинг будет позже. На первом этапе вы получаете
+  готовый пакет для ручной публикации.
 </div>
-
-<p class="muted"><a href="/b2b">Admin dashboard</a> (только для команды)</p>
 {% endblock %}

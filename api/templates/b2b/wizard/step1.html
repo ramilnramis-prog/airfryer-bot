@@ -1,34 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Onboarding -- Step 1{% endblock %}
+{% block title %}Шаг 1: Товар{% endblock %}
 {% block content %}
-<h1>Добавить товар -- Шаг 1 из 6: Товар</h1>
+{% set current_step = 1 %}
+{% include "wizard/_stepper.html" %}
+
+<h1>Расскажите о товаре</h1>
 <p class="muted">Опишите товар простыми словами: что это, для кого и зачем.</p>
 
-<form action="/b2b/seller/start" method="post">
-  <label>Ваше имя / название компании (client_name)<input name="client_name" required></label>
-  <label>Контакт (email/телефон/telegram)<input name="contact"></label>
+<div class="card">
+  <form action="/b2b/seller/start" method="post">
+    <label>Ваше имя / название компании
+      <input name="client_name" required>
+    </label>
+    <p class="hint">client_name</p>
 
-  <label>Название товара
-    <input name="product_name" required placeholder="Силиконовая форма для аэрогриля">
-  </label>
-  <label>Площадка (marketplace)
-    <select name="marketplace">
-      {% for m in marketplaces %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
-    </select>
-  </label>
-  <label>Артикул на площадке
-    <input name="marketplace_article" placeholder="Артикул Ozon: 1931921872">
-  </label>
-  <label>Ссылка на карточку товара
-    <input name="marketplace_url" placeholder="Ссылка на карточку товара">
-  </label>
-  <label>Цена<input name="price" placeholder="например 990"></label>
-  <label>Категория<input name="category" placeholder="Кухонные принадлежности"></label>
-  <label>Короткое описание товара
-    <textarea name="short_product_description" rows="4"
-      placeholder="Помогает готовить аккуратнее и проще убирать после готовки"></textarea>
-  </label>
+    <label>Контакт (email/телефон/telegram)
+      <input name="contact">
+    </label>
 
-  <button type="submit">Далее: Фото товара &raquo;</button>
-</form>
+    <label>Название товара
+      <input name="product_name" required placeholder="Силиконовая форма для аэрогриля">
+    </label>
+
+    <label>Площадка
+      <select name="marketplace">
+        {% for m in marketplaces %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+      </select>
+    </label>
+
+    <label>Артикул на площадке
+      <input name="marketplace_article" placeholder="Артикул Ozon: 1931921872">
+    </label>
+
+    <label>Ссылка на карточку товара
+      <input name="marketplace_url" placeholder="Ссылка на карточку товара">
+    </label>
+
+    <label>Цена
+      <input name="price" placeholder="например 990">
+    </label>
+
+    <label>Категория
+      <input name="category" placeholder="Кухонные принадлежности">
+    </label>
+
+    <label>Короткое описание товара
+      <textarea name="short_product_description" rows="4"
+        placeholder="Помогает готовить аккуратнее и проще убирать после готовки"></textarea>
+    </label>
+
+    <button type="submit">Далее: Фото товара &raquo;</button>
+  </form>
+</div>
 {% endblock %}

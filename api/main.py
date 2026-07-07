@@ -18,7 +18,7 @@ from fastapi import FastAPI, Depends, BackgroundTasks, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 
-from .config import PHOTOS_DIR, GEN_DIR, BASE_URL, REGISTRY_AUTO_MIGRATE
+from .config import PHOTOS_DIR, GEN_DIR, BASE_URL, REGISTRY_AUTO_MIGRATE, ROOT
 from .auth import require_api_key
 from . import db, jobs, registry_db
 from .registry import router as registry_router
@@ -52,6 +52,9 @@ def _startup():
 # Статика. Более специфичный префикс (/files/photos) монтируем ПЕРВЫМ.
 app.mount("/files/photos", StaticFiles(directory=str(PHOTOS_DIR)), name="photos")
 app.mount("/files", StaticFiles(directory=str(GEN_DIR)), name="files")
+
+# CSS/JS for server-rendered B2B/Traffic Factory pages (api/templates/b2b/base.html)
+app.mount("/static", StaticFiles(directory=str(ROOT / "api" / "static")), name="static")
 
 # Единый реестр (источник истины) — отдельный набор роутов /registry/*
 app.include_router(registry_router)

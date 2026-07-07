@@ -2,20 +2,30 @@
 {% block title %}{{ product.product_name }}{% endblock %}
 {% block content %}
 <h1>{{ product.product_name }}</h1>
-<div class="card">
-  <p><b>marketplace:</b> {{ product.marketplace }} / {{ product.marketplace_article }}</p>
-  <p><b>url:</b> <a href="{{ product.marketplace_url }}">{{ product.marketplace_url }}</a></p>
-  <p><b>category:</b> {{ product.category }}</p>
-  <p><b>target audience:</b> {{ product.target_audience }}</p>
-  <p><b>main pain:</b> {{ product.main_pain }}</p>
-  <p><b>description:</b> {{ product.product_description }}</p>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Товар</h2>
+    <p><b>Категория:</b> {{ product.category or "-" }}</p>
+    <p><b>Описание:</b> {{ product.product_description or "-" }}</p>
+    <p><b>Целевая аудитория:</b> {{ product.target_audience or "-" }}</p>
+    <p><b>Главная боль (заполнено вручную):</b> {{ product.main_pain or "-" }}</p>
+  </div>
+  <div class="card">
+    <h2>Маркетплейс</h2>
+    <p><b>Площадка:</b> {{ product.marketplace }}</p>
+    <p><b>Артикул:</b> {{ product.marketplace_article or "-" }}</p>
+    <p><b>Ссылка:</b> {% if product.marketplace_url %}<a href="{{ product.marketplace_url }}">{{ product.marketplace_url }}</a>{% else %}-{% endif %}</p>
+  </div>
 </div>
 
 {% if intelligence %}
 {% set r = intelligence.report %}
 <div class="card">
-  <h2>Что система поняла о вашем товаре
-      <span class="status-badge">{{ r.match_confidence }} confidence</span></h2>
+  <div class="card-title-row">
+    <h2>Что система поняла о вашем товаре</h2>
+    <span class="status-badge">{{ r.match_confidence }} confidence</span>
+  </div>
   <p><b>Главная проблема, которую решает товар:</b> {{ r.core_problem_solved }}</p>
   <p><b>Для кого он особенно полезен:</b>
      {{ r.ideal_customer_segments[0].segment if r.ideal_customer_segments else "-" }}</p>
@@ -44,40 +54,37 @@
 
 <div class="card">
   <h2>Что нужно загрузить, чтобы контент-завод работал</h2>
-  <p>Product references -- это главный визуальный эталон товара. Система будет сохранять внешний
-     вид товара, а кухню, фон, еду, руки и рекламные сцены будет создавать отдельно.</p>
-  <table>
-    <tr><th>Фото</th><th>Статус</th><th>Approved</th><th>Role</th><th>Preview</th></tr>
+  <p class="muted">Product references -- это главный визуальный эталон товара (фото товара для
+     сохранения внешнего вида). Система будет сохранять внешний вид товара, а кухню, фон, еду,
+     руки и рекламные сцены будет создавать отдельно.</p>
+  <div class="upload-grid">
     {% for slot in upload_guide %}
-    <tr>
-      <td>{{ slot.label }}</td>
-      <td>{{ "uploaded" if slot.refs else "missing" }}</td>
-      <td>
-        {% if slot.refs %}
-        {{ slot.refs|selectattr("approved")|list|length }}/{{ slot.refs|length }} approved
-        {% else %}-{% endif %}
-      </td>
-      <td>{{ slot.role }}</td>
-      <td>
-        {% if slot.refs %}
-        {% for r in slot.refs %}{{ r.file_path.split('/')[-1] }}{% if not loop.last %}, {% endif %}{% endfor %}
-        {% else %}<span class="muted">нет фото</span>{% endif %}
-      </td>
-    </tr>
+    <div class="upload-card {% if slot.refs %}filled{% endif %}">
+      <div class="upload-label">{{ slot.label }}</div>
+      {% if slot.refs %}
+      <span class="badge badge-success">{{ slot.refs|selectattr("approved")|list|length }}/{{ slot.refs|length }} approved</span>
+      <p class="hint">{% for r in slot.refs %}{{ r.file_path.split('/')[-1] }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+      {% else %}
+      <span class="badge badge-muted">missing</span>
+      {% endif %}
+    </div>
     {% endfor %}
-  </table>
+  </div>
   <p><a href="/b2b/seller/{{ product.product_id }}/step2"><button type="button">Загрузить/добавить фото</button></a></p>
 </div>
 
 <div class="card">
-  <h2>Product references ({{ approved_count }}/{{ references|length }} approved,
-      минимум {{ min_refs }} нужно для генерации)</h2>
+  <div class="card-title-row">
+    <h2>Фото товара для сохранения внешнего вида</h2>
+    <span class="badge {% if approved_count >= min_refs %}badge-success{% else %}badge-warning{% endif %}">{{ approved_count }}/{{ references|length }} approved</span>
+  </div>
   {% if not references %}
   <p class="muted">Нет загруженных референсов.</p>
   {% elif approved_count < min_refs %}
-  <p class="muted">⚠ Одобрено только {{ approved_count }} из {{ min_refs }} минимально необходимых.</p>
+  <div class="alert alert-error">⚠ Одобрено только {{ approved_count }} из {{ min_refs }} минимально необходимых.</div>
   {% endif %}
   {% if references %}
+  <div class="tf-table-wrap">
   <table>
     <tr><th>file</th><th>role</th><th>approved</th><th>notes</th><th></th></tr>
     {% for r in references %}
@@ -86,50 +93,53 @@
       <td>
         <form action="/b2b/products/{{ product.product_id }}/references/role" method="post" style="display:inline">
           <input type="hidden" name="file_path" value="{{ r.file_path }}">
-          <select name="role" onchange="this.form.submit()" style="width:auto;max-width:120px;padding:2px;margin:0;">
+          <select name="role" onchange="this.form.submit()" style="width:auto;max-width:120px;padding:4px;margin:0;">
             {% for role in roles %}
             <option value="{{ role }}" {% if role == r.role %}selected{% endif %}>{{ role }}</option>
             {% endfor %}
           </select>
         </form>
       </td>
-      <td>{{ "yes" if r.approved else "no" }}</td>
+      <td>{% if r.approved %}<span class="badge badge-success">approved</span>{% else %}<span class="badge badge-warning">pending_review</span>{% endif %}</td>
       <td>{{ r.notes }}</td>
       <td>
         {% if not r.approved %}
         <form action="/b2b/products/{{ product.product_id }}/references/approve" method="post" style="display:inline">
           <input type="hidden" name="file_path" value="{{ r.file_path }}">
-          <button type="submit" style="margin:0;padding:2px 8px;">approve</button>
+          <button type="submit" class="btn-secondary" style="margin:0;padding:4px 10px;">approve</button>
         </form>
         {% else %}
         <form action="/b2b/products/{{ product.product_id }}/references/unapprove" method="post" style="display:inline">
           <input type="hidden" name="file_path" value="{{ r.file_path }}">
-          <button type="submit" style="margin:0;padding:2px 8px;">unapprove</button>
+          <button type="submit" class="btn-secondary" style="margin:0;padding:4px 10px;">unapprove</button>
         </form>
         {% endif %}
       </td>
     </tr>
     {% endfor %}
   </table>
+  </div>
   {% endif %}
 </div>
 
 <div class="card">
-  <h2>Campaigns</h2>
+  <h2>Контент-пакеты (campaigns)</h2>
   {% if campaigns %}
+  <div class="tf-table-wrap">
   <table>
     <tr><th>campaign_id</th><th>status</th></tr>
     {% for c in campaigns %}
-    <tr><td><a href="/b2b/campaigns/{{ c.campaign_id }}">{{ c.campaign_id }}</a></td><td>{{ c.status }}</td></tr>
+    <tr><td><a href="/b2b/campaigns/{{ c.campaign_id }}">{{ c.campaign_id }}</a></td><td><span class="status-badge">{{ c.status }}</span></td></tr>
     {% endfor %}
   </table>
+  </div>
   {% else %}
   <p class="muted">Пока нет кампаний.</p>
   {% endif %}
 
   {% if can_generate %}
   <form action="/b2b/products/{{ product.product_id }}/campaigns/new" method="post">
-    <label>Campaign goal
+    <label>Цель контент-пакета
       <select name="campaign_goal">
         <option value="external_traffic">external_traffic</option>
         <option value="marketplace_sales">marketplace_sales</option>
@@ -137,10 +147,10 @@
         <option value="content_testing">content_testing</option>
       </select>
     </label>
-    <button type="submit">Create campaign</button>
+    <button type="submit">Создать контент-пакет</button>
   </form>
   {% else %}
-  <p class="muted">Нужно ещё {{ min_refs - approved_count }} approved референс(ов), чтобы создать кампанию.</p>
+  <p class="muted">Нужно ещё {{ min_refs - approved_count }} approved референс(ов), чтобы создать контент-пакет.</p>
   {% endif %}
 </div>
 {% endblock %}

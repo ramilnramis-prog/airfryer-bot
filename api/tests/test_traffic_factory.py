@@ -120,7 +120,7 @@ class TestLandingExplainsUpload(TrafficFactoryTestCase):
 class TestLandingExplainsWhatSellerGets(TrafficFactoryTestCase):
     def test_landing_lists_deliverables(self):
         r = self.client.get("/traffic-factory/")
-        for marker in ("YouTube Shorts", "статьи для Дзена", "план публикаций",
+        for marker in ("YouTube Shorts", "Статьи для Дзена", "План публикаций",
                       "performance tracker", "delivery ZIP"):
             self.assertIn(marker, r.text)
 
