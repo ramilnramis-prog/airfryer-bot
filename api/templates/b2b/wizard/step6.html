@@ -38,15 +38,18 @@
 
   {% if checklist.can_run_dry_run %}
   <form action="/b2b/seller/{{ product.product_id }}/step6/dry-run" method="post" style="display:inline">
-    <button type="submit">Run dry-run</button>
+    <button type="submit">Проверить будущий контент-пакет</button>
   </form>
   <form action="/b2b/seller/{{ product.product_id }}/step6/create-package" method="post" style="display:inline">
-    <button type="submit">Create content package</button>
+    <button type="submit">Собрать готовый ZIP с материалами</button>
   </form>
   {% else %}
-  <button type="button" disabled>Run dry-run</button>
-  <button type="button" disabled>Create content package</button>
+  <button type="button" disabled>Проверить будущий контент-пакет</button>
+  <button type="button" disabled>Собрать готовый ZIP с материалами</button>
   <p class="muted">Нужно минимум {{ min_refs }} одобренных фото товара.</p>
   {% endif %}
+  <p class="muted">&laquo;Проверить будущий контент-пакет&raquo; ничего не генерирует и не тратит
+     деньги -- это только план. &laquo;Собрать готовый ZIP с материалами&raquo; (delivery kit)
+     формирует архив с планом и пояснениями, готовый для ручной публикации.</p>
 </div>
 {% endblock %}

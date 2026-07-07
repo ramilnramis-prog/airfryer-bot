@@ -1,0 +1,65 @@
+{% extends "b2b/base.html" %}
+{% block title %}Пример: контент-пакет{% endblock %}
+{% block content %}
+<h1>Пример: Силиконовая форма для аэрогриля</h1>
+<p class="muted">Так выглядит контент-пакет, который получает селлер после прохождения wizard.</p>
+
+{% if not seeded %}
+<div class="card">
+  <p class="muted">Демо ещё не создано. Запустите <code>python -m api.media_pipeline.cli b2b-seed-demo</code>.</p>
+</div>
+{% else %}
+
+<div class="card">
+  <h2>1. Какие фото товара были загружены</h2>
+  <table>
+    <tr><th>file</th><th>role</th><th>status</th></tr>
+    {% for r in references %}
+    <tr><td>{{ r.file_path.split('/')[-1] }}</td><td>{{ r.role }}</td>
+        <td>{{ "approved" if r.approved else "pending_review" }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% set rep = intelligence.report %}
+<div class="card">
+  <h2>2. Какую проблему определил AI</h2>
+  <p><b>{{ rep.core_problem_solved }}</b></p>
+  <p class="muted">{{ rep.confidence_notes }}</p>
+</div>
+
+<div class="card">
+  <h2>3. Какие хуки предложила система</h2>
+  <ul>
+    {% for h in rep.hook_angles if h.enabled %}<li>[{{ h.angle_type }}] {{ h.hook }}</li>{% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <h2>4. Какие видео/статьи получаются</h2>
+  <p><b>Идеи видео:</b></p>
+  <ul>{% for v in rep.video_message_angles %}<li>{{ v.angle }} -- &ldquo;{{ v.viewer_thought_to_trigger }}&rdquo;</li>{% endfor %}</ul>
+  <p><b>Рекомендуемый контент-микс:</b></p>
+  <ul>{% for k, v in rep.recommended_content_mix.items() %}<li>{{ k }}: {{ v }}%</li>{% endfor %}</ul>
+</div>
+
+<div class="card">
+  <h2>5. Пример структуры готового ZIP (delivery ZIP)</h2>
+  <p>Статус: dry-run {{ "готов" if dry_run_exists else "ещё не запускался" }},
+     ZIP {{ "собран" if delivery_zip_exists else "ещё не собран" }}.</p>
+  <p><b>Файлы внутри:</b></p>
+  <ul>{% for f in delivery_files %}<li>{{ f }}</li>{% endfor %}</ul>
+  <p><b>Папки:</b></p>
+  <ul>{% for d in delivery_subdirs %}<li>{{ d }}/</li>{% endfor %}</ul>
+</div>
+
+<div class="card">
+  <h2>6. Что получает селлер</h2>
+  <p>Готовый ZIP с материалами (delivery ZIP): короткие видео, описания под площадки, статьи
+     Дзена с картинками, план публикаций и трекер результатов -- всё готово к ручной загрузке.</p>
+</div>
+
+{% endif %}
+
+<p><a href="/traffic-factory/start"><button type="button">Создать свой контент-пакет</button></a></p>
+{% endblock %}

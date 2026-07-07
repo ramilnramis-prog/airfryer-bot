@@ -24,6 +24,7 @@ from . import db, jobs, registry_db
 from .registry import router as registry_router
 from .b2b import router as b2b_router
 from .b2b_seller_wizard import router as b2b_seller_wizard_router
+from .traffic_factory import router as traffic_factory_router
 from .posts import prepare_post
 
 logging.basicConfig(
@@ -61,6 +62,10 @@ app.include_router(b2b_router)
 
 # Seller-facing guided onboarding wizard, /b2b/seller/* (same MVP auth gap)
 app.include_router(b2b_seller_wizard_router)
+
+# Public seller entry point ("Крутая внешняя реклама"), /traffic-factory/*
+# (beta access code gate only, no full auth yet)
+app.include_router(traffic_factory_router)
 
 
 @app.exception_handler(sqlite3.IntegrityError)
