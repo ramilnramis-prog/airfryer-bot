@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}B2B dashboard{% endblock %}
+{% block content %}
+<h1>B2B Seller Traffic Factory -- dashboard</h1>
+<p class="muted">Admin-first MVP: clients/products/campaigns are created manually by us, not self-serve yet.</p>
+
+{% if not rows %}
+<p>Пока нет ни одного клиента/продукта. <a href="/b2b/products/new">Создать первый продукт</a>.</p>
+{% endif %}
+
+{% for row in rows %}
+<div class="card">
+  <h2>{{ row.client.name }} <span class="muted">({{ row.client.client_id }})</span></h2>
+  <p><a href="/b2b/products/{{ row.product.product_id }}">{{ row.product.product_name }}</a>
+     <span class="muted">{{ row.product.marketplace }} / {{ row.product.marketplace_article }}</span></p>
+  {% if row.campaigns %}
+  <table>
+    <tr><th>campaign_id</th><th>goal</th><th>status</th><th>platforms</th></tr>
+    {% for c in row.campaigns %}
+    <tr>
+      <td><a href="/b2b/campaigns/{{ c.campaign_id }}">{{ c.campaign_id }}</a></td>
+      <td>{{ c.campaign_goal }}</td>
+      <td><span class="status-badge">{{ c.status }}</span></td>
+      <td>{{ c.platforms|join(", ") }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Нет кампаний для этого продукта.</p>
+  {% endif %}
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>{% block title %}B2B Seller Traffic Factory{% endblock %}</title>
+<style>
+body { font-family: sans-serif; background:#111; color:#eee; margin:0; padding:20px; }
+h1 { font-size: 20px; } h2 { font-size: 16px; }
+a { color:#8ab4ff; }
+.nav { margin-bottom: 20px; }
+.card { background:#1c1c1c; border:1px solid #333; border-radius:8px; padding:14px; margin-bottom:14px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #333; font-size: 13px; }
+label { display:block; margin-top:10px; font-size:13px; color:#aaa; }
+input, select, textarea { width: 100%; max-width: 480px; padding:6px; margin-top:4px;
+  background:#222; color:#eee; border:1px solid #444; border-radius:4px; }
+button { margin-top:14px; padding:8px 16px; background:#2a5c8a; color:#fff; border:none;
+  border-radius:4px; cursor:pointer; }
+.status-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold; background:#2a2a2a; }
+.muted { color:#888; font-size:12px; }
+</style>
+</head><body>
+<div class="nav"><a href="/b2b">B2B dashboard</a> | <a href="/b2b/products/new">+ new product</a></div>
+{% block content %}{% endblock %}
+</body></html>

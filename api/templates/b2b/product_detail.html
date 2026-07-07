@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ product.product_name }}{% endblock %}
+{% block content %}
+<h1>{{ product.product_name }}</h1>
+<div class="card">
+  <p><b>marketplace:</b> {{ product.marketplace }} / {{ product.marketplace_article }}</p>
+  <p><b>url:</b> <a href="{{ product.marketplace_url }}">{{ product.marketplace_url }}</a></p>
+  <p><b>category:</b> {{ product.category }}</p>
+  <p><b>target audience:</b> {{ product.target_audience }}</p>
+  <p><b>main pain:</b> {{ product.main_pain }}</p>
+  <p><b>description:</b> {{ product.product_description }}</p>
+</div>
+
+<div class="card">
+  <h2>Product references ({{ approved_count }}/{{ references|length }} approved,
+      минимум {{ min_refs }} нужно для генерации)</h2>
+  {% if references %}
+  <table>
+    <tr><th>file</th><th>role</th><th>approved</th><th>notes</th><th></th></tr>
+    {% for r in references %}
+    <tr>
+      <td>{{ r.file_path }}</td>
+      <td>{{ r.role }}</td>
+      <td>{{ "yes" if r.approved else "no" }}</td>
+      <td>{{ r.notes }}</td>
+      <td>
+        {% if not r.approved %}
+        <form action="/b2b/products/{{ product.product_id }}/references/approve" method="post" style="display:inline">
+          <input type="hidden" name="file_path" value="{{ r.file_path }}">
+          <button type="submit" style="margin:0;padding:2px 8px;">approve</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Нет загруженных референсов.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Campaigns</h2>
+  {% if campaigns %}
+  <table>
+    <tr><th>campaign_id</th><th>status</th></tr>
+    {% for c in campaigns %}
+    <tr><td><a href="/b2b/campaigns/{{ c.campaign_id }}">{{ c.campaign_id }}</a></td><td>{{ c.status }}</td></tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Пока нет кампаний.</p>
+  {% endif %}
+
+  {% if can_generate %}
+  <form action="/b2b/products/{{ product.product_id }}/campaigns/new" method="post">
+    <label>Campaign goal
+      <select name="campaign_goal">
+        <option value="external_traffic">external_traffic</option>
+        <option value="marketplace_sales">marketplace_sales</option>
+        <option value="awareness">awareness</option>
+        <option value="content_testing">content_testing</option>
+      </select>
+    </label>
+    <button type="submit">Create campaign</button>
+  </form>
+  {% else %}
+  <p class="muted">Нужно ещё {{ min_refs - approved_count }} approved референс(ов), чтобы создать кампанию.</p>
+  {% endif %}
+</div>
+{% endblock %}
