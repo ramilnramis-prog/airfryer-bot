@@ -14,13 +14,27 @@
 <div class="card">
   <h2>Product references ({{ approved_count }}/{{ references|length }} approved,
       минимум {{ min_refs }} нужно для генерации)</h2>
+  {% if not references %}
+  <p class="muted">Нет загруженных референсов.</p>
+  {% elif approved_count < min_refs %}
+  <p class="muted">⚠ Одобрено только {{ approved_count }} из {{ min_refs }} минимально необходимых.</p>
+  {% endif %}
   {% if references %}
   <table>
     <tr><th>file</th><th>role</th><th>approved</th><th>notes</th><th></th></tr>
     {% for r in references %}
     <tr>
       <td>{{ r.file_path }}</td>
-      <td>{{ r.role }}</td>
+      <td>
+        <form action="/b2b/products/{{ product.product_id }}/references/role" method="post" style="display:inline">
+          <input type="hidden" name="file_path" value="{{ r.file_path }}">
+          <select name="role" onchange="this.form.submit()" style="width:auto;max-width:120px;padding:2px;margin:0;">
+            {% for role in roles %}
+            <option value="{{ role }}" {% if role == r.role %}selected{% endif %}>{{ role }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </td>
       <td>{{ "yes" if r.approved else "no" }}</td>
       <td>{{ r.notes }}</td>
       <td>
@@ -29,13 +43,16 @@
           <input type="hidden" name="file_path" value="{{ r.file_path }}">
           <button type="submit" style="margin:0;padding:2px 8px;">approve</button>
         </form>
+        {% else %}
+        <form action="/b2b/products/{{ product.product_id }}/references/unapprove" method="post" style="display:inline">
+          <input type="hidden" name="file_path" value="{{ r.file_path }}">
+          <button type="submit" style="margin:0;padding:2px 8px;">unapprove</button>
+        </form>
         {% endif %}
       </td>
     </tr>
     {% endfor %}
   </table>
-  {% else %}
-  <p class="muted">Нет загруженных референсов.</p>
   {% endif %}
 </div>
 

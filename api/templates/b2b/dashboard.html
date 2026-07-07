@@ -4,6 +4,17 @@
 <h1>B2B Seller Traffic Factory -- dashboard</h1>
 <p class="muted">Admin-first MVP: clients/products/campaigns are created manually by us, not self-serve yet.</p>
 
+<div class="card">
+  <p><b>Clients:</b> {{ clients_count }} &nbsp; <b>Products:</b> {{ products_count }} &nbsp;
+     <b>Campaigns:</b> {{ campaigns_count }}</p>
+  {% if demo_campaign_exists %}
+  <p><a href="/b2b/campaigns/{{ demo_campaign_id }}">Открыть demo-кампанию ({{ demo_campaign_id }})</a></p>
+  {% else %}
+  <p class="muted">Demo-кампания ещё не создана (запустите CLI b2b-seed-demo).</p>
+  {% endif %}
+  <p><a href="/b2b/products/new"><button type="button">+ Create new product</button></a></p>
+</div>
+
 {% if not rows %}
 <p>Пока нет ни одного клиента/продукта. <a href="/b2b/products/new">Создать первый продукт</a>.</p>
 {% endif %}

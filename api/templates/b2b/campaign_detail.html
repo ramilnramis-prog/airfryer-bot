@@ -13,6 +13,9 @@
   <h2>Generation</h2>
   {% if dry_run_exists %}
   <p>campaign-dry-run.json уже создан: <code>{{ dry_run_path }}</code></p>
+  {% if dry_run_md_exists %}
+  <p>Человекочитаемый план: <code>{{ dry_run_md_path }}</code></p>
+  {% endif %}
   {% else %}
   <p class="muted">Dry-run ещё не запускался.</p>
   {% endif %}
@@ -35,8 +38,14 @@
   <h2>Delivery kit</h2>
   {% if delivery_kit_exists %}
   <p>DELIVERY-KIT.zip готов: <code>{{ delivery_kit_path }}</code></p>
+  <p><a href="/b2b/campaigns/{{ campaign.campaign_id }}/delivery-kit.zip"><button type="button">Download delivery kit zip</button></a></p>
   {% else %}
   <p class="muted">Delivery kit ещё не собран.</p>
   {% endif %}
+  <form action="/b2b/campaigns/{{ campaign.campaign_id }}/build-delivery-kit" method="post">
+    <button type="submit">Build delivery kit</button>
+  </form>
+  <p class="muted">Требует минимум {{ min_refs }} одобренных product references (та же
+     fail-closed политика, что и dry-run).</p>
 </div>
 {% endblock %}

@@ -1,22 +1,30 @@
-"""Tests for the B2B Seller Product Traffic Factory MVP skeleton (data
+"""Tests for the B2B Seller Product Traffic Factory admin-first MVP (data
 models, storage, reference policy, dry-run contract, delivery kit, web
-routes, roadmap doc). Covers the 14 points requested by the owner:
+routes, CLI commands, roadmap/readme docs). Covers the 19 points requested
+by the owner:
 
-1. b2b storage paths are created correctly
-2. product.json schema valid
-3. campaign.json schema valid
-4. product reference policy rejects zero references
-5. product reference policy rejects generated paths
-6. product reference policy accepts approved uploaded product refs
-7. b2b dry-run creates campaign-dry-run.json
-8. dry-run makes 0 OpenAI calls
-9. no Higgsfield calls
-10. no auto-posting APIs are called
-11. demo client/product/campaign seed exists or can be created
-12. web routes render basic pages
-13. delivery kit README template exists
-14. AUTOPOSTING-ROADMAP.md exists
+1. preflight command reports branch/status
+2. product creation saves product.json
+3. uploaded references saved under product folder
+4. references default approved=false
+5. approval changes reference status
+6. dry-run rejects product with <3 approved refs
+7. dry-run passes with >=3 approved refs
+8. campaign-dry-run.json created
+9. campaign-dry-run.md created
+10. delivery kit zip created
+11. OWNER-README.md exists
+12. B2B-MVP-README.md exists
+13. web dashboard renders
+14. product form renders
+15. campaign page renders
+16. no OpenAI calls
+17. no Higgsfield calls
+18. no auto-posting APIs are called
+19. no Railway/Production changes (verified manually -- this test tree does
+    not touch any Railway/production config)
 """
+import io
 import json
 import re
 import shutil
@@ -30,6 +38,7 @@ from api.media_pipeline import b2b_reference_policy as pol
 from api.media_pipeline import b2b_campaign_contract as contract
 from api.media_pipeline import b2b_delivery_kit as dk
 from api.media_pipeline import b2b_seed as seed
+from api.media_pipeline import cli as media_cli
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEMO_CLIENT = seed.DEMO_CLIENT_ID
@@ -44,6 +53,36 @@ SECRET_PATTERN = re.compile(
 
 def urlopen_raises():
     return mock.patch("urllib.request.urlopen", side_effect=AssertionError("network call!"))
+
+
+class TestB2BPreflightCommand(unittest.TestCase):
+    def _run_preflight(self, expected_branch):
+        import argparse
+        import contextlib
+
+        args = argparse.Namespace(expected_branch=expected_branch)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = media_cli.cmd_b2b_preflight(args)
+        return code, json.loads(buf.getvalue())
+
+    def test_reports_current_branch_and_status(self):
+        code, report = self._run_preflight("__definitely-not-a-real-branch__")
+        self.assertIn("current_branch", report)
+        self.assertIn("git_status_short", report)
+        self.assertIn("last_commit", report)
+        self.assertFalse(report["branch_matches"])
+        self.assertEqual(code, 2)
+        self.assertIn("error", report)
+
+    def test_matching_branch_reports_ok(self):
+        import subprocess
+
+        current = subprocess.run(["git", "branch", "--show-current"], cwd=str(REPO_ROOT),
+                                 capture_output=True, text=True).stdout.strip()
+        code, report = self._run_preflight(current)
+        self.assertTrue(report["branch_matches"])
+        self.assertEqual(code, 0)
 
 
 class TestStoragePathsCreatedCorrectly(unittest.TestCase):
@@ -277,6 +316,111 @@ class TestWebRoutesRenderBasicPages(unittest.TestCase):
         self.assertEqual(r.status_code, 404)
 
 
+class TestWebProductCreationFlow(unittest.TestCase):
+    """Covers points 2 (product.json saved), 3 (references saved under
+    product folder), 4 (approved=false by default), 5 (approve/unapprove
+    change reference status) -- via the actual /b2b web routes, not the
+    storage layer directly."""
+
+    CLIENT_ID = "test-web-flow-client"
+
+    @classmethod
+    def setUpClass(cls):
+        from fastapi.testclient import TestClient
+        from api.main import app
+        cls.client = TestClient(app)
+
+    def tearDown(self):
+        client_dir = st.client_dir(self.CLIENT_ID, str(REPO_ROOT))
+        if client_dir.is_dir():
+            shutil.rmtree(client_dir)
+
+    def _create_product_with_refs(self, n=3):
+        files = [("reference_images", (f"ref{i}.png", io.BytesIO(b"fakepngbytes"), "image/png"))
+                for i in range(n)]
+        data = {
+            "client_name": "Test Web Flow Client", "contact": "test@example.com",
+            "product_name": "Test Web Flow Product", "marketplace": "ozon",
+            "marketplace_article": "T1", "marketplace_url": "https://ozon.ru/t",
+            "category": "test", "target_audience": "testers", "main_pain": "bugs",
+            "product_description": "desc",
+        }
+        r = self.client.post("/b2b/products/new", data=data, files=files, follow_redirects=False)
+        self.assertEqual(r.status_code, 303, r.text)
+        product_id = r.headers["location"].rsplit("/", 1)[-1]
+        return product_id
+
+    def test_product_json_saved(self):
+        product_id = self._create_product_with_refs()
+        path = st.product_dir(self.CLIENT_ID, product_id, str(REPO_ROOT)) / "product.json"
+        self.assertTrue(path.is_file())
+
+    def test_references_saved_under_uploaded_subfolder(self):
+        product_id = self._create_product_with_refs()
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        self.assertEqual(len(refs), 3)
+        for r in refs:
+            self.assertIn("references/uploaded/", r.file_path.replace("\\", "/"))
+            self.assertTrue((Path(REPO_ROOT) / r.file_path).is_file())
+
+    def test_references_default_approved_false(self):
+        product_id = self._create_product_with_refs()
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        for r in refs:
+            self.assertFalse(r.approved)
+
+    def test_approve_then_unapprove_changes_status(self):
+        product_id = self._create_product_with_refs()
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        file_path = refs[0].file_path
+
+        r = self.client.post(f"/b2b/products/{product_id}/references/approve",
+                             data={"file_path": file_path}, follow_redirects=False)
+        self.assertEqual(r.status_code, 303)
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        self.assertTrue(next(r for r in refs if r.file_path == file_path).approved)
+
+        r = self.client.post(f"/b2b/products/{product_id}/references/unapprove",
+                             data={"file_path": file_path}, follow_redirects=False)
+        self.assertEqual(r.status_code, 303)
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        self.assertFalse(next(r for r in refs if r.file_path == file_path).approved)
+
+    def test_role_change_route(self):
+        product_id = self._create_product_with_refs()
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        file_path = refs[0].file_path
+        r = self.client.post(f"/b2b/products/{product_id}/references/role",
+                             data={"file_path": file_path, "role": "top"},
+                             follow_redirects=False)
+        self.assertEqual(r.status_code, 303)
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        self.assertEqual(next(r for r in refs if r.file_path == file_path).role, "top")
+
+    def test_campaign_creation_gated_on_three_approved(self):
+        product_id = self._create_product_with_refs()
+        r = self.client.post(f"/b2b/products/{product_id}/campaigns/new",
+                             data={"campaign_goal": "external_traffic"}, follow_redirects=False)
+        # route itself doesn't gate creation (UI hides the button); the real
+        # gate is the dry-run/delivery-kit fail-closed policy check
+        self.assertEqual(r.status_code, 303)
+        campaign_id = r.headers["location"].rsplit("/", 1)[-1]
+        r = self.client.post(f"/b2b/campaigns/{campaign_id}/dry-run", follow_redirects=False)
+        self.assertEqual(r.status_code, 422)
+
+    def test_dry_run_succeeds_after_three_approvals(self):
+        product_id = self._create_product_with_refs()
+        refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
+        for r in refs:
+            self.client.post(f"/b2b/products/{product_id}/references/approve",
+                             data={"file_path": r.file_path}, follow_redirects=False)
+        r = self.client.post(f"/b2b/products/{product_id}/campaigns/new",
+                             data={"campaign_goal": "external_traffic"}, follow_redirects=False)
+        campaign_id = r.headers["location"].rsplit("/", 1)[-1]
+        r = self.client.post(f"/b2b/campaigns/{campaign_id}/dry-run", follow_redirects=False)
+        self.assertEqual(r.status_code, 303)
+
+
 class TestDeliveryKitReadmeExists(unittest.TestCase):
     def test_readme_generated_for_demo_campaign(self):
         result = dk.build_delivery_kit_structure(DEMO_CLIENT, DEMO_PRODUCT, DEMO_CAMPAIGN, str(REPO_ROOT))
@@ -292,7 +436,52 @@ class TestDeliveryKitReadmeExists(unittest.TestCase):
         result = dk.build_delivery_kit_zip(DEMO_CLIENT, DEMO_PRODUCT, DEMO_CAMPAIGN, str(REPO_ROOT))
         z = zipfile.ZipFile(result["zip_path"])
         self.assertIsNone(z.testzip())
-        self.assertIn("OWNER-README.md", z.namelist())
+        for name in ("OWNER-README.md", "PRODUCT-SUMMARY.md", "CAMPAIGN-PLAN.md",
+                    "REFERENCE-POLICY.md", "NEXT-STEPS.md"):
+            self.assertIn(name, z.namelist())
+
+    def test_delivery_kit_fails_closed_below_minimum_approved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            st.save_client(st.Client(client_id="acme", name="Acme"), tmp)
+            st.save_product(st.Product(product_id="widget", client_id="acme",
+                                       product_name="Widget"), tmp)
+            st.save_campaign(st.Campaign(campaign_id="camp1", client_id="acme",
+                                         product_id="widget"), tmp)
+            with self.assertRaises(pol.B2BReferencePolicyError):
+                dk.build_delivery_kit_zip("acme", "widget", "camp1", tmp)
+
+
+class TestDryRunMarkdownCreated(unittest.TestCase):
+    def test_campaign_dry_run_md_created(self):
+        with urlopen_raises():
+            plan = contract.write_campaign_dry_run(DEMO_CLIENT, DEMO_PRODUCT, DEMO_CAMPAIGN, str(REPO_ROOT))
+        self.assertTrue(Path(plan["report_md_path"]).is_file())
+        text = Path(plan["report_md_path"]).read_text(encoding="utf-8")
+        for marker in ("Campaign dry-run", "## Client", "## Product",
+                      "Approved references used", "Rejected / unapproved references",
+                      "Content package plan", "Estimated cost", "Safety policy summary",
+                      "Forbidden refs scan", "dry_run_only"):
+            self.assertIn(marker, text)
+
+    def test_dry_run_json_includes_rejected_refs_and_safety_summary(self):
+        d = json.loads((st.campaign_generated_dir(DEMO_CLIENT, DEMO_PRODUCT, DEMO_CAMPAIGN, str(REPO_ROOT))
+                       / "campaign-dry-run.json").read_text(encoding="utf-8"))
+        self.assertIn("references_rejected", d)
+        self.assertIn("safety_policy_summary", d)
+        self.assertIn("min_approved_references", d["safety_policy_summary"])
+
+
+class TestB2BMVPReadmeExists(unittest.TestCase):
+    def test_file_exists(self):
+        path = REPO_ROOT / "content" / "b2b" / "B2B-MVP-README.md"
+        self.assertTrue(path.is_file())
+
+    def test_covers_required_sections(self):
+        text = (REPO_ROOT / "content" / "b2b" / "B2B-MVP-README.md").read_text(encoding="utf-8")
+        for marker in ("b2b-seed-demo", "b2b-campaign-dry-run", "b2b-build-delivery-kit",
+                      "What is NOT yet implemented", "Payments", "Auto-posting",
+                      "OAuth", "Login"):
+            self.assertIn(marker, text)
 
 
 class TestAutopostingRoadmapExists(unittest.TestCase):

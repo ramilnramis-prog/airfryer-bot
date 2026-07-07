@@ -68,6 +68,18 @@
                                         вместо падения; см.
                                         api.media_pipeline.content_factory_renderer
 
+  b2b-campaign-dry-run --client C --product P --campaign K -- B2B universal
+                                        campaign dry-run; fail-closed по
+                                        B2B_PRODUCT_REFERENCE_ONLY_POLICY;
+                                        0 вызовов OpenAI/Higgsfield
+  b2b-seed-demo                       — идемпотентно создаёт demo B2B
+                                        client/product/campaign
+  b2b-build-delivery-kit --client C --product P --campaign K -- собирает
+                                        delivery kit + DELIVERY-KIT.zip
+  b2b-preflight --expected-branch BRANCH — branch safety guard: текущая
+                                        ветка/git status/последний коммит,
+                                        exit 2 при несовпадении ветки
+
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
 """
@@ -78,6 +90,7 @@ import json
 import sys
 from pathlib import Path
 
+from ..config import ROOT
 from .budget import BudgetStop, SpendTracker
 from .models import CandidateObservation, ImageRequest, SceneSpec
 from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
@@ -97,6 +110,8 @@ from .content_factory_performance import (write_performance_summary,
                                           write_next_batch_recommendations)
 from .b2b_campaign_contract import write_campaign_dry_run
 from .b2b_reference_policy import B2BReferencePolicyError
+from .b2b_seed import seed_demo
+from .b2b_delivery_kit import build_delivery_kit_zip
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -517,6 +532,55 @@ def cmd_b2b_campaign_dry_run(args) -> int:
     return _emit(plan)
 
 
+def cmd_b2b_seed_demo(args) -> int:
+    """B2B seller traffic factory: создаёт (идемпотентно) demo client/product/
+    campaign + legacy adapter manifest поверх уже существующей кампании
+    coating-protect-2026-07. 0 сетевых вызовов; см. api.media_pipeline.b2b_seed."""
+    result = seed_demo(str(ROOT))
+    return _emit(result)
+
+
+def cmd_b2b_build_delivery_kit(args) -> int:
+    """B2B seller traffic factory: собирает delivery kit (OWNER-README.md +
+    PRODUCT-SUMMARY.md + CAMPAIGN-PLAN.md + REFERENCE-POLICY.md +
+    NEXT-STEPS.md + upload-ready/ + publishing-plan/ + performance-tracking/)
+    и DELIVERY-KIT.zip поверх уже посчитанного campaign-dry-run. 0 вызовов
+    OpenAI/Higgsfield, никакого auto-posting; см.
+    api.media_pipeline.b2b_delivery_kit."""
+    result = build_delivery_kit_zip(args.client, args.product, args.campaign, str(ROOT))
+    return _emit(result)
+
+
+def cmd_b2b_preflight(args) -> int:
+    """Branch safety guard: показывает текущую git-ветку, git status --short
+    и последний коммит; предупреждает/ошибается (exit 2), если текущая ветка
+    не совпадает с --expected-branch. Только чтение -- никаких git-мутаций."""
+    import subprocess
+
+    def _git(*cmd_args):
+        result = subprocess.run(["git", *cmd_args], cwd=str(ROOT),
+                                capture_output=True, text=True)
+        return result.stdout.strip()
+
+    current_branch = _git("branch", "--show-current")
+    status_short = _git("status", "--short")
+    last_commit = _git("log", "-1", "--oneline")
+    branch_matches = current_branch == args.expected_branch
+
+    report = {
+        "current_branch": current_branch,
+        "expected_branch": args.expected_branch,
+        "branch_matches": branch_matches,
+        "git_status_short": status_short.splitlines() if status_short else [],
+        "last_commit": last_commit,
+    }
+    if not branch_matches:
+        report["error"] = (f"WRONG BRANCH: currently on {current_branch!r}, expected "
+                           f"{args.expected_branch!r} -- stop, do not commit/push here")
+        return _emit(report, 2)
+    return _emit(report, 0)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -687,6 +751,29 @@ def main(argv=None) -> int:
     p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
     p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
     p.set_defaults(fn=cmd_b2b_campaign_dry_run)
+
+    p = sub.add_parser("b2b-seed-demo",
+                       help="B2B seller traffic factory: идемпотентно создаёт demo "
+                            "client/product/campaign (+ legacy adapter manifest); "
+                            "0 вызовов OpenAI/Higgsfield")
+    p.set_defaults(fn=cmd_b2b_seed_demo)
+
+    p = sub.add_parser("b2b-build-delivery-kit",
+                       help="B2B seller traffic factory: собирает delivery kit "
+                            "(OWNER-README/PRODUCT-SUMMARY/CAMPAIGN-PLAN/REFERENCE-POLICY/"
+                            "NEXT-STEPS + upload-ready/publishing-plan/performance-tracking) "
+                            "и DELIVERY-KIT.zip; 0 вызовов OpenAI/Higgsfield, без auto-posting")
+    p.add_argument("--client", required=True, help="client_id, например demo-ozon-airfryer")
+    p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
+    p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
+    p.set_defaults(fn=cmd_b2b_build_delivery_kit)
+
+    p = sub.add_parser("b2b-preflight",
+                       help="Branch safety guard: текущая ветка/git status/последний коммит; "
+                            "exit 2 если ветка не совпадает с --expected-branch")
+    p.add_argument("--expected-branch", required=True,
+                   help="ожидаемая git-ветка, например feature/product-only-scene05-runner")
+    p.set_defaults(fn=cmd_b2b_preflight)
 
     args = parser.parse_args(argv)
     try:
