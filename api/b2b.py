@@ -141,6 +141,16 @@ async def product_new_submit(
     return RedirectResponse(url=f"/b2b/products/{product_id}", status_code=303)
 
 
+UPLOAD_GUIDE_SLOTS = (
+    ("front", "Фото товара спереди"),
+    ("top", "Фото сверху"),
+    ("side", "Фото сбоку"),
+    ("detail", "Фото деталей / ручки / текстура"),
+    ("packaging", "Фото упаковки"),
+    ("other", "Дополнительные фото"),
+)
+
+
 @router.get("/products/{product_id}", response_class=HTMLResponse)
 def product_detail(request: Request, product_id: str):
     product = _find_product(product_id)
@@ -150,12 +160,22 @@ def product_detail(request: Request, product_id: str):
     campaigns = st.list_campaigns(product.client_id, product_id, REPO_ROOT)
     approved_count = sum(1 for r in refs if r.approved)
     intelligence = pi.load_product_intelligence(product.client_id, product_id, REPO_ROOT)
+
+    refs_by_role = {}
+    for r in refs:
+        refs_by_role.setdefault(r.role, []).append(r)
+    upload_guide = [
+        {"role": role, "label": label, "refs": refs_by_role.get(role, [])}
+        for role, label in UPLOAD_GUIDE_SLOTS
+    ]
+
     return templates.TemplateResponse(request, "product_detail.html", {
         "product": product, "references": refs, "campaigns": campaigns,
         "min_refs": pol.MIN_APPROVED_REFERENCES, "approved_count": approved_count,
         "can_generate": approved_count >= pol.MIN_APPROVED_REFERENCES,
         "roles": st.PRODUCT_REFERENCE_ROLES,
         "intelligence": intelligence,
+        "upload_guide": upload_guide,
     })
 
 

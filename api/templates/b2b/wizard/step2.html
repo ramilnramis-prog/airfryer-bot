@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Onboarding -- Step 2{% endblock %}
+{% block content %}
+<h1>{{ product.product_name }} -- Шаг 2 из 6: Фото товара</h1>
+
+<div class="card">
+  <p><b>Загружайте только сам товар. Эти фото будут использоваться как визуальный эталон товара.</b></p>
+  <p>Не загружайте сюда кухню, руки, людей, еду, интерьер, старые рекламные картинки или
+     сгенерированные изображения.</p>
+  <p><b>Минимум 3 фото товара, лучше 5-8.</b></p>
+  <p class="muted">Все загруженные фото сохраняются со статусом approved=false / pending_review --
+     подтвердить их можно на странице товара после завершения wizard.</p>
+</div>
+
+<form action="/b2b/seller/{{ product.product_id }}/step2" method="post" enctype="multipart/form-data">
+  {% for field_name, role, label in slots %}
+  <label>{{ label }} ({{ role }})
+    <input type="file" name="{{ field_name }}" accept="image/*">
+  </label>
+  {% if refs_by_role.get(role) %}
+  <p class="muted">Уже загружено: {% for r in refs_by_role[role] %}{{ r.file_path.split('/')[-1] }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+  {% endif %}
+  {% endfor %}
+  <label>Дополнительные фото (additional photos, можно несколько)
+    <input type="file" name="additional_photos" multiple accept="image/*">
+  </label>
+
+  <button type="submit">Далее: Покупатель и позиционирование &raquo;</button>
+</form>
+
+{% if references %}
+<div class="card">
+  <h2>Уже загружено ({{ references|length }})</h2>
+  <table>
+    <tr><th>file</th><th>role</th><th>status</th></tr>
+    {% for r in references %}
+    <tr><td>{{ r.file_path }}</td><td>{{ r.role }}</td>
+        <td>{{ "approved" if r.approved else "pending_review" }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

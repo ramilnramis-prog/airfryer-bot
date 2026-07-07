@@ -9,6 +9,28 @@
   <p><b>platforms:</b> {{ campaign.platforms|join(", ") }}</p>
 </div>
 
+<div class="card">
+  <h2>Что создаст контент-завод</h2>
+  <ul>
+    <li>рекламные сцены</li>
+    <li>short video creatives</li>
+    <li>описания под площадки</li>
+    <li>статьи Дзена</li>
+    <li>картинки к статьям</li>
+    <li>план публикаций</li>
+    <li>performance tracker</li>
+    <li>ZIP delivery kit</li>
+  </ul>
+  {% if intelligence %}
+  {% set r = intelligence.report %}
+  <p><b>Контент будет строиться на основе главной проблемы товара:</b> {{ r.core_problem_solved }}</p>
+  <p><b>Главная мысль зрителя:</b>
+     &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
+  {% else %}
+  <p class="muted">Анализ товара ещё не запускался -- откройте страницу товара, чтобы построить гипотезы.</p>
+  {% endif %}
+</div>
+
 {% if intelligence %}
 {% set r = intelligence.report %}
 <div class="card">

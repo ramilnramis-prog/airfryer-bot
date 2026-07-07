@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Onboarding -- Step 4{% endblock %}
+{% block content %}
+<h1>{{ product.product_name }} -- Шаг 4 из 6: Что AI понял про ваш товар</h1>
+
+{% set r = intelligence.report %}
+<div class="card">
+  <p><span class="status-badge">{{ r.match_confidence }} confidence</span> &nbsp;
+     approved: {{ "yes" if intelligence.approved_by_owner else "no" }}</p>
+  <p class="muted">{{ r.confidence_notes }}</p>
+
+  <p><b>Главная проблема, которую решает товар:</b> {{ r.core_problem_solved }}</p>
+  <p><b>Для кого товар особенно полезен:</b>
+     {{ r.ideal_customer_segments[0].segment if r.ideal_customer_segments else "-" }}</p>
+
+  <p><b>Топ-3 боли покупателя:</b></p>
+  <ul>{% for p in r.pain_points[:3] %}<li>{{ p.pain }}</li>{% endfor %}</ul>
+
+  <p><b>Топ-3 выгоды:</b></p>
+  <ul>{% for b in r.product_benefits[:3] %}<li>{{ b.benefit }}</li>{% endfor %}</ul>
+
+  <p><b>Топ-3 сценария использования:</b></p>
+  <ul>{% for u in r.use_cases[:3] %}<li>{{ u.scenario }}</li>{% endfor %}</ul>
+
+  <p><b>Возражения:</b></p>
+  <ul>{% for o in r.likely_objections %}<li>{{ o.objection }}</li>{% endfor %}</ul>
+
+  <p><b>Идеи хуков:</b></p>
+  <ul>{% for h in r.hook_angles %}<li>[{{ h.angle_type }}] {{ h.hook }} {% if not h.enabled %}(disabled){% endif %}</li>{% endfor %}</ul>
+
+  <p><b>Идеи видео:</b></p>
+  <ul>{% for v in r.video_message_angles %}<li>{{ v.angle }}</li>{% endfor %}</ul>
+
+  <p><b>Мысль, которую должен поймать зритель:</b><br>
+     &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
+</div>
+
+<div class="card">
+  <h2>Действия</h2>
+  <form action="/b2b/seller/{{ product.product_id }}/step4/approve" method="post" style="display:inline">
+    <input type="hidden" name="approval_notes" value="approved in onboarding wizard">
+    <button type="submit">Approve AI analysis</button>
+  </form>
+  <form action="/b2b/seller/{{ product.product_id }}/step4/regenerate" method="post" style="display:inline">
+    <button type="submit">Regenerate from product info</button>
+  </form>
+
+  <form action="/b2b/seller/{{ product.product_id }}/step4/primary-problem" method="post">
+    <label>Edit primary problem
+      <textarea name="problem_text" rows="2">{{ r.core_problem_solved }}</textarea>
+    </label>
+    <button type="submit">Save primary problem</button>
+  </form>
+
+  <form action="/b2b/seller/{{ product.product_id }}/step4/positioning-mode" method="post">
+    <label>Mark product as
+      <select name="mode" onchange="this.form.submit()">
+        {% for m in positioning_modes %}
+        <option value="{{ m }}" {% if m == r.positioning_mode %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+
+  <p class="muted">Disable irrelevant hook:</p>
+  {% for h in r.hook_angles %}
+  <form action="/b2b/seller/{{ product.product_id }}/step4/hook-toggle" method="post" style="display:inline">
+    <input type="hidden" name="index" value="{{ loop.index0 }}">
+    <input type="hidden" name="enabled" value="{{ 'false' if h.enabled else 'true' }}">
+    <button type="submit" style="margin:2px;padding:2px 8px;">
+      {{ "disable" if h.enabled else "enable" }}: {{ h.hook[:40] }}...
+    </button>
+  </form>
+  {% endfor %}
+</div>
+
+<p><a href="/b2b/seller/{{ product.product_id }}/step5"><button type="button">Далее: Настройки контент-пакета &raquo;</button></a></p>
+{% endblock %}

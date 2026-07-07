@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 
 from . import b2b_storage as st
+from . import product_intelligence as pi
+from . import seller_intake as si
 
 DEMO_CLIENT_ID = "demo-ozon-airfryer"
 DEMO_PRODUCT_ID = "airfryer-silicone-form"
@@ -85,6 +87,13 @@ def seed_demo(repo_root: str = ".") -> dict:
                             "прорезями, рифлёное дно. Ставится внутрь корзины аэрогриля "
                             "перед готовкой -- жир и соус остаются в форме, а не на "
                             "решётке, мыть нужно только форму."),
+        who_is_this_for="Владельцы аэрогрилей, которые готовят дома регулярно",
+        what_problem_does_it_usually_solve=("После готовки сложно мыть чашу аэрогриля -- "
+                                            "жир и соус пригорают к решётке корзины"),
+        why_people_buy_it="Готовить аккуратнее, меньше грязи, проще мыть форму, а не всю корзину",
+        top_3_benefits=("Жир и соус остаются в форме, а не на решётке; "
+                        "Мыть нужно только форму, а не всю корзину; "
+                        "Корзина не контактирует с едой напрямую"),
     )
     st.save_product(product, repo_root)
 
@@ -105,8 +114,49 @@ def seed_demo(repo_root: str = ".") -> dict:
 
     adapter = write_legacy_adapter_manifest(repo_root)
 
+    # Product intelligence + seller-intake snapshot -- so the demo shows a
+    # complete, already-reviewed onboarding wizard example end to end.
+    envelope = pi.write_product_intelligence(DEMO_CLIENT_ID, DEMO_PRODUCT_ID, repo_root)
+    pi.approve_product_intelligence(DEMO_CLIENT_ID, DEMO_PRODUCT_ID, repo_root,
+                                    approval_notes="auto-approved for demo seed")
+    envelope = pi.load_product_intelligence(DEMO_CLIENT_ID, DEMO_PRODUCT_ID, repo_root)
+
+    si.update_seller_intake(
+        DEMO_CLIENT_ID, DEMO_PRODUCT_ID, repo_root,
+        product_basics={
+            "product_name": product.product_name, "marketplace": product.marketplace,
+            "marketplace_article": product.marketplace_article,
+            "marketplace_url": product.marketplace_url, "category": product.category,
+            "short_product_description": product.product_description,
+        },
+        reference_uploads={
+            "total_uploaded": len(refs), "roles_present": sorted({r.role for r in refs}),
+        },
+        customer_positioning={
+            "who_is_this_for": product.who_is_this_for,
+            "what_problem_does_it_usually_solve": product.what_problem_does_it_usually_solve,
+            "why_people_buy_it": product.why_people_buy_it,
+            "top_3_benefits": product.top_3_benefits,
+        },
+        product_intelligence_summary={
+            "matched_category": envelope["report"]["matched_category"],
+            "match_confidence": envelope["report"]["match_confidence"],
+            "core_problem_solved": envelope["report"]["core_problem_solved"],
+            "approved_by_owner": envelope["approved_by_owner"],
+        },
+        content_package_settings={
+            "platforms": list(st.CAMPAIGN_PLATFORMS),
+            "package_duration": "14_days",
+            "content_types": list(si.CONTENT_TYPES),
+            "manual_or_autopost": "manual_upload_ready_kit",
+        },
+    )
+    checklist = si.sync_readiness_checklist(DEMO_CLIENT_ID, DEMO_PRODUCT_ID, repo_root)
+
     return {
         "client_id": DEMO_CLIENT_ID, "product_id": DEMO_PRODUCT_ID,
         "campaign_id": DEMO_CAMPAIGN_ID, "references_count": len(refs),
         "legacy_adapter_manifest_path": adapter["manifest_path"],
+        "seller_intake_path": str(si.seller_intake_path(DEMO_CLIENT_ID, DEMO_PRODUCT_ID, repo_root)),
+        "readiness_checklist": checklist,
     }

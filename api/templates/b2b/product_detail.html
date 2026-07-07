@@ -43,6 +43,33 @@
 {% endif %}
 
 <div class="card">
+  <h2>Что нужно загрузить, чтобы контент-завод работал</h2>
+  <p>Product references -- это главный визуальный эталон товара. Система будет сохранять внешний
+     вид товара, а кухню, фон, еду, руки и рекламные сцены будет создавать отдельно.</p>
+  <table>
+    <tr><th>Фото</th><th>Статус</th><th>Approved</th><th>Role</th><th>Preview</th></tr>
+    {% for slot in upload_guide %}
+    <tr>
+      <td>{{ slot.label }}</td>
+      <td>{{ "uploaded" if slot.refs else "missing" }}</td>
+      <td>
+        {% if slot.refs %}
+        {{ slot.refs|selectattr("approved")|list|length }}/{{ slot.refs|length }} approved
+        {% else %}-{% endif %}
+      </td>
+      <td>{{ slot.role }}</td>
+      <td>
+        {% if slot.refs %}
+        {% for r in slot.refs %}{{ r.file_path.split('/')[-1] }}{% if not loop.last %}, {% endif %}{% endfor %}
+        {% else %}<span class="muted">нет фото</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p><a href="/b2b/seller/{{ product.product_id }}/step2"><button type="button">Загрузить/добавить фото</button></a></p>
+</div>
+
+<div class="card">
   <h2>Product references ({{ approved_count }}/{{ references|length }} approved,
       минимум {{ min_refs }} нужно для генерации)</h2>
   {% if not references %}

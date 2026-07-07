@@ -31,7 +31,8 @@ POSITIONING_MODES = ("pain", "desire", "comfort", "status", "emotion")
 
 MANUAL_POSITIONING_FIELDS = (
     "who_is_this_for", "what_problem_does_it_usually_solve", "why_people_buy_it",
-    "top_3_benefits", "common_questions", "what_should_not_be_claimed", "tone_preference",
+    "top_3_benefits", "use_cases", "common_questions", "objections",
+    "what_should_not_be_claimed", "tone_preference",
 )
 
 
@@ -706,7 +707,9 @@ def _apply_manual_overrides(report: dict, product_data: dict) -> None:
     problem = (product_data.get("what_problem_does_it_usually_solve") or "").strip()
     who = (product_data.get("who_is_this_for") or "").strip()
     benefits = _as_list(product_data.get("top_3_benefits"))
+    use_cases = _as_list(product_data.get("use_cases"))
     questions = _as_list(product_data.get("common_questions"))
+    objections = _as_list(product_data.get("objections"))
     avoid = _as_list(product_data.get("what_should_not_be_claimed"))
     tone = (product_data.get("tone_preference") or "").strip()
 
@@ -725,10 +728,19 @@ def _apply_manual_overrides(report: dict, product_data: dict) -> None:
     for b in reversed(benefits):
         report["product_benefits"].insert(0, {"benefit": b, "mapped_to_pain": "Указано продавцом вручную"})
 
+    for u in reversed(use_cases):
+        report["use_cases"].insert(0, {"scenario": u, "why_product_fits": "Указано продавцом вручную"})
+
     for q in questions:
         report["likely_objections"].append({
             "objection": q,
             "response_angle": "Частый вопрос от продавца -- ответить на него заранее в статье/видео/описании",
+        })
+
+    for o in objections:
+        report["likely_objections"].append({
+            "objection": o,
+            "response_angle": "Указано продавцом вручную -- подготовьте ответ заранее",
         })
 
     if avoid:
@@ -737,7 +749,8 @@ def _apply_manual_overrides(report: dict, product_data: dict) -> None:
     if tone:
         report["tone_preference"] = tone
 
-    report["manual_override_present"] = bool(problem or who or benefits or questions or avoid or tone)
+    report["manual_override_present"] = bool(
+        problem or who or benefits or use_cases or questions or objections or avoid or tone)
 
 
 def analyze_product_intelligence(product_data: dict) -> dict:

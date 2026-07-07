@@ -41,3 +41,8 @@ content/b2b/clients/*/products/*/campaigns/*/generated/
 # is deterministically regenerable from product.json at any time -- never
 # committed, so owner-approval/override state from local runs doesn't churn git.
 content/b2b/clients/*/products/*/product-intelligence.json
+
+# Seller onboarding wizard snapshot (api/media_pipeline/seller_intake.py) --
+# regenerable from Product/references/product-intelligence.json + wizard
+# progress; never committed for the same reason as product-intelligence.json.
+content/b2b/clients/*/products/*/seller-intake.json

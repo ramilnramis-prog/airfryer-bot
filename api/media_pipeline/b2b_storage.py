@@ -37,7 +37,7 @@ class Client:
     created_at: str = field(default_factory=utcnow_iso)
 
 
-PRODUCT_MARKETPLACES = ("ozon", "wildberries", "yandex_market", "other")
+PRODUCT_MARKETPLACES = ("ozon", "wildberries", "yandex_market", "own_site", "other")
 
 
 @dataclass
@@ -48,6 +48,7 @@ class Product:
     marketplace: str = "ozon"
     marketplace_url: str = ""
     marketplace_article: str = ""
+    price: str = ""
     category: str = ""
     target_audience: str = ""
     main_pain: str = ""
@@ -59,7 +60,9 @@ class Product:
     what_problem_does_it_usually_solve: str = ""
     why_people_buy_it: str = ""
     top_3_benefits: str = ""
+    use_cases: str = ""
     common_questions: str = ""
+    objections: str = ""
     what_should_not_be_claimed: str = ""
     tone_preference: str = ""
     created_at: str = field(default_factory=utcnow_iso)

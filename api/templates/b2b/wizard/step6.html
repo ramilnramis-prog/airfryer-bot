@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Onboarding -- Step 6{% endblock %}
+{% block content %}
+<h1>{{ product.product_name }} -- Шаг 6 из 6: Чеклист готовности</h1>
+
+{% if saved %}
+<div class="card"><p>Черновик сохранён.</p></div>
+{% endif %}
+
+<div class="card">
+  <h2>Readiness checklist</h2>
+  <ul>
+    <li>{{ "[x]" if checklist.product_info_complete else "[ ]" }} product info complete</li>
+    <li>{{ "[x]" if checklist.marketplace_article_or_link_present else "[ ]" }} marketplace article/link present</li>
+    <li>{{ "[x]" if checklist.at_least_3_uploaded_references else "[ ]" }} at least 3 uploaded product references</li>
+    <li>{{ "[x]" if checklist.at_least_3_approved_references else "[ ]" }} at least 3 approved product references</li>
+    <li>{{ "[x]" if checklist.customer_positioning_present else "[ ]" }} customer positioning present</li>
+    <li>{{ "[x]" if checklist.product_intelligence_generated else "[ ]" }} product intelligence generated</li>
+    <li>{{ "[x]" if checklist.primary_problem_approved else "[ ]" }} primary problem approved</li>
+    <li>{{ "[x]" if checklist.platforms_selected else "[ ]" }} platforms selected</li>
+    <li>{{ "[x]" if checklist.package_duration_selected else "[ ]" }} package duration selected</li>
+  </ul>
+
+  {% if not checklist.at_least_3_approved_references %}
+  <p class="muted">⚠ Нужно минимум {{ min_refs }} одобренных фото товара.
+     Одобрить фото можно на странице товара: <a href="/b2b/products/{{ product.product_id }}">{{ product.product_id }}</a>.</p>
+  {% endif %}
+  {% if intelligence and not intelligence.approved_by_owner %}
+  <p class="muted">⚠ Проверьте, правильно ли AI понял ваш товар --
+     <a href="/b2b/seller/{{ product.product_id }}/step4">вернуться к шагу 4</a>.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <form action="/b2b/seller/{{ product.product_id }}/step6/save-draft" method="post" style="display:inline">
+    <button type="submit">Save draft</button>
+  </form>
+
+  {% if checklist.can_run_dry_run %}
+  <form action="/b2b/seller/{{ product.product_id }}/step6/dry-run" method="post" style="display:inline">
+    <button type="submit">Run dry-run</button>
+  </form>
+  <form action="/b2b/seller/{{ product.product_id }}/step6/create-package" method="post" style="display:inline">
+    <button type="submit">Create content package</button>
+  </form>
+  {% else %}
+  <button type="button" disabled>Run dry-run</button>
+  <button type="button" disabled>Create content package</button>
+  <p class="muted">Нужно минимум {{ min_refs }} одобренных фото товара.</p>
+  {% endif %}
+</div>
+{% endblock %}

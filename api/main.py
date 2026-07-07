@@ -23,6 +23,7 @@ from .auth import require_api_key
 from . import db, jobs, registry_db
 from .registry import router as registry_router
 from .b2b import router as b2b_router
+from .b2b_seller_wizard import router as b2b_seller_wizard_router
 from .posts import prepare_post
 
 logging.basicConfig(
@@ -57,6 +58,9 @@ app.include_router(registry_router)
 # B2B seller traffic factory -- admin-first server-rendered pages, /b2b/*
 # (no X-API-Key auth yet, see api/b2b.py module docstring)
 app.include_router(b2b_router)
+
+# Seller-facing guided onboarding wizard, /b2b/seller/* (same MVP auth gap)
+app.include_router(b2b_seller_wizard_router)
 
 
 @app.exception_handler(sqlite3.IntegrityError)
