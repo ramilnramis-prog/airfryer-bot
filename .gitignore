@@ -33,3 +33,9 @@ dashboard/
 # baseplate-варианты, resolved-campaign-visual-lock.json и т.п.) — никогда
 # не коммитятся, включая абсолютные локальные пути внутри resolved-снапшотов
 content/autopilot/*/generated/
+
+# B2B seller traffic factory: seller-uploaded product photos and all
+# generated campaign output (dry-runs, delivery kits) never committed --
+# only client.json/product.json/campaign.json metadata is tracked.
+content/b2b/clients/*/products/*/references/
+content/b2b/clients/*/products/*/campaigns/*/generated/

@@ -95,6 +95,8 @@ from .content_factory_renderer import render_batch
 from .content_factory_planner import write_angle_variant_plan
 from .content_factory_performance import (write_performance_summary,
                                           write_next_batch_recommendations)
+from .b2b_campaign_contract import write_campaign_dry_run
+from .b2b_reference_policy import B2BReferencePolicyError
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -505,6 +507,16 @@ def cmd_analyze_content_performance(args) -> int:
     return _emit({"performance_summary": summary, "next_batch_recommendations": recommendations})
 
 
+def cmd_b2b_campaign_dry_run(args) -> int:
+    """B2B seller traffic factory: универсальный campaign dry-run поверх
+    client -> product -> campaign. Fail-closed по B2B_PRODUCT_REFERENCE_ONLY_
+    POLICY (минимум 3 approved product references) ДО построения плана.
+    0 вызовов OpenAI/Higgsfield -- только планирование; см.
+    api.media_pipeline.b2b_campaign_contract."""
+    plan = write_campaign_dry_run(args.client, args.product, args.campaign)
+    return _emit(plan)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -667,9 +679,20 @@ def main(argv=None) -> int:
                         "резолвится как content/autopilot/<campaign>")
     p.set_defaults(fn=cmd_analyze_content_performance)
 
+    p = sub.add_parser("b2b-campaign-dry-run",
+                       help="B2B seller traffic factory: универсальный campaign dry-run "
+                            "(client -> product -> campaign); fail-closed по "
+                            "B2B_PRODUCT_REFERENCE_ONLY_POLICY; 0 вызовов OpenAI/Higgsfield")
+    p.add_argument("--client", required=True, help="client_id, например demo-ozon-airfryer")
+    p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
+    p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
+    p.set_defaults(fn=cmd_b2b_campaign_dry_run)
+
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
+    except B2BReferencePolicyError as e:
+        return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (ProductOnlyPolicyError, ProductOnlyRunnerError, ProductReferenceOnlyRunnerError,
             ProductReferenceOnlyCampaignError) as e:
         return _emit({"gate_error": str(e), "code": e.code}, 2)

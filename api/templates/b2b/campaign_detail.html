@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.campaign_id }}{% endblock %}
+{% block content %}
+<h1>Campaign: {{ campaign.campaign_id }}</h1>
+<div class="card">
+  <p><b>product:</b> {% if product %}<a href="/b2b/products/{{ product.product_id }}">{{ product.product_name }}</a>{% endif %}</p>
+  <p><b>goal:</b> {{ campaign.campaign_goal }}</p>
+  <p><b>status:</b> <span class="status-badge">{{ campaign.status }}</span></p>
+  <p><b>platforms:</b> {{ campaign.platforms|join(", ") }}</p>
+</div>
+
+<div class="card">
+  <h2>Generation</h2>
+  {% if dry_run_exists %}
+  <p>campaign-dry-run.json уже создан: <code>{{ dry_run_path }}</code></p>
+  {% else %}
+  <p class="muted">Dry-run ещё не запускался.</p>
+  {% endif %}
+  <form action="/b2b/campaigns/{{ campaign.campaign_id }}/dry-run" method="post">
+    <button type="submit">Run dry-run</button>
+  </form>
+  <p class="muted">Dry-run не делает вызовов OpenAI/Higgsfield -- только план. Реальная генерация
+     запускается вручную отдельной командой (см. CLI), не с этой страницы.</p>
+</div>
+
+<div class="card">
+  <h2>Output folders</h2>
+  <p><code>{{ generated_dir }}</code></p>
+  <ul>
+    {% for sub in generated_subdirs %}<li>{{ sub }}/</li>{% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <h2>Delivery kit</h2>
+  {% if delivery_kit_exists %}
+  <p>DELIVERY-KIT.zip готов: <code>{{ delivery_kit_path }}</code></p>
+  {% else %}
+  <p class="muted">Delivery kit ещё не собран.</p>
+  {% endif %}
+</div>
+{% endblock %}
