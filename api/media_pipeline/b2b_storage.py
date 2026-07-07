@@ -52,6 +52,16 @@ class Product:
     target_audience: str = ""
     main_pain: str = ""
     product_description: str = ""
+    # Seller-facing positioning inputs (optional) -- feed the Product
+    # Intelligence Engine (api.media_pipeline.product_intelligence) as
+    # manual overrides when filled in; the engine still works without them.
+    who_is_this_for: str = ""
+    what_problem_does_it_usually_solve: str = ""
+    why_people_buy_it: str = ""
+    top_3_benefits: str = ""
+    common_questions: str = ""
+    what_should_not_be_claimed: str = ""
+    tone_preference: str = ""
     created_at: str = field(default_factory=utcnow_iso)
 
 

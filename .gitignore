@@ -36,3 +36,8 @@ content/autopilot/*/generated/
 # only client.json/product.json/campaign.json metadata is tracked.
 content/b2b/clients/*/products/*/references/
 content/b2b/clients/*/products/*/campaigns/*/generated/
+
+# Product Intelligence Engine output (api/media_pipeline/product_intelligence.py)
+# is deterministically regenerable from product.json at any time -- never
+# committed, so owner-approval/override state from local runs doesn't churn git.
+content/b2b/clients/*/products/*/product-intelligence.json

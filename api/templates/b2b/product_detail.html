@@ -11,6 +11,37 @@
   <p><b>description:</b> {{ product.product_description }}</p>
 </div>
 
+{% if intelligence %}
+{% set r = intelligence.report %}
+<div class="card">
+  <h2>Что система поняла о вашем товаре
+      <span class="status-badge">{{ r.match_confidence }} confidence</span></h2>
+  <p><b>Главная проблема, которую решает товар:</b> {{ r.core_problem_solved }}</p>
+  <p><b>Для кого он особенно полезен:</b>
+     {{ r.ideal_customer_segments[0].segment if r.ideal_customer_segments else "-" }}</p>
+  <p><b>Топ-3 боли покупателя:</b></p>
+  <ul>{% for p in r.pain_points[:3] %}<li>{{ p.pain }}</li>{% endfor %}</ul>
+  <p><b>Топ-3 выгоды:</b></p>
+  <ul>{% for b in r.product_benefits[:3] %}<li>{{ b.benefit }}</li>{% endfor %}</ul>
+  <p><b>Где товар используют:</b></p>
+  <ul>{% for u in r.use_cases[:3] %}<li>{{ u.scenario }}</li>{% endfor %}</ul>
+  <p><b>Основные возражения:</b></p>
+  <ul>{% for o in r.likely_objections[:3] %}<li>{{ o.objection }}</li>{% endfor %}</ul>
+  <p><b>Рекомендуемый тип роликов:</b>
+     {% for k, v in r.recommended_content_mix.items() %}{{ k }} ({{ v }}%){% if not loop.last %}, {% endif %}{% endfor %}</p>
+  <p class="muted">{{ r.confidence_notes }}</p>
+  <p><a href="/b2b/products/{{ product.product_id }}/intelligence"><button type="button">Открыть полный разбор / редактировать</button></a></p>
+</div>
+{% else %}
+<div class="card">
+  <h2>Что система поняла о вашем товаре</h2>
+  <p class="muted">Анализ ещё не запускался.</p>
+  <form action="/b2b/products/{{ product.product_id }}/intelligence/regenerate" method="post">
+    <button type="submit">Запустить анализ товара</button>
+  </form>
+</div>
+{% endif %}
+
 <div class="card">
   <h2>Product references ({{ approved_count }}/{{ references|length }} approved,
       минимум {{ min_refs }} нужно для генерации)</h2>

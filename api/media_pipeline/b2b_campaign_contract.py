@@ -12,6 +12,7 @@ from pathlib import Path
 
 from . import b2b_storage as st
 from . import b2b_reference_policy as pol
+from . import product_intelligence as pi
 
 # Planning constants -- same shape/order of magnitude as the proven
 # single-campaign pipeline (content_factory_planner / product_reference_
@@ -49,6 +50,29 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
     all_refs = st.load_references(client_id, product_id, repo_root)
     approved_paths = {r.file_path for r in approved_refs}
     rejected_refs = [r for r in all_refs if r.file_path not in approved_paths]
+
+    # Product Intelligence Engine -- auto-generate if missing so the dry-run
+    # always has a hypothesis to plan around; zero external API calls (local
+    # rule-based engine only). See api.media_pipeline.product_intelligence.
+    intelligence_envelope = pi.load_product_intelligence(client_id, product_id, repo_root)
+    if intelligence_envelope is None:
+        intelligence_envelope = pi.write_product_intelligence(client_id, product_id, repo_root)
+    intel_report = intelligence_envelope["report"]
+    product_intelligence_summary = {
+        "core_problem_solved": intel_report["core_problem_solved"],
+        "matched_category": intel_report["matched_category"],
+        "match_confidence": intel_report["match_confidence"],
+        "positioning_mode": intel_report["positioning_mode"],
+        "approved_by_owner": intelligence_envelope["approved_by_owner"],
+        "top_pain_points": intel_report["pain_points"][:3],
+        "top_benefits": intel_report["product_benefits"][:3],
+        "use_cases": intel_report["use_cases"],
+        "likely_objections": intel_report["likely_objections"],
+        "hook_angles": [h for h in intel_report["hook_angles"] if h.get("enabled", True)],
+        "video_message_angles": intel_report["video_message_angles"],
+        "recommended_content_mix": intel_report["recommended_content_mix"],
+        "needs_owner_review": intel_report["needs_owner_review"],
+    }
 
     planned_scenes = [
         {"scene_id": f"scene-{i:02d}", "narrative_beat": beat, "uses_product_reference": True}
@@ -108,6 +132,7 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
         "references_rejected": [asdict(r) for r in rejected_refs],
         "forbidden_refs_scan": forbidden_scan,
         "safety_policy_summary": safety_policy_summary,
+        "product_intelligence": product_intelligence_summary,
         "platforms": platforms,
         "planned_scenes": planned_scenes,
         "planned_video_variants": planned_video_variants,
@@ -167,7 +192,23 @@ def render_campaign_dry_run_md(plan: dict) -> str:
     if not plan["references_rejected"]:
         lines.append("- (none)")
 
+    pi_summary = plan["product_intelligence"]
     lines += [
+        "",
+        "## Product intelligence (what the system understood about this product)",
+        "",
+        f"- Core problem solved: {pi_summary['core_problem_solved']}",
+        f"- Matched category: {pi_summary['matched_category']} "
+        f"(confidence: {pi_summary['match_confidence']}, "
+        f"approved_by_owner: {pi_summary['approved_by_owner']})",
+        f"- Positioning mode: {pi_summary['positioning_mode']}",
+        "- Top pain points: " + (
+            "; ".join(p["pain"] for p in pi_summary["top_pain_points"]) or "-"),
+        "- Top benefits: " + (
+            "; ".join(b["benefit"] for b in pi_summary["top_benefits"]) or "-"),
+        "- Suggested hook angles: " + (
+            "; ".join(h["hook"] for h in pi_summary["hook_angles"]) or "-"),
+        f"- needs_owner_review: {pi_summary['needs_owner_review']}",
         "",
         "## Content package plan",
         "",

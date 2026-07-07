@@ -23,6 +23,7 @@ from .media_pipeline import b2b_reference_policy as pol
 from .media_pipeline import b2b_seed as seed
 from .media_pipeline.b2b_campaign_contract import write_campaign_dry_run
 from .media_pipeline.b2b_delivery_kit import build_delivery_kit_zip
+from .media_pipeline import product_intelligence as pi
 
 router = APIRouter(prefix="/b2b", tags=["b2b"])
 
@@ -94,6 +95,13 @@ async def product_new_submit(
     target_audience: str = Form(""),
     main_pain: str = Form(""),
     product_description: str = Form(""),
+    who_is_this_for: str = Form(""),
+    what_problem_does_it_usually_solve: str = Form(""),
+    why_people_buy_it: str = Form(""),
+    top_3_benefits: str = Form(""),
+    common_questions: str = Form(""),
+    what_should_not_be_claimed: str = Form(""),
+    tone_preference: str = Form(""),
     reference_images: list[UploadFile] = File(default=[]),
 ):
     client_id = _slugify(client_name)
@@ -107,8 +115,16 @@ async def product_new_submit(
         marketplace_article=marketplace_article, category=category,
         target_audience=target_audience, main_pain=main_pain,
         product_description=product_description,
+        who_is_this_for=who_is_this_for,
+        what_problem_does_it_usually_solve=what_problem_does_it_usually_solve,
+        why_people_buy_it=why_people_buy_it,
+        top_3_benefits=top_3_benefits,
+        common_questions=common_questions,
+        what_should_not_be_claimed=what_should_not_be_claimed,
+        tone_preference=tone_preference,
     )
     st.save_product(product, REPO_ROOT)
+    pi.write_product_intelligence(client_id, product_id, REPO_ROOT)
 
     uploaded_dir = st.references_dir(client_id, product_id, REPO_ROOT) / "uploaded"
     uploaded_dir.mkdir(parents=True, exist_ok=True)
@@ -133,12 +149,87 @@ def product_detail(request: Request, product_id: str):
     refs = st.load_references(product.client_id, product_id, REPO_ROOT)
     campaigns = st.list_campaigns(product.client_id, product_id, REPO_ROOT)
     approved_count = sum(1 for r in refs if r.approved)
+    intelligence = pi.load_product_intelligence(product.client_id, product_id, REPO_ROOT)
     return templates.TemplateResponse(request, "product_detail.html", {
         "product": product, "references": refs, "campaigns": campaigns,
         "min_refs": pol.MIN_APPROVED_REFERENCES, "approved_count": approved_count,
         "can_generate": approved_count >= pol.MIN_APPROVED_REFERENCES,
         "roles": st.PRODUCT_REFERENCE_ROLES,
+        "intelligence": intelligence,
     })
+
+
+@router.get("/products/{product_id}/intelligence", response_class=HTMLResponse)
+def product_intelligence_preview(request: Request, product_id: str):
+    product = _find_product(product_id)
+    if not product:
+        raise HTTPException(404, "product not found")
+    intelligence = pi.load_product_intelligence(product.client_id, product_id, REPO_ROOT)
+    if intelligence is None:
+        intelligence = pi.write_product_intelligence(product.client_id, product_id, REPO_ROOT)
+    return templates.TemplateResponse(request, "product_intelligence.html", {
+        "product": product, "intelligence": intelligence,
+        "positioning_modes": pi.POSITIONING_MODES,
+    })
+
+
+@router.post("/products/{product_id}/intelligence/regenerate")
+def product_intelligence_regenerate(product_id: str):
+    product = _find_product(product_id)
+    if not product:
+        raise HTTPException(404, "product not found")
+    pi.regenerate_product_intelligence(product.client_id, product_id, REPO_ROOT)
+    return RedirectResponse(url=f"/b2b/products/{product_id}/intelligence", status_code=303)
+
+
+@router.post("/products/{product_id}/intelligence/approve")
+def product_intelligence_approve(product_id: str, approval_notes: str = Form("")):
+    product = _find_product(product_id)
+    if not product:
+        raise HTTPException(404, "product not found")
+    try:
+        pi.approve_product_intelligence(product.client_id, product_id, REPO_ROOT, approval_notes)
+    except pi.ProductIntelligenceError as e:
+        raise HTTPException(422, f"{e.code}: {e}")
+    return RedirectResponse(url=f"/b2b/products/{product_id}/intelligence", status_code=303)
+
+
+@router.post("/products/{product_id}/intelligence/primary-problem")
+def product_intelligence_set_primary_problem(product_id: str, problem_text: str = Form(...)):
+    product = _find_product(product_id)
+    if not product:
+        raise HTTPException(404, "product not found")
+    try:
+        pi.set_primary_problem(product.client_id, product_id, REPO_ROOT, problem_text)
+    except pi.ProductIntelligenceError as e:
+        raise HTTPException(422, f"{e.code}: {e}")
+    return RedirectResponse(url=f"/b2b/products/{product_id}/intelligence", status_code=303)
+
+
+@router.post("/products/{product_id}/intelligence/positioning-mode")
+def product_intelligence_set_positioning_mode(product_id: str, mode: str = Form(...)):
+    product = _find_product(product_id)
+    if not product:
+        raise HTTPException(404, "product not found")
+    try:
+        pi.set_positioning_mode(product.client_id, product_id, REPO_ROOT, mode)
+    except pi.ProductIntelligenceError as e:
+        raise HTTPException(422, f"{e.code}: {e}")
+    return RedirectResponse(url=f"/b2b/products/{product_id}/intelligence", status_code=303)
+
+
+@router.post("/products/{product_id}/intelligence/hook-angle/toggle")
+def product_intelligence_toggle_hook_angle(product_id: str, index: int = Form(...),
+                                           enabled: str = Form("false")):
+    product = _find_product(product_id)
+    if not product:
+        raise HTTPException(404, "product not found")
+    try:
+        pi.toggle_hook_angle(product.client_id, product_id, REPO_ROOT, index,
+                             enabled.lower() in ("1", "true", "on", "yes"))
+    except pi.ProductIntelligenceError as e:
+        raise HTTPException(422, f"{e.code}: {e}")
+    return RedirectResponse(url=f"/b2b/products/{product_id}/intelligence", status_code=303)
 
 
 @router.post("/products/{product_id}/references/approve")
@@ -205,6 +296,7 @@ def campaign_detail(request: Request, campaign_id: str):
     dry_run_path = gen_dir / "campaign-dry-run.json"
     dry_run_md_path = gen_dir / "campaign-dry-run.md"
     delivery_zip = gen_dir / "delivery" / "DELIVERY-KIT.zip"
+    intelligence = pi.load_product_intelligence(campaign.client_id, campaign.product_id, REPO_ROOT)
     return templates.TemplateResponse(request, "campaign_detail.html", {
         "campaign": campaign, "product": product, "generated_dir": str(gen_dir),
         "dry_run_exists": dry_run_path.is_file(),
@@ -215,6 +307,7 @@ def campaign_detail(request: Request, campaign_id: str):
         "delivery_kit_path": str(delivery_zip),
         "generated_subdirs": st.GENERATED_SUBDIRS,
         "min_refs": pol.MIN_APPROVED_REFERENCES,
+        "intelligence": intelligence,
     })
 
 

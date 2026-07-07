@@ -97,6 +97,7 @@ def build_product_summary_md(product: "st.Product") -> str:
 
 def build_campaign_plan_md(plan: dict) -> str:
     campaign = plan["campaign"]
+    pi_summary = plan["product_intelligence"]
     lines = [
         "# План кампании (dry-run)",
         "",
@@ -104,6 +105,13 @@ def build_campaign_plan_md(plan: dict) -> str:
         f"- **Цель:** {campaign['campaign_goal']}",
         f"- **Площадки:** {', '.join(plan['platforms'])}",
         f"- **Статус:** {plan['status']}",
+        "",
+        "## Что система поняла о товаре",
+        "",
+        f"- Главная проблема: {pi_summary['core_problem_solved']}",
+        f"- Категория (confidence): {pi_summary['matched_category']} "
+        f"({pi_summary['match_confidence']})",
+        f"- Одобрено владельцем: {pi_summary['approved_by_owner']}",
         "",
         "## Контентный пакет (план, ничего ещё не сгенерировано)",
         "",

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Intelligence -- {{ product.product_name }}{% endblock %}
+{% block content %}
+<h1>Что система поняла о товаре: {{ product.product_name }}</h1>
+<p><a href="/b2b/products/{{ product.product_id }}">&laquo; назад к товару</a></p>
+
+{% set r = intelligence.report %}
+<div class="card">
+  <p><b>Confidence:</b> <span class="status-badge">{{ r.match_confidence }}</span>
+     ({{ r.matched_category }}) &nbsp;
+     <b>Approved by owner:</b> {{ "yes" if intelligence.approved_by_owner else "no" }} &nbsp;
+     <b>Manual override:</b> {{ "yes" if intelligence.manual_override_present else "no" }}</p>
+  <p class="muted">{{ r.confidence_notes }}</p>
+  <p class="muted">Сгенерировано: {{ intelligence.generated_at }} | needs_owner_review: {{ r.needs_owner_review }}</p>
+
+  <form action="/b2b/products/{{ product.product_id }}/intelligence/regenerate" method="post" style="display:inline">
+    <button type="submit">Regenerate from product data</button>
+  </form>
+  <form action="/b2b/products/{{ product.product_id }}/intelligence/approve" method="post" style="display:inline">
+    <input type="hidden" name="approval_notes" value="approved from intelligence preview page">
+    <button type="submit">Approve intelligence</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Problem</h2>
+  <p><b>Core problem solved:</b> {{ r.core_problem_solved }}</p>
+  <form action="/b2b/products/{{ product.product_id }}/intelligence/primary-problem" method="post">
+    <label>Переопределить главную проблему вручную
+      <textarea name="problem_text" rows="2">{{ r.core_problem_solved }}</textarea>
+    </label>
+    <button type="submit">Set as primary problem</button>
+  </form>
+  {% if r.secondary_problems_solved %}
+  <p><b>Secondary problems:</b></p>
+  <ul>{% for p in r.secondary_problems_solved %}<li>{{ p }}</li>{% endfor %}</ul>
+  {% endif %}
+
+  <form action="/b2b/products/{{ product.product_id }}/intelligence/positioning-mode" method="post">
+    <label>Positioning mode (owner может отметить, что товар не про боль, а про желание/удобство/статус/эмоцию)
+      <select name="mode" onchange="this.form.submit()">
+        {% for m in positioning_modes %}
+        <option value="{{ m }}" {% if m == r.positioning_mode %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Audience</h2>
+  <table>
+    <tr><th>segment</th><th>why they care</th><th>pain level</th></tr>
+    {% for s in r.ideal_customer_segments %}
+    <tr><td>{{ s.segment }}</td><td>{{ s.why_this_segment_cares }}</td><td>{{ s.pain_level }}/5</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Pains</h2>
+  <table>
+    <tr><th>pain</th><th>why it happens</th><th>severity</th></tr>
+    {% for p in r.pain_points %}
+    <tr><td>{{ p.pain }}</td><td>{{ p.why_it_happens }}</td><td>{{ p.severity }}/5</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Benefits</h2>
+  <table>
+    <tr><th>benefit</th><th>mapped to pain</th></tr>
+    {% for b in r.product_benefits %}
+    <tr><td>{{ b.benefit }}</td><td>{{ b.mapped_to_pain }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Objections</h2>
+  <table>
+    <tr><th>objection</th><th>response angle</th></tr>
+    {% for o in r.likely_objections %}
+    <tr><td>{{ o.objection }}</td><td>{{ o.response_angle }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Use cases</h2>
+  <table>
+    <tr><th>scenario</th><th>why product fits</th></tr>
+    {% for u in r.use_cases %}
+    <tr><td>{{ u.scenario }}</td><td>{{ u.why_product_fits }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Hook ideas</h2>
+  <table>
+    <tr><th>type</th><th>hook</th><th>why it should work</th><th>enabled</th></tr>
+    {% for h in r.hook_angles %}
+    <tr>
+      <td>{{ h.angle_type }}</td>
+      <td>{{ h.hook }}</td>
+      <td>{{ h.why_it_should_work }}</td>
+      <td>
+        <form action="/b2b/products/{{ product.product_id }}/intelligence/hook-angle/toggle" method="post">
+          <input type="hidden" name="index" value="{{ loop.index0 }}">
+          <input type="hidden" name="enabled" value="{{ 'false' if h.enabled else 'true' }}">
+          <button type="submit" style="margin:0;padding:2px 8px;">{{ "disable" if h.enabled else "enable" }}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Video angles</h2>
+  <table>
+    <tr><th>angle</th><th>viewer thought to trigger</th><th>scene direction</th></tr>
+    {% for v in r.video_message_angles %}
+    <tr><td>{{ v.angle }}</td><td>&ldquo;{{ v.viewer_thought_to_trigger }}&rdquo;</td><td>{{ v.recommended_scene_direction }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Article / content directions</h2>
+  <p><b>Recommended content mix:</b></p>
+  <ul>
+    {% for k, v in r.recommended_content_mix.items() %}<li>{{ k }}: {{ v }}%</li>{% endfor %}
+  </ul>
+</div>
+{% endblock %}

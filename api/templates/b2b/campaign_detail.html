@@ -9,6 +9,37 @@
   <p><b>platforms:</b> {{ campaign.platforms|join(", ") }}</p>
 </div>
 
+{% if intelligence %}
+{% set r = intelligence.report %}
+<div class="card">
+  <h2>Как система будет делать контент</h2>
+  <p>На основе анализа товара система будет делать контент так, чтобы зритель узнавал свою проблему.</p>
+  <p><b>Например, мы хотим, чтобы зритель подумал:</b><br>
+     &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
+
+  <p><b>Suggested hook angles:</b></p>
+  <ul>
+    {% for h in r.hook_angles if h.enabled %}<li>[{{ h.angle_type }}] {{ h.hook }}</li>{% endfor %}
+  </ul>
+
+  <p><b>Suggested video angles:</b></p>
+  <ul>
+    {% for v in r.video_message_angles %}<li>{{ v.angle }} -- &ldquo;{{ v.viewer_thought_to_trigger }}&rdquo;</li>{% endfor %}
+  </ul>
+
+  <p><b>Suggested content directions (recommended content mix):</b></p>
+  <ul>
+    {% for k, v in r.recommended_content_mix.items() %}<li>{{ k }}: {{ v }}%</li>{% endfor %}
+  </ul>
+  <p><a href="/b2b/products/{{ campaign.product_id }}/intelligence">Полный разбор товара &raquo;</a></p>
+</div>
+{% else %}
+<div class="card">
+  <h2>Как система будет делать контент</h2>
+  <p class="muted">Анализ товара ещё не запускался -- откройте страницу товара, чтобы построить гипотезы.</p>
+</div>
+{% endif %}
+
 <div class="card">
   <h2>Generation</h2>
   {% if dry_run_exists %}
