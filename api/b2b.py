@@ -8,6 +8,7 @@ content/b2b/AUTOPOSTING-ROADMAP.md for what comes after this skeleton.
 """
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import uuid
@@ -24,6 +25,7 @@ from .media_pipeline import b2b_seed as seed
 from .media_pipeline.b2b_campaign_contract import write_campaign_dry_run
 from .media_pipeline.b2b_delivery_kit import build_delivery_kit_zip
 from .media_pipeline import product_intelligence as pi
+from .media_pipeline import seller_intake as si
 
 router = APIRouter(prefix="/b2b", tags=["b2b"])
 
@@ -317,6 +319,18 @@ def campaign_detail(request: Request, campaign_id: str):
     dry_run_md_path = gen_dir / "campaign-dry-run.md"
     delivery_zip = gen_dir / "delivery" / "DELIVERY-KIT.zip"
     intelligence = pi.load_product_intelligence(campaign.client_id, campaign.product_id, REPO_ROOT)
+
+    # Demo mode ("Демо -- 1 тестовый ролик") -- prefer the already-computed
+    # dry-run's package_mode (authoritative once a plan exists), otherwise
+    # fall back to the wizard's own seller-intake settings.
+    package_mode = None
+    if dry_run_path.is_file():
+        package_mode = json.loads(dry_run_path.read_text(encoding="utf-8")).get("package_mode")
+    if package_mode is None:
+        intake = si.load_seller_intake(campaign.client_id, campaign.product_id, REPO_ROOT) or {}
+        package_mode = intake.get("content_package_settings", {}).get("package_duration")
+    is_demo_mode = package_mode == si.DEMO_PACKAGE_DURATION
+
     return templates.TemplateResponse(request, "campaign_detail.html", {
         "campaign": campaign, "product": product, "generated_dir": str(gen_dir),
         "dry_run_exists": dry_run_path.is_file(),
@@ -328,6 +342,7 @@ def campaign_detail(request: Request, campaign_id: str):
         "generated_subdirs": st.GENERATED_SUBDIRS,
         "min_refs": pol.MIN_SELLER_FLOW_REFERENCES,
         "intelligence": intelligence,
+        "is_demo_mode": is_demo_mode,
     })
 
 

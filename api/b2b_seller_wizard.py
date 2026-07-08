@@ -323,6 +323,8 @@ def step5_form(request: Request, product_id: str):
         "product": product, "platforms": st.CAMPAIGN_PLATFORMS,
         "platform_labels": st.CAMPAIGN_PLATFORM_LABELS,
         "durations": si.PACKAGE_DURATIONS, "duration_labels": si.PACKAGE_DURATION_LABELS,
+        "duration_descriptions": si.PACKAGE_DURATION_DESCRIPTIONS,
+        "demo_package_duration": si.DEMO_PACKAGE_DURATION,
         "content_types": si.CONTENT_TYPES, "content_type_labels": si.CONTENT_TYPE_LABELS,
         "manual_or_autopost_label": si.MANUAL_OR_AUTOPOST_LABELS["manual_upload_ready_kit"],
         "settings": settings,
@@ -333,7 +335,7 @@ def step5_form(request: Request, product_id: str):
 def step5_submit(
     product_id: str,
     platforms: list[str] = Form(default=[]),
-    package_duration: str = Form("14_days"),
+    package_duration: str = Form(si.DEMO_PACKAGE_DURATION),
     content_types: list[str] = Form(default=[]),
 ):
     product = _require_product(product_id)
@@ -356,10 +358,14 @@ def step6_form(request: Request, product_id: str, saved: str = None):
     product = _require_product(product_id)
     checklist = si.sync_readiness_checklist(product.client_id, product_id, REPO_ROOT)
     intelligence = pi.load_product_intelligence(product.client_id, product_id, REPO_ROOT)
+    intake = si.load_seller_intake(product.client_id, product_id, REPO_ROOT) or {}
+    package_mode = intake.get("content_package_settings", {}).get("package_duration")
+    is_demo_mode = package_mode == si.DEMO_PACKAGE_DURATION
     return templates.TemplateResponse(request, "wizard/step6.html", {
         "product": product, "checklist": checklist, "intelligence": intelligence,
         "min_refs": pol.MIN_SELLER_FLOW_REFERENCES,
         "recommended_refs": pol.RECOMMENDED_REFERENCE_RANGE, "saved": bool(saved),
+        "is_demo_mode": is_demo_mode,
     })
 
 

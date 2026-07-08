@@ -13,6 +13,7 @@ from pathlib import Path
 from . import b2b_storage as st
 from . import b2b_reference_policy as pol
 from . import product_intelligence as pi
+from . import seller_intake as si
 
 # Planning constants -- same shape/order of magnitude as the proven
 # single-campaign pipeline (content_factory_planner / product_reference_
@@ -33,6 +34,23 @@ CREATIVE_ANGLES = ("pain_problem", "recipe", "meme_conversational", "fast_hype",
                   "product_beauty_clean")
 
 DZEN_ARTICLE_TYPES = ("problem_solution", "recipe", "lifehack", "soft_ad", "comparison")
+
+# "Демо -- 1 тестовый ролик" mode: exactly one scene/video, zero Dzen
+# content, one publishing day -- lets a seller check quality before
+# committing to a 7/14/30-day package. See api.media_pipeline.seller_intake
+# .DEMO_PACKAGE_DURATION for the backend value ("demo_1_video").
+DEMO_MODE_NOTE = ("Для демо-режима выбран один самый подходящий рекламный угол. В большом "
+                 "пакете можно будет протестировать несколько стратегий.")
+DEMO_PLAN_EXPLANATION = ("Это демо-план. Он нужен, чтобы проверить один ролик перед запуском "
+                        "большого контент-пакета.")
+
+_PACKAGE_DURATION_DAYS = {"7_days": 7, "14_days": 14, "30_days": 30}
+
+
+def _publishing_days_for_package(package_mode: str) -> int:
+    if package_mode == si.DEMO_PACKAGE_DURATION:
+        return 1
+    return _PACKAGE_DURATION_DAYS.get(package_mode, 14)
 
 
 def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
@@ -80,42 +98,92 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
         "needs_owner_review": intel_report["needs_owner_review"],
     }
 
-    planned_scenes = [
-        {"scene_id": f"scene-{i:02d}", "narrative_beat": beat, "uses_product_reference": True}
-        for i, beat in enumerate(SCENE_NARRATIVE_TEMPLATE, start=1)
-    ]
+    # package_mode: read from the seller wizard's own intake snapshot (Step 5
+    # "Настройки контент-пакета") if it exists; admin-created campaigns that
+    # never went through the wizard have no seller-intake.json and default to
+    # a full (non-demo) plan, preserving prior behaviour.
+    intake = si.load_seller_intake(client_id, product_id, repo_root)
+    package_mode = (intake or {}).get("content_package_settings", {}).get("package_duration") or "14_days"
+    is_demo_mode = package_mode == si.DEMO_PACKAGE_DURATION
 
     platforms = campaign.platforms or list(st.CAMPAIGN_PLATFORMS)
     video_platforms = [p for p in platforms if p != "dzen"]
-    planned_video_variants = {
-        "total_variants": PLANNED_VIDEO_VARIANT_COUNT,
-        "platforms": video_platforms,
-        "creative_angles": list(CREATIVE_ANGLES),
-        "note": ("Same combinatorial shape as the proven single-campaign pipeline: "
-                "creative angle x platform, each variant reusing only the approved "
-                "product references, no new image generation for the variant grid itself."),
-    }
 
-    dzen_enabled = "dzen" in platforms
-    planned_dzen_articles = {
-        "total_articles": PLANNED_DZEN_ARTICLE_COUNT if dzen_enabled else 0,
-        "article_types": list(DZEN_ARTICLE_TYPES) if dzen_enabled else [],
-        "images_per_article": PLANNED_IMAGES_PER_DZEN_ARTICLE if dzen_enabled else 0,
-    }
+    demo_mode_note = None
+    if is_demo_mode:
+        ad_options = intel_report.get("ad_strategy_options", [])
+        selected_strategy = intel_report.get("selected_ad_strategy", "multi_angle_test")
+        if selected_strategy == "multi_angle_test":
+            primary_angle = ad_options[0]["strategy_id"] if ad_options else "pain_problem"
+            demo_mode_note = DEMO_MODE_NOTE
+        else:
+            primary_angle = selected_strategy
+        demo_platform = video_platforms[0] if video_platforms else (platforms[0] if platforms else "youtube_shorts")
 
-    planned_publishing_queue = {
-        "video_posting_times": ["12:30", "16:30", "20:30"] if video_platforms else [],
-        "dzen_posting_times": ["10:30", "19:00"] if dzen_enabled else [],
-        "note": "14-day rotating queue, same shape as the proven single-campaign pipeline.",
-    }
+        planned_scenes = [
+            {"scene_id": "scene-01", "narrative_beat": SCENE_NARRATIVE_TEMPLATE[0],
+             "uses_product_reference": True},
+        ]
+        planned_video_variants = {
+            "total_variants": 1,
+            "platforms": [demo_platform],
+            "creative_angles": [primary_angle],
+            "note": "Демо-режим: один тестовый ролик на одном рекламном угле.",
+        }
+        planned_dzen_articles = {"total_articles": 0, "article_types": [], "images_per_article": 0}
+        planned_publishing_queue = {
+            "video_posting_times": ["12:30"],
+            "dzen_posting_times": [],
+            "note": "Демо-режим: 1 день публикации для теста.",
+        }
+        estimated_image_calls = 1
+        estimated_video_renders = 1
+        estimated_cost_usd = round(estimated_image_calls * IMAGE_PRICE_PER_CALL_USD +
+                                  estimated_video_renders * VIDEO_RENDER_PRICE_PER_CALL_USD, 2)
+    else:
+        planned_scenes = [
+            {"scene_id": f"scene-{i:02d}", "narrative_beat": beat, "uses_product_reference": True}
+            for i, beat in enumerate(SCENE_NARRATIVE_TEMPLATE, start=1)
+        ]
+        planned_video_variants = {
+            "total_variants": PLANNED_VIDEO_VARIANT_COUNT,
+            "platforms": video_platforms,
+            "creative_angles": list(CREATIVE_ANGLES),
+            "note": ("Same combinatorial shape as the proven single-campaign pipeline: "
+                    "creative angle x platform, each variant reusing only the approved "
+                    "product references, no new image generation for the variant grid itself."),
+        }
 
-    estimated_image_calls = (
-        PLANNED_SCENE_COUNT +
-        (planned_dzen_articles["total_articles"] * planned_dzen_articles["images_per_article"])
-    )
-    estimated_video_renders = PLANNED_VIDEO_VARIANT_COUNT if video_platforms else 0
-    estimated_cost_usd = round(estimated_image_calls * IMAGE_PRICE_PER_CALL_USD +
-                              estimated_video_renders * VIDEO_RENDER_PRICE_PER_CALL_USD, 2)
+        dzen_enabled = "dzen" in platforms
+        planned_dzen_articles = {
+            "total_articles": PLANNED_DZEN_ARTICLE_COUNT if dzen_enabled else 0,
+            "article_types": list(DZEN_ARTICLE_TYPES) if dzen_enabled else [],
+            "images_per_article": PLANNED_IMAGES_PER_DZEN_ARTICLE if dzen_enabled else 0,
+        }
+
+        planned_publishing_queue = {
+            "video_posting_times": ["12:30", "16:30", "20:30"] if video_platforms else [],
+            "dzen_posting_times": ["10:30", "19:00"] if dzen_enabled else [],
+            "note": "14-day rotating queue, same shape as the proven single-campaign pipeline.",
+        }
+
+        estimated_image_calls = (
+            PLANNED_SCENE_COUNT +
+            (planned_dzen_articles["total_articles"] * planned_dzen_articles["images_per_article"])
+        )
+        estimated_video_renders = PLANNED_VIDEO_VARIANT_COUNT if video_platforms else 0
+        estimated_cost_usd = round(estimated_image_calls * IMAGE_PRICE_PER_CALL_USD +
+                                  estimated_video_renders * VIDEO_RENDER_PRICE_PER_CALL_USD, 2)
+
+    content_package_plan = {
+        "planned_scenes_count": len(planned_scenes),
+        "planned_short_videos_count": planned_video_variants["total_variants"],
+        "planned_dzen_articles_count": planned_dzen_articles["total_articles"],
+        "planned_article_images_count": (planned_dzen_articles["total_articles"] *
+                                        planned_dzen_articles["images_per_article"]),
+        "planned_publishing_days": _publishing_days_for_package(package_mode),
+        "demo_mode": is_demo_mode,
+    }
 
     safety_policy_summary = {
         "policy": "B2B_PRODUCT_REFERENCE_ONLY_POLICY",
@@ -135,6 +203,7 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
 
     plan = {
         "status": "dry_run_only",
+        "package_mode": package_mode,
         "client": asdict(client),
         "product": asdict(product),
         "campaign": asdict(campaign),
@@ -145,6 +214,7 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
         "safety_policy_summary": safety_policy_summary,
         "product_intelligence": product_intelligence_summary,
         "platforms": platforms,
+        "content_package_plan": content_package_plan,
         "planned_scenes": planned_scenes,
         "planned_video_variants": planned_video_variants,
         "planned_dzen_articles": planned_dzen_articles,
@@ -157,6 +227,8 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
         "external_api_calls": 0,
         "auto_posting_triggered": False,
     }
+    if demo_mode_note:
+        plan["demo_mode_note"] = demo_mode_note
     return plan
 
 
@@ -172,6 +244,21 @@ def render_campaign_dry_run_md(plan: dict) -> str:
         f"(openai_calls={plan['openai_calls']}, higgsfield_calls={plan['higgsfield_calls']}, "
         f"external_api_calls={plan['external_api_calls']}, "
         f"auto_posting_triggered={plan['auto_posting_triggered']}).",
+        "",
+        "## Package mode",
+        "",
+        f"- package_mode: {plan['package_mode']}",
+        f"- Planned scenes: {plan['content_package_plan']['planned_scenes_count']}",
+        f"- Planned short videos: {plan['content_package_plan']['planned_short_videos_count']}",
+        f"- Planned Dzen articles: {plan['content_package_plan']['planned_dzen_articles_count']}",
+        f"- Planned article images: {plan['content_package_plan']['planned_article_images_count']}",
+        f"- Planned publishing days: {plan['content_package_plan']['planned_publishing_days']}",
+    ]
+    if plan["content_package_plan"]["demo_mode"]:
+        lines.append(f"- {DEMO_PLAN_EXPLANATION}")
+        if plan.get("demo_mode_note"):
+            lines.append(f"- {plan['demo_mode_note']}")
+    lines += [
         "",
         "## Client",
         "",

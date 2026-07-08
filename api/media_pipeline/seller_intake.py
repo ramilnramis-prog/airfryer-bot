@@ -24,7 +24,10 @@ from . import product_intelligence as pi
 CONTENT_TYPES = ("short_videos", "platform_descriptions", "dzen_articles",
                  "article_images", "publishing_plan", "performance_tracker",
                  "delivery_zip")
-PACKAGE_DURATIONS = ("7_days", "14_days", "30_days")
+# demo_1_video is listed first -- it's the recommended first-run option (see
+# PACKAGE_DURATION_DESCRIPTIONS / TASK 3 "Рекомендуется для первого теста").
+DEMO_PACKAGE_DURATION = "demo_1_video"
+PACKAGE_DURATIONS = (DEMO_PACKAGE_DURATION, "7_days", "14_days", "30_days")
 MANUAL_OR_AUTOPOST_OPTIONS = ("manual_upload_ready_kit",)
 MIN_UPLOADED_REFERENCES = 3
 
@@ -39,10 +42,23 @@ CONTENT_TYPE_LABELS = {
     "delivery_zip": "ZIP с материалами",
 }
 PACKAGE_DURATION_LABELS = {
+    "demo_1_video": "Демо -- 1 тестовый ролик",
     "7_days": "7 дней",
     "14_days": "14 дней",
     "30_days": "30 дней",
 }
+PACKAGE_DURATION_DESCRIPTIONS = {
+    "demo_1_video": "Проверить идею и качество перед большим пакетом.",
+    "7_days": "Небольшой контент-пакет для первой недели.",
+    "14_days": "Основной тестовый пакет для нескольких площадок.",
+    "30_days": "Расширенный пакет для регулярной публикации.",
+}
+# Fuller explanation of the demo option (TASK 1 spec text) -- available for
+# surfaces that want more detail than the Step 5 card's one-liner.
+DEMO_PACKAGE_DURATION_LONG_DESCRIPTION = (
+    "Быстрый тест: система подготовит один рекламный ролик, чтобы проверить товар, "
+    "стратегию и качество результата перед большим пакетом."
+)
 MANUAL_OR_AUTOPOST_LABELS = {
     "manual_upload_ready_kit": "Готовый ZIP для ручной публикации",
 }

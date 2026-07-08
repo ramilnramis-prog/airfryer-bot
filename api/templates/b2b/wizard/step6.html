@@ -10,6 +10,10 @@
 <div class="alert alert-success">Черновик сохранён.</div>
 {% endif %}
 
+{% if is_demo_mode %}
+<div class="alert alert-info">Будет создан тестовый план на 1 ролик.</div>
+{% endif %}
+
 <div class="card">
   <ul class="checklist">
     <li class="{{ 'done' if checklist.product_info_complete else '' }}"><span class="tick">{{ "✓" if checklist.product_info_complete else "" }}</span> Информация о товаре заполнена</li>
@@ -51,19 +55,20 @@
     <button type="submit" class="btn-secondary">Сохранить черновик</button>
   </form>
 
+  {% set check_button_label = "Проверить будущий тестовый ролик" if is_demo_mode else "Проверить будущий контент-пакет" %}
   {% if checklist.can_run_dry_run %}
   <form action="/b2b/seller/{{ product.product_id }}/step6/dry-run" method="post" style="display:inline">
-    <button type="submit">Проверить будущий контент-пакет</button>
+    <button type="submit">{{ check_button_label }}</button>
   </form>
   <form action="/b2b/seller/{{ product.product_id }}/step6/create-package" method="post" style="display:inline">
     <button type="submit" class="btn-orange">Собрать готовый ZIP с материалами</button>
   </form>
   {% else %}
-  <button type="button" disabled>Проверить будущий контент-пакет</button>
+  <button type="button" disabled>{{ check_button_label }}</button>
   <button type="button" disabled>Собрать готовый ZIP с материалами</button>
   <p class="muted">Нужно загрузить хотя бы {{ min_refs }} фото товара.</p>
   {% endif %}
-  <p class="hint">&laquo;Проверить будущий контент-пакет&raquo; ничего не генерирует и не тратит
+  <p class="hint">&laquo;{{ check_button_label }}&raquo; ничего не генерирует и не тратит
      деньги -- это только план. &laquo;Собрать готовый ZIP с материалами&raquo; формирует архив с
      планом и пояснениями, готовый для ручной публикации.</p>
 </div>

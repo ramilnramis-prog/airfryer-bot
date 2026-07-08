@@ -16,13 +16,18 @@
     </label>
     {% endfor %}
 
-    <label>Длительность пакета
-      <select name="package_duration">
-        {% for d in durations %}
-        <option value="{{ d }}" {% if d == settings.get('package_duration') %}selected{% endif %}>{{ duration_labels.get(d, d) }}</option>
-        {% endfor %}
-      </select>
-    </label>
+    <label>Длительность пакета</label>
+    <div class="grid grid-2">
+      {% for d in durations %}
+      <label class="card" style="cursor:pointer;display:block;font-weight:400;margin-top:0;">
+        <input type="radio" name="package_duration" value="{{ d }}" style="width:auto;display:inline;"
+          {% if d == (settings.get('package_duration') or demo_package_duration) %}checked{% endif %}>
+        <b>{{ duration_labels.get(d, d) }}</b>
+        {% if d == demo_package_duration %}<span class="badge badge-success">Рекомендуется для первого теста</span>{% endif %}
+        <p class="muted">{{ duration_descriptions.get(d, "") }}</p>
+      </label>
+      {% endfor %}
+    </div>
 
     <label>Что включить в пакет</label>
     {% for c in content_types %}
