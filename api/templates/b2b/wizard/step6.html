@@ -12,26 +12,32 @@
 
 <div class="card">
   <ul class="checklist">
-    <li class="{{ 'done' if checklist.product_info_complete else '' }}"><span class="tick">{{ "✓" if checklist.product_info_complete else "" }}</span> product info complete</li>
-    <li class="{{ 'done' if checklist.marketplace_article_or_link_present else '' }}"><span class="tick">{{ "✓" if checklist.marketplace_article_or_link_present else "" }}</span> marketplace article/link present</li>
-    <li class="{{ 'done' if checklist.at_least_3_uploaded_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_uploaded_references else "" }}</span> at least 3 uploaded product references</li>
-    <li class="{{ 'done' if checklist.at_least_3_approved_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_approved_references else "" }}</span> at least 3 approved product references</li>
-    <li class="{{ 'done' if checklist.customer_positioning_present else '' }}"><span class="tick">{{ "✓" if checklist.customer_positioning_present else "" }}</span> customer positioning present</li>
-    <li class="{{ 'done' if checklist.product_intelligence_generated else '' }}"><span class="tick">{{ "✓" if checklist.product_intelligence_generated else "" }}</span> product intelligence generated</li>
-    <li class="{{ 'done' if checklist.primary_problem_approved else '' }}"><span class="tick">{{ "✓" if checklist.primary_problem_approved else "" }}</span> primary problem approved</li>
-    <li class="{{ 'done' if checklist.platforms_selected else '' }}"><span class="tick">{{ "✓" if checklist.platforms_selected else "" }}</span> platforms selected</li>
-    <li class="{{ 'done' if checklist.package_duration_selected else '' }}"><span class="tick">{{ "✓" if checklist.package_duration_selected else "" }}</span> package duration selected</li>
+    <li class="{{ 'done' if checklist.product_info_complete else '' }}"><span class="tick">{{ "✓" if checklist.product_info_complete else "" }}</span> Информация о товаре заполнена</li>
+    <li class="{{ 'done' if checklist.marketplace_article_or_link_present else '' }}"><span class="tick">{{ "✓" if checklist.marketplace_article_or_link_present else "" }}</span> Артикул или ссылка добавлены</li>
+    <li class="{{ 'done' if checklist.at_least_3_uploaded_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_uploaded_references else "" }}</span> Загружено минимум 3 фото товара</li>
+    <li class="{{ 'done' if checklist.at_least_3_approved_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_approved_references else "" }}</span> Фото товара проверены</li>
+    <li class="{{ 'done' if checklist.customer_positioning_present else '' }}"><span class="tick">{{ "✓" if checklist.customer_positioning_present else "" }}</span> Покупатель и проблема описаны</li>
+    <li class="{{ 'done' if checklist.product_intelligence_generated else '' }}"><span class="tick">{{ "✓" if checklist.product_intelligence_generated else "" }}</span> AI-анализ товара готов</li>
+    <li class="{{ 'done' if checklist.primary_problem_approved else '' }}"><span class="tick">{{ "✓" if checklist.primary_problem_approved else "" }}</span> Главная проблема подтверждена</li>
+    <li class="{{ 'done' if checklist.platforms_selected else '' }}"><span class="tick">{{ "✓" if checklist.platforms_selected else "" }}</span> Площадки выбраны</li>
+    <li class="{{ 'done' if checklist.package_duration_selected else '' }}"><span class="tick">{{ "✓" if checklist.package_duration_selected else "" }}</span> Период пакета выбран</li>
   </ul>
 
   {% if not checklist.at_least_3_approved_references %}
   <div class="alert alert-error">
-    Нужно минимум {{ min_refs }} одобренных фото товара.
-    Одобрить фото можно на странице товара: <a href="/b2b/products/{{ product.product_id }}">{{ product.product_id }}</a>.
+    {% if checklist.at_least_3_uploaded_references %}
+    Фото уже загружены, но их нужно подтвердить как фото товара. Это защита от случайных
+    картинок, людей, еды или интерьера.
+    {% else %}
+    Нужно проверить и подтвердить минимум {{ min_refs }} фото товара. Перейдите на страницу
+    товара и отметьте подходящие фото.
+    {% endif %}
+    <br><a href="/b2b/products/{{ product.product_id }}">Открыть страницу товара</a>
   </div>
   {% endif %}
   {% if intelligence and not intelligence.approved_by_owner %}
   <div class="alert alert-info">
-    Проверьте, правильно ли AI понял ваш товар --
+    Перед генерацией проверьте, правильно ли AI понял главную проблему товара --
     <a href="/b2b/seller/{{ product.product_id }}/step4">вернуться к шагу 4</a>.
   </div>
   {% endif %}
@@ -39,7 +45,7 @@
 
 <div class="card">
   <form action="/b2b/seller/{{ product.product_id }}/step6/save-draft" method="post" style="display:inline">
-    <button type="submit" class="btn-secondary">Save draft</button>
+    <button type="submit" class="btn-secondary">Сохранить черновик</button>
   </form>
 
   {% if checklist.can_run_dry_run %}

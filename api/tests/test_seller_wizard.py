@@ -73,10 +73,7 @@ class WizardWebTestCase(unittest.TestCase):
         return r.headers["location"].rsplit("/", 2)[-2]
 
     def _step2_upload_n(self, product_id, n=3):
-        slots = ["front_photo", "top_photo", "side_photo", "detail_photo", "packaging_photo"]
-        files = {}
-        for i in range(n):
-            files[slots[i]] = (f"{slots[i]}.png", io.BytesIO(b"fake"), "image/png")
+        files = [("photos", (f"photo{i}.png", io.BytesIO(b"fake"), "image/png")) for i in range(n)]
         r = self.client.post(f"/b2b/seller/{product_id}/step2", files=files, follow_redirects=False)
         self.assertEqual(r.status_code, 303, r.text)
 

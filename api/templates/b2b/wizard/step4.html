@@ -5,67 +5,94 @@
 {% include "wizard/_stepper.html" %}
 
 <h1>Что AI понял про ваш товар</h1>
+<p class="muted">Проверьте, правильно ли система поняла товар. Это основа для будущих видео,
+   статей и описаний.</p>
 
 {% set r = intelligence.report %}
+
+{% if r.match_confidence == "low" %}
+<div class="alert alert-info">
+  AI не уверен на 100%, потому что информации пока мало. Вы можете поправить главную проблему ниже.
+</div>
+{% elif intelligence.approved_by_owner %}
+<div class="alert alert-success">Вы уже подтвердили этот анализ.</div>
+{% endif %}
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Главная проблема покупателя</h2>
+    <p>{{ r.core_problem_solved }}</p>
+  </div>
+  <div class="card">
+    <h2>Кому это особенно нужно</h2>
+    <ul>{% for s in r.ideal_customer_segments[:3] %}<li>{{ s.segment }}</li>{% endfor %}</ul>
+  </div>
+  <div class="card">
+    <h2>Почему товар могут купить</h2>
+    <ul>{% for b in r.product_benefits[:3] %}<li>{{ b.benefit }}</li>{% endfor %}</ul>
+  </div>
+  <div class="card">
+    <h2>Где товар используют</h2>
+    <ul>{% for u in r.use_cases[:3] %}<li>{{ u.scenario }}</li>{% endfor %}</ul>
+  </div>
+</div>
+
+<div class="alert alert-info">
+  Мы хотим, чтобы зритель подумал: &laquo;Да, у меня такая же проблема. Мне это нужно.&raquo;
+</div>
+
+<h2>Как будем рекламировать товар?</h2>
+<div class="grid grid-3">
+  {% for opt in r.ad_strategy_options %}
+  <div class="card">
+    <div class="card-title-row">
+      <b>Вариант {{ loop.index }}. {{ opt.title }}</b>
+      {% if r.selected_ad_strategy == opt.strategy_id %}<span class="badge badge-success">выбрано</span>{% endif %}
+    </div>
+    <p class="muted">{{ opt.main_message }}</p>
+    <p><b>Мысль зрителя:</b> &laquo;{{ opt.viewer_thought }}&raquo;</p>
+    <p><b>Пример хука:</b> {{ opt.example_hook }}</p>
+    <p class="hint">{{ opt.recommended_for }}</p>
+    <form action="/b2b/seller/{{ product.product_id }}/step4/ad-strategy" method="post">
+      <input type="hidden" name="strategy_id" value="{{ opt.strategy_id }}">
+      <button type="submit" class="btn-secondary">Выбрать вариант {{ loop.index }}</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+
 <div class="card">
   <div class="card-title-row">
-    <span class="badge">{{ r.match_confidence }} confidence</span>
-    {% if intelligence.approved_by_owner %}
-    <span class="badge badge-success">approved</span>
-    {% else %}
-    <span class="badge badge-warning">не подтверждено</span>
-    {% endif %}
+    <b>Тестировать все варианты</b>
+    {% if r.selected_ad_strategy == "multi_angle_test" %}<span class="badge badge-success">выбрано</span>{% endif %}
   </div>
-  <p class="muted">{{ r.confidence_notes }}</p>
-
-  <p><b>Главная проблема, которую решает товар:</b> {{ r.core_problem_solved }}</p>
-  <p><b>Для кого товар особенно полезен:</b>
-     {{ r.ideal_customer_segments[0].segment if r.ideal_customer_segments else "-" }}</p>
-
-  <p><b>Топ-3 боли покупателя:</b></p>
-  <ul>{% for p in r.pain_points[:3] %}<li>{{ p.pain }}</li>{% endfor %}</ul>
-
-  <p><b>Топ-3 выгоды:</b></p>
-  <ul>{% for b in r.product_benefits[:3] %}<li>{{ b.benefit }}</li>{% endfor %}</ul>
-
-  <p><b>Топ-3 сценария использования:</b></p>
-  <ul>{% for u in r.use_cases[:3] %}<li>{{ u.scenario }}</li>{% endfor %}</ul>
-
-  <p><b>Возражения:</b></p>
-  <ul>{% for o in r.likely_objections %}<li>{{ o.objection }}</li>{% endfor %}</ul>
-
-  <p><b>Идеи хуков:</b></p>
-  <ul>{% for h in r.hook_angles %}<li>[{{ h.angle_type }}] {{ h.hook }} {% if not h.enabled %}<span class="badge badge-muted">disabled</span>{% endif %}</li>{% endfor %}</ul>
-
-  <p><b>Идеи видео:</b></p>
-  <ul>{% for v in r.video_message_angles %}<li>{{ v.angle }}</li>{% endfor %}</ul>
-
-  <p><b>Мысль, которую должен поймать зритель:</b><br>
-     &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
-  <div class="alert alert-info">
-    Мы хотим, чтобы зритель подумал: &laquo;Да, у меня такая же проблема. Мне это нужно.&raquo;
-  </div>
+  <p class="muted">Так система сделает несколько типов видео, и вы увидите, какой угол лучше
+     работает. Рекомендуется для MVP.</p>
+  <form action="/b2b/seller/{{ product.product_id }}/step4/ad-strategy" method="post">
+    <input type="hidden" name="strategy_id" value="multi_angle_test">
+    <button type="submit">Тестировать все варианты</button>
+  </form>
 </div>
 
 <div class="card">
   <h2>Действия</h2>
   <form action="/b2b/seller/{{ product.product_id }}/step4/approve" method="post" style="display:inline">
     <input type="hidden" name="approval_notes" value="approved in onboarding wizard">
-    <button type="submit">Approve AI analysis</button>
+    <button type="submit">Подтвердить AI-анализ</button>
   </form>
   <form action="/b2b/seller/{{ product.product_id }}/step4/regenerate" method="post" style="display:inline">
-    <button type="submit" class="btn-secondary">Regenerate from product info</button>
+    <button type="submit" class="btn-secondary">Пересобрать анализ</button>
   </form>
 
   <form action="/b2b/seller/{{ product.product_id }}/step4/primary-problem" method="post">
-    <label>Edit primary problem
+    <label>Поправить главную проблему
       <textarea name="problem_text" rows="2">{{ r.core_problem_solved }}</textarea>
     </label>
-    <button type="submit" class="btn-secondary">Save primary problem</button>
+    <button type="submit" class="btn-secondary">Сохранить проблему</button>
   </form>
 
   <form action="/b2b/seller/{{ product.product_id }}/step4/positioning-mode" method="post">
-    <label>Mark product as
+    <label>Тип продвижения
       <select name="mode" onchange="this.form.submit()">
         {% for m in positioning_modes %}
         <option value="{{ m }}" {% if m == r.positioning_mode %}selected{% endif %}>{{ positioning_mode_labels.get(m, m) }}</option>
@@ -74,16 +101,18 @@
     </label>
   </form>
 
-  <p class="hint">Disable irrelevant hook:</p>
-  {% for h in r.hook_angles %}
-  <form action="/b2b/seller/{{ product.product_id }}/step4/hook-toggle" method="post" style="display:inline">
-    <input type="hidden" name="index" value="{{ loop.index0 }}">
-    <input type="hidden" name="enabled" value="{{ 'false' if h.enabled else 'true' }}">
-    <button type="submit" class="btn-secondary" style="margin:2px;padding:4px 10px;font-weight:400;">
-      {{ "disable" if h.enabled else "enable" }}: {{ h.hook[:40] }}...
-    </button>
-  </form>
-  {% endfor %}
+  <details>
+    <summary>Идеи хуков (дополнительно)</summary>
+    {% for h in r.hook_angles %}
+    <form action="/b2b/seller/{{ product.product_id }}/step4/hook-toggle" method="post" style="display:inline">
+      <input type="hidden" name="index" value="{{ loop.index0 }}">
+      <input type="hidden" name="enabled" value="{{ 'false' if h.enabled else 'true' }}">
+      <button type="submit" class="btn-secondary" style="margin:2px;padding:4px 10px;font-weight:400;">
+        {{ "Отключить неподходящий хук" if h.enabled else "Включить хук" }}: {{ h.hook[:40] }}...
+      </button>
+    </form>
+    {% endfor %}
+  </details>
 </div>
 
 <p>

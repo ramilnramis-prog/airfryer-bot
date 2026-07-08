@@ -35,14 +35,10 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 REPO_ROOT = str(ROOT)
 
-# STEP 2 upload slots -> reference role
-REFERENCE_UPLOAD_SLOTS = (
-    ("front_photo", "front", "Фото товара спереди"),
-    ("top_photo", "top", "Фото сверху"),
-    ("side_photo", "side", "Фото сбоку"),
-    ("detail_photo", "detail", "Фото деталей / ручки / текстура"),
-    ("packaging_photo", "packaging", "Фото упаковки (если есть)"),
-)
+# STEP 2 -- one multi-file upload; roles auto-assigned by upload order so the
+# seller never has to pick a role manually. Continues across multiple
+# upload batches (role assignment looks at how many references already exist).
+REFERENCE_ROLE_ASSIGNMENT_ORDER = ("front", "top", "side", "detail", "packaging")
 
 # STEP 3 tone_preference options -- human-readable labels, backend values unchanged.
 TONE_PREFERENCE_OPTIONS = ("calm", "emotional", "expert", "funny", "premium", "simple")
@@ -141,54 +137,31 @@ def step1_submit(
 def step2_form(request: Request, product_id: str):
     product = _require_product(product_id)
     refs = st.load_references(product.client_id, product_id, REPO_ROOT)
-    refs_by_role = {}
-    for r in refs:
-        refs_by_role.setdefault(r.role, []).append(r)
     return templates.TemplateResponse(request, "wizard/step2.html", {
-        "product": product, "slots": REFERENCE_UPLOAD_SLOTS, "refs_by_role": refs_by_role,
-        "references": refs,
+        "product": product, "references": refs, "uploaded_count": len(refs),
     })
 
 
 @router.post("/{product_id}/step2")
-async def step2_submit(
-    product_id: str,
-    front_photo: UploadFile = File(default=None),
-    top_photo: UploadFile = File(default=None),
-    side_photo: UploadFile = File(default=None),
-    detail_photo: UploadFile = File(default=None),
-    packaging_photo: UploadFile = File(default=None),
-    additional_photos: list[UploadFile] = File(default=[]),
-):
+async def step2_submit(product_id: str, photos: list[UploadFile] = File(default=[])):
     product = _require_product(product_id)
     client_id = product.client_id
     uploaded_dir = st.references_dir(client_id, product_id, REPO_ROOT) / "uploaded"
     uploaded_dir.mkdir(parents=True, exist_ok=True)
 
-    named_uploads = [
-        (front_photo, "front"), (top_photo, "top"), (side_photo, "side"),
-        (detail_photo, "detail"), (packaging_photo, "packaging"),
-    ]
+    existing_count = len(st.load_references(client_id, product_id, REPO_ROOT))
     saved_count = 0
-    for upload, role in named_uploads:
-        if upload is None or not getattr(upload, "filename", None):
+    for upload in photos or []:
+        if not getattr(upload, "filename", None):
             continue
+        seq_index = existing_count + saved_count
+        role = (REFERENCE_ROLE_ASSIGNMENT_ORDER[seq_index]
+               if seq_index < len(REFERENCE_ROLE_ASSIGNMENT_ORDER) else "other")
         dest = uploaded_dir / upload.filename
         with dest.open("wb") as f:
             shutil.copyfileobj(upload.file, f)
         rel_path = str(dest.relative_to(ROOT)).replace("\\", "/")
         st.add_reference(client_id, product_id, rel_path, role=role,
-                         approved=False, repo_root=REPO_ROOT)
-        saved_count += 1
-
-    for upload in additional_photos or []:
-        if not getattr(upload, "filename", None):
-            continue
-        dest = uploaded_dir / upload.filename
-        with dest.open("wb") as f:
-            shutil.copyfileobj(upload.file, f)
-        rel_path = str(dest.relative_to(ROOT)).replace("\\", "/")
-        st.add_reference(client_id, product_id, rel_path, role="other",
                          approved=False, repo_root=REPO_ROOT)
         saved_count += 1
 
@@ -275,6 +248,7 @@ def step4_form(request: Request, product_id: str):
         "product": product, "intelligence": envelope,
         "positioning_modes": pi.POSITIONING_MODES,
         "positioning_mode_labels": pi.POSITIONING_MODE_LABELS,
+        "ad_strategy_ids": pi.AD_STRATEGY_IDS,
     })
 
 
@@ -322,6 +296,19 @@ def step4_positioning_mode(product_id: str, mode: str = Form(...)):
         pi.set_positioning_mode(product.client_id, product_id, REPO_ROOT, mode)
     except pi.ProductIntelligenceError as e:
         raise HTTPException(422, f"{e.code}: {e}")
+    return RedirectResponse(url=f"/b2b/seller/{product_id}/step4", status_code=303)
+
+
+@router.post("/{product_id}/step4/ad-strategy")
+def step4_ad_strategy(product_id: str, strategy_id: str = Form(...)):
+    product = _require_product(product_id)
+    try:
+        envelope = pi.set_ad_strategy(product.client_id, product_id, REPO_ROOT, strategy_id)
+    except pi.ProductIntelligenceError as e:
+        raise HTTPException(422, f"{e.code}: {e}")
+    si.update_seller_intake(product.client_id, product_id, REPO_ROOT, product_intelligence_summary={
+        "selected_ad_strategy": envelope["report"]["selected_ad_strategy"],
+    })
     return RedirectResponse(url=f"/b2b/seller/{product_id}/step4", status_code=303)
 
 

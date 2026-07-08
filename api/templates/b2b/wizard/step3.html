@@ -10,41 +10,48 @@
 
 <div class="card">
   <form action="/b2b/seller/{{ product.product_id }}/step3" method="post">
-    <label>Кто покупает этот товар?
-      <textarea name="who_is_this_for" rows="2">{{ product.who_is_this_for }}</textarea>
+    <label>Кто обычно покупает этот товар?
+      <textarea name="who_is_this_for" rows="2"
+        placeholder="Например: женщины 25-55, владельцы аэрогрилей, готовят дома, хотят меньше возиться с уборкой.">{{ product.who_is_this_for }}</textarea>
     </label>
-    <label>Какую бытовую проблему он решает?
-      <textarea name="what_problem_does_it_usually_solve" rows="2">{{ product.what_problem_does_it_usually_solve }}</textarea>
+    <label>Какую главную проблему или желание решает товар?
+      <textarea name="what_problem_does_it_usually_solve" rows="2"
+        placeholder="Например: после готовки сложно мыть чашу аэрогриля; хочется готовить аккуратнее; нужно быстро навести порядок.">{{ product.what_problem_does_it_usually_solve }}</textarea>
     </label>
-    <label>Почему человек должен подумать &laquo;Да, мне это нужно&raquo;?
-      <textarea name="why_people_buy_it" rows="2">{{ product.why_people_buy_it }}</textarea>
+    <label>Почему человек должен выбрать именно этот товар?
+      <textarea name="why_people_buy_it" rows="2"
+        placeholder="Например: удобная форма, подходит для разных блюд, проще мыть, аккуратно выглядит, хорошая цена.">{{ product.why_people_buy_it }}</textarea>
     </label>
-    <label>Топ-3 выгоды (через запятую)
-      <textarea name="top_3_benefits" rows="2">{{ product.top_3_benefits }}</textarea>
-    </label>
-    <label>Сценарии использования (через запятую)
-      <textarea name="use_cases" rows="2">{{ product.use_cases }}</textarea>
-    </label>
-    <label>Частые вопросы (через запятую)
-      <textarea name="common_questions" rows="2">{{ product.common_questions }}</textarea>
-    </label>
-    <label>Возражения покупателей (через запятую)
-      <textarea name="objections" rows="2">{{ product.objections }}</textarea>
-    </label>
-    <label>Что нельзя обещать в рекламе?
-      <textarea name="what_should_not_be_claimed" rows="2">{{ product.what_should_not_be_claimed }}</textarea>
-    </label>
-    <label>Тон коммуникации
-      <select name="tone_preference">
-        <option value="">-- не указано --</option>
-        {% for t in tone_options %}
-        <option value="{{ t }}" {% if t == product.tone_preference %}selected{% endif %}>{{ tone_labels.get(t, t) }}</option>
-        {% endfor %}
-      </select>
-    </label>
+
+    <details>
+      <summary>Дополнительно, если хотите уточнить</summary>
+      <label>Топ-3 выгоды (через запятую)
+        <textarea name="top_3_benefits" rows="2">{{ product.top_3_benefits }}</textarea>
+      </label>
+      <label>Сценарии использования (через запятую)
+        <textarea name="use_cases" rows="2">{{ product.use_cases }}</textarea>
+      </label>
+      <label>Частые вопросы покупателей (через запятую)
+        <textarea name="common_questions" rows="2">{{ product.common_questions }}</textarea>
+      </label>
+      <label>Возражения покупателей (через запятую)
+        <textarea name="objections" rows="2">{{ product.objections }}</textarea>
+      </label>
+      <label>Что нельзя обещать в рекламе?
+        <textarea name="what_should_not_be_claimed" rows="2">{{ product.what_should_not_be_claimed }}</textarea>
+      </label>
+      <label>Тон коммуникации
+        <select name="tone_preference">
+          <option value="">-- не указано --</option>
+          {% for t in tone_options %}
+          <option value="{{ t }}" {% if t == product.tone_preference %}selected{% endif %}>{{ tone_labels.get(t, t) }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </details>
 
     <button type="submit">Далее: AI-анализ товара &raquo;</button>
   </form>
 </div>
-<p><a href="/b2b/seller/{{ product.product_id }}/step2">&laquo; Назад: Фото товара</a></p>
+<p><a href="/b2b/seller/{{ product.product_id }}/step2">&laquo; Назад</a></p>
 {% endblock %}

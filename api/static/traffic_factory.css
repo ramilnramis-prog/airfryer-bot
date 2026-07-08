@@ -170,6 +170,15 @@ input, select, textarea {
   background: #fff; color: var(--tf-navy); border: 1px solid var(--tf-border);
   border-radius: 8px; font-size: 14px; font-family: inherit;
 }
+details {
+  margin-top: 16px; border: 1px solid var(--tf-border); border-radius: 8px;
+  padding: 10px 14px; background: var(--tf-bg);
+}
+details summary {
+  cursor: pointer; font-weight: 600; font-size: 13px; color: var(--tf-navy);
+}
+details[open] summary { margin-bottom: 8px; }
+
 input:focus, select:focus, textarea:focus {
   outline: none; border-color: var(--tf-blue);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);

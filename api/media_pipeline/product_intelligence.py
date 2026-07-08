@@ -29,6 +29,11 @@ from . import b2b_storage as st
 
 POSITIONING_MODES = ("pain", "desire", "comfort", "status", "emotion")
 
+# selected_ad_strategy values -- the first 3 correspond to ad_strategy_options[*]
+# .strategy_id in every category template; multi_angle_test is the MVP default
+# recommendation (test all three angles instead of committing to one).
+AD_STRATEGY_IDS = ("pain_problem", "demo_use_case", "benefit_convenience", "multi_angle_test")
+
 # Human-readable labels for seller-facing UI -- backend values unchanged.
 POSITIONING_MODE_LABELS = {
     "pain": "Решение боли",
@@ -186,6 +191,24 @@ CATEGORY_TEMPLATES = {
             "recommended_content_mix": {"pain_problem": 30, "problem_solution": 25, "demo": 20,
                                         "recipe_or_use_case": 15, "ugc_style": 5, "meme_style": 5},
             "positioning_mode": "pain",
+            "ad_strategy_options": [
+                {"strategy_id": "pain_problem", "title": "Через боль",
+                 "main_message": "Показываем проблему покупателя и сразу даём решение.",
+                 "viewer_thought": "Да, у меня тоже после готовки грязная чаша.",
+                 "example_hook": "Опять мыть аэрогриль после курицы?",
+                 "recommended_for": "Тем, кто уже сталкивался с этой проблемой и ищет решение"},
+                {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+                 "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+                 "viewer_thought": "Понятно, как это работает.",
+                 "example_hook": "Вот как я готовлю курицу, чтобы потом меньше отмывать чашу.",
+                 "recommended_for": "Тем, кто хочет сначала увидеть, как это работает"},
+                {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+                 "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                                 "делает процесс приятнее.",
+                 "viewer_thought": "Это удобно, надо попробовать.",
+                 "example_hook": "Маленькая форма, которая делает готовку в аэрогриле аккуратнее.",
+                 "recommended_for": "Тем, кто ценит удобство и аккуратность"},
+            ],
         },
     },
     "flashlight": {
@@ -282,6 +305,24 @@ CATEGORY_TEMPLATES = {
             "recommended_content_mix": {"pain_problem": 25, "problem_solution": 25, "demo": 30,
                                         "recipe_or_use_case": 10, "ugc_style": 5, "meme_style": 5},
             "positioning_mode": "pain",
+            "ad_strategy_options": [
+                {"strategy_id": "pain_problem", "title": "Через боль",
+                 "main_message": "Показываем проблему покупателя и сразу даём решение.",
+                 "viewer_thought": "Да, обычный фонарик светит слабо/садится быстро.",
+                 "example_hook": "Фонарик, который реально выручает в темноте.",
+                 "recommended_for": "Тем, кого уже подводил слабый фонарик"},
+                {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+                 "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+                 "viewer_thought": "Вижу, как далеко он светит.",
+                 "example_hook": "Показываю, как этот фонарик светит ночью.",
+                 "recommended_for": "Тем, кто хочет увидеть реальную дальность света"},
+                {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+                 "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                                 "делает процесс приятнее.",
+                 "viewer_thought": "Такой удобно держать в машине/на даче.",
+                 "example_hook": "Одна вещь, которую стоит держать в машине.",
+                 "recommended_for": "Тем, кто хочет всегда иметь под рукой надёжный источник света"},
+            ],
         },
     },
     "organizer_container": {
@@ -372,6 +413,24 @@ CATEGORY_TEMPLATES = {
             "recommended_content_mix": {"pain_problem": 20, "problem_solution": 20, "demo": 30,
                                         "recipe_or_use_case": 15, "ugc_style": 10, "meme_style": 5},
             "positioning_mode": "pain",
+            "ad_strategy_options": [
+                {"strategy_id": "pain_problem", "title": "Через боль",
+                 "main_message": "Показываем проблему покупателя и сразу даём решение.",
+                 "viewer_thought": "Да, у меня дома тоже такой бардак.",
+                 "example_hook": "Опять не могу найти нужную вещь в этом ящике?",
+                 "recommended_for": "Тем, кто уже устал от беспорядка и активно ищет решение"},
+                {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+                 "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+                 "viewer_thought": "Понятно, как это организовать.",
+                 "example_hook": "Вот как я навела порядок в ящике за 60 секунд.",
+                 "recommended_for": "Тем, кто хочет сначала увидеть результат вживую"},
+                {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+                 "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                                 "делает процесс приятнее.",
+                 "viewer_thought": "Это удобно, надо попробовать.",
+                 "example_hook": "Органайзер, после которого я перестала терять вещи.",
+                 "recommended_for": "Тем, кто ценит порядок и эстетику"},
+            ],
         },
     },
     "kitchen_accessory_generic": {
@@ -458,6 +517,24 @@ CATEGORY_TEMPLATES = {
             "recommended_content_mix": {"pain_problem": 25, "problem_solution": 25, "demo": 25,
                                         "recipe_or_use_case": 15, "ugc_style": 5, "meme_style": 5},
             "positioning_mode": "pain",
+            "ad_strategy_options": [
+                {"strategy_id": "pain_problem", "title": "Через боль",
+                 "main_message": "Показываем проблему покупателя и сразу даём решение.",
+                 "viewer_thought": "Да, у меня та же морока на кухне каждый день.",
+                 "example_hook": "Вот что бесит в готовке на обычной кухне.",
+                 "recommended_for": "Тем, кто уже сталкивается с этим неудобством регулярно"},
+                {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+                 "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+                 "viewer_thought": "Так вот как это работает.",
+                 "example_hook": "Показываю, как этот аксессуар упрощает привычную задачу.",
+                 "recommended_for": "Тем, кто хочет увидеть процесс своими глазами"},
+                {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+                 "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                                 "делает процесс приятнее.",
+                 "viewer_thought": "Это реально экономит время, надо попробовать.",
+                 "example_hook": "Маленький аксессуар, который экономит мне полчаса каждый день.",
+                 "recommended_for": "Тем, кто ценит скорость и простоту на кухне"},
+            ],
         },
     },
     "beauty_selfcare_accessory": {
@@ -544,6 +621,24 @@ CATEGORY_TEMPLATES = {
             "recommended_content_mix": {"pain_problem": 20, "problem_solution": 25, "demo": 30,
                                         "recipe_or_use_case": 5, "ugc_style": 15, "meme_style": 5},
             "positioning_mode": "desire",
+            "ad_strategy_options": [
+                {"strategy_id": "pain_problem", "title": "Через боль",
+                 "main_message": "Показываем проблему покупателя и сразу даём решение.",
+                 "viewer_thought": "Да, обычный уход не даёт такого результата.",
+                 "example_hook": "Почему обычный уход не работает так, как хочется?",
+                 "recommended_for": "Тем, кто уже пробовал обычные способы и разочаровался"},
+                {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+                 "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+                 "viewer_thought": "Вижу результат сразу, это работает.",
+                 "example_hook": "Наношу и показываю результат прямо сейчас.",
+                 "recommended_for": "Тем, кто хочет увидеть эффект до покупки"},
+                {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+                 "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                                 "делает процесс приятнее.",
+                 "viewer_thought": "Это быстро и приятно, надо попробовать.",
+                 "example_hook": "5 минут вместо похода в салон.",
+                 "recommended_for": "Тем, кто ценит удобство и экономию на салонных процедурах"},
+            ],
         },
     },
     "simple_home_utility": {
@@ -632,6 +727,24 @@ CATEGORY_TEMPLATES = {
             "recommended_content_mix": {"pain_problem": 25, "problem_solution": 25, "demo": 25,
                                         "recipe_or_use_case": 10, "ugc_style": 10, "meme_style": 5},
             "positioning_mode": "pain",
+            "ad_strategy_options": [
+                {"strategy_id": "pain_problem", "title": "Через боль",
+                 "main_message": "Показываем проблему покупателя и сразу даём решение.",
+                 "viewer_thought": "Да, у меня та же мелочь постоянно теряется/мешает.",
+                 "example_hook": "Эта мелочь бесит каждый день, а решается за 2 секунды.",
+                 "recommended_for": "Тем, кого уже раздражает эта бытовая мелочь"},
+                {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+                 "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+                 "viewer_thought": "Понятно, куда это девать и как использовать.",
+                 "example_hook": "Показываю, куда обычно теряется эта вещь -- и как это исправить.",
+                 "recommended_for": "Тем, кто хочет сразу понять, как это применить у себя"},
+                {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+                 "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                                 "делает процесс приятнее.",
+                 "viewer_thought": "Удобная мелочь, надо взять себе такую же.",
+                 "example_hook": "Маленькая вещь, которая экономит нервы каждый день.",
+                 "recommended_for": "Тем, кто ценит порядок в мелочах"},
+            ],
         },
     },
 }
@@ -690,6 +803,24 @@ GENERIC_FALLBACK_TEMPLATE = {
         "recommended_content_mix": {"pain_problem": 15, "problem_solution": 15, "demo": 20,
                                     "recipe_or_use_case": 15, "ugc_style": 20, "meme_style": 15},
         "positioning_mode": "pain",
+        "ad_strategy_options": [
+            {"strategy_id": "pain_problem", "title": "Через боль",
+             "main_message": "Показываем проблему покупателя и сразу даём решение.",
+             "viewer_thought": "неизвестно без дополнительных данных",
+             "example_hook": "[Требует ручного заполнения]",
+             "recommended_for": "Требуется уточнение от владельца"},
+            {"strategy_id": "demo_use_case", "title": "Через демонстрацию",
+             "main_message": "Показываем товар в действии: как он используется и чем помогает.",
+             "viewer_thought": "неизвестно без дополнительных данных",
+             "example_hook": "[Требует ручного заполнения]",
+             "recommended_for": "Требуется уточнение от владельца"},
+            {"strategy_id": "benefit_convenience", "title": "Через выгоду / удобство",
+             "main_message": "Показываем, как товар экономит время, упрощает жизнь или "
+                             "делает процесс приятнее.",
+             "viewer_thought": "неизвестно без дополнительных данных",
+             "example_hook": "[Требует ручного заполнения]",
+             "recommended_for": "Требуется уточнение от владельца"},
+        ],
     },
 }
 
@@ -809,6 +940,9 @@ def analyze_product_intelligence(product_data: dict) -> dict:
             f"проверьте и одобрите вручную перед использованием в контенте."
         )
     report["needs_owner_review"] = True
+    # MVP default recommendation: test all three ad-strategy angles rather than
+    # committing to one -- owner can pick a single angle later via set_ad_strategy.
+    report.setdefault("selected_ad_strategy", "multi_angle_test")
 
     _apply_manual_overrides(report, product_data)
 
@@ -910,6 +1044,19 @@ def set_positioning_mode(client_id: str, product_id: str, repo_root: str = ".",
                                        f"mode must be one of {POSITIONING_MODES}, got {mode!r}")
     envelope = _load_or_error(client_id, product_id, repo_root)
     envelope["report"]["positioning_mode"] = mode
+    envelope["manual_override_present"] = True
+    _save_envelope(envelope, client_id, product_id, repo_root)
+    return envelope
+
+
+def set_ad_strategy(client_id: str, product_id: str, repo_root: str = ".",
+                    strategy_id: str = "") -> dict:
+    if strategy_id not in AD_STRATEGY_IDS:
+        raise ProductIntelligenceError("UNKNOWN_AD_STRATEGY",
+                                       f"strategy_id must be one of {AD_STRATEGY_IDS}, "
+                                       f"got {strategy_id!r}")
+    envelope = _load_or_error(client_id, product_id, repo_root)
+    envelope["report"]["selected_ad_strategy"] = strategy_id
     envelope["manual_override_present"] = True
     _save_envelope(envelope, client_id, product_id, repo_root)
     return envelope

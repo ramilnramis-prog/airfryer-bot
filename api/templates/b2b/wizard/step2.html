@@ -5,47 +5,42 @@
 {% include "wizard/_stepper.html" %}
 
 <h1>Загрузите фото товара</h1>
-<p class="muted">Эти фото будут использоваться как визуальный эталон (product references) --
-   система будет сохранять именно этот внешний вид товара во всех сгенерированных сценах.
-   Загружайте только сам товар.</p>
+<p class="muted">Добавьте 3-8 фото товара. Можно выбрать сразу несколько файлов.</p>
 
 <div class="alert alert-info">
-  Не загружайте кухню, людей, руки, еду, старые рекламные картинки или сгенерированные
-  изображения. Минимум 3 фото товара, лучше 5-8.
+  Загружайте только сам товар: разные ракурсы, детали, упаковку. Не загружайте кухню, людей,
+  руки, еду, старые рекламные картинки или сгенерированные изображения.
 </div>
 
-<form action="/b2b/seller/{{ product.product_id }}/step2" method="post" enctype="multipart/form-data">
-  <div class="upload-grid">
-    {% for field_name, role, label in slots %}
-    <div class="upload-card {% if refs_by_role.get(role) %}filled{% endif %}">
-      <div class="upload-label">{{ label }}</div>
-      <input type="file" name="{{ field_name }}" accept="image/*">
-      {% if refs_by_role.get(role) %}
-      <p class="hint">Уже загружено: {% for r in refs_by_role[role] %}{{ r.file_path.split('/')[-1] }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
-      {% endif %}
-    </div>
-    {% endfor %}
-    <div class="upload-card">
-      <div class="upload-label">Дополнительные фото</div>
-      <input type="file" name="additional_photos" multiple accept="image/*">
-    </div>
-  </div>
+<div class="card">
+  <form action="/b2b/seller/{{ product.product_id }}/step2" method="post" enctype="multipart/form-data">
+    <label>Фото товара
+      <input type="file" name="photos" multiple accept="image/*">
+    </label>
 
-  <button type="submit">Далее: Покупатель и позиционирование &raquo;</button>
-</form>
+    {% if uploaded_count == 0 %}
+    <div class="alert alert-error">Пока не загружено ни одного фото.</div>
+    {% elif uploaded_count < 3 %}
+    <div class="alert alert-error">Лучше загрузить минимум 3 фото, чтобы AI лучше сохранил
+      внешний вид товара. Сейчас загружено: {{ uploaded_count }}.</div>
+    {% else %}
+    <div class="alert alert-success">Загружено {{ uploaded_count }} фото -- достаточно для продолжения.</div>
+    {% endif %}
+
+    <button type="submit">Далее: Покупатель и позиционирование &raquo;</button>
+  </form>
+</div>
 
 {% if references %}
 <div class="card">
   <h2>Уже загружено ({{ references|length }})</h2>
-  <div class="tf-table-wrap">
-  <table>
-    <tr><th>file</th><th>role</th><th>status</th></tr>
+  <ul class="checklist">
     {% for r in references %}
-    <tr><td>{{ r.file_path }}</td><td>{{ r.role }}</td>
-        <td>{% if r.approved %}<span class="badge badge-success">approved</span>{% else %}<span class="badge badge-warning">pending_review</span>{% endif %}</td></tr>
+    <li class="done"><span class="tick">✓</span> фото {{ loop.index }} -- загружено
+      {% if r.approved %}<span class="badge badge-success">approved</span>{% else %}<span class="badge badge-warning">pending_review</span>{% endif %}
+    </li>
     {% endfor %}
-  </table>
-  </div>
+  </ul>
 </div>
 {% endif %}
 {% endblock %}
