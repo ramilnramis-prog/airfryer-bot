@@ -212,14 +212,14 @@ class TestStep6ChecklistRussian(WizardTestCase):
         r = self.client.get(f"/b2b/seller/{product_id}/step6")
         self.assertEqual(r.status_code, 200)
         for label in ("Информация о товаре заполнена", "Артикул или ссылка добавлены",
-                     "Загружено минимум 3 фото товара", "Фото товара проверены",
+                     "Загружено минимум 3 фото товара", "Фото товара загружены",
                      "Покупатель и проблема описаны", "AI-анализ товара готов",
                      "Главная проблема подтверждена", "Площадки выбраны",
                      "Период пакета выбран"):
             self.assertIn(label, r.text)
         for old_label in ("product info complete", "marketplace article/link present",
                          "at least 3 uploaded product references",
-                         "at least 3 approved product references"):
+                         "at least 3 approved product references", "Фото товара проверены"):
             self.assertNotIn(old_label, r.text)
 
 
@@ -227,9 +227,26 @@ class TestStep6HumanReadableWarning(WizardTestCase):
     def test_warning_is_human_readable(self):
         product_id = self._step1()
         r = self.client.get(f"/b2b/seller/{product_id}/step6")
-        self.assertIn("Нужно проверить и подтвердить минимум", r.text)
-        self.assertIn("Открыть страницу товара", r.text)
+        self.assertIn("Нужно загрузить хотя бы 1 фото товара, чтобы продолжить", r.text)
+        self.assertIn("Загрузить фото товара", r.text)
         self.assertNotIn("Одобрить фото можно на странице товара:", r.text)
+        self.assertNotIn("Фото уже загружены, но их нужно подтвердить", r.text)
+
+    def test_quality_note_for_one_or_two_uploaded_not_blocking(self):
+        product_id = self._step1()
+        files = [("photos", ("p1.png", io.BytesIO(b"fake"), "image/png"))]
+        self.client.post(f"/b2b/seller/{product_id}/step2", files=files, follow_redirects=False)
+        r = self.client.get(f"/b2b/seller/{product_id}/step6")
+        self.assertIn("Фото товара загружены. Можно продолжить", r.text)
+        self.assertIn("рекомендуем добавить", r.text)
+        self.assertNotIn("disabled", r.text)
+
+    def test_green_status_for_three_or_more_uploaded(self):
+        product_id = self._step1()
+        files = [("photos", (f"p{i}.png", io.BytesIO(b"fake"), "image/png")) for i in range(3)]
+        self.client.post(f"/b2b/seller/{product_id}/step2", files=files, follow_redirects=False)
+        r = self.client.get(f"/b2b/seller/{product_id}/step6")
+        self.assertIn("Фото товара загружены. Этого достаточно для старта.", r.text)
 
 
 class TestBackendStillStoresCorrectData(WizardTestCase):

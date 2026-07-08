@@ -358,7 +358,8 @@ def step6_form(request: Request, product_id: str, saved: str = None):
     intelligence = pi.load_product_intelligence(product.client_id, product_id, REPO_ROOT)
     return templates.TemplateResponse(request, "wizard/step6.html", {
         "product": product, "checklist": checklist, "intelligence": intelligence,
-        "min_refs": pol.MIN_APPROVED_REFERENCES, "saved": bool(saved),
+        "min_refs": pol.MIN_SELLER_FLOW_REFERENCES,
+        "recommended_refs": pol.RECOMMENDED_REFERENCE_RANGE, "saved": bool(saved),
     })
 
 
@@ -374,8 +375,8 @@ def step6_run_dry_run(product_id: str):
     product = _require_product(product_id)
     checklist = si.build_readiness_checklist(product.client_id, product_id, REPO_ROOT)
     if not checklist["can_run_dry_run"]:
-        raise HTTPException(422, "NOT_ENOUGH_APPROVED_REFERENCES: need at least "
-                                 f"{pol.MIN_APPROVED_REFERENCES} approved product references")
+        raise HTTPException(422, "NOT_ENOUGH_UPLOADED_REFERENCES: need at least "
+                                 f"{pol.MIN_SELLER_FLOW_REFERENCES} uploaded product photo")
     intake = si.load_seller_intake(product.client_id, product_id, REPO_ROOT) or {}
     campaign = _get_or_create_wizard_campaign(product, intake.get("content_package_settings", {}))
     try:
@@ -390,8 +391,8 @@ def step6_create_package(product_id: str):
     product = _require_product(product_id)
     checklist = si.build_readiness_checklist(product.client_id, product_id, REPO_ROOT)
     if not checklist["can_run_dry_run"]:
-        raise HTTPException(422, "NOT_ENOUGH_APPROVED_REFERENCES: need at least "
-                                 f"{pol.MIN_APPROVED_REFERENCES} approved product references")
+        raise HTTPException(422, "NOT_ENOUGH_UPLOADED_REFERENCES: need at least "
+                                 f"{pol.MIN_SELLER_FLOW_REFERENCES} uploaded product photo")
     intake = si.load_seller_intake(product.client_id, product_id, REPO_ROOT) or {}
     campaign = _get_or_create_wizard_campaign(product, intake.get("content_package_settings", {}))
     try:

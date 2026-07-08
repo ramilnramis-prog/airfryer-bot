@@ -36,20 +36,26 @@ DZEN_ARTICLE_TYPES = ("problem_solution", "recipe", "lifehack", "soft_ad", "comp
 
 
 def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
-                           repo_root: str = ".") -> dict:
+                           repo_root: str = ".", strict_approved_refs_required: bool = False) -> dict:
     client = st.load_client(client_id, repo_root)
     product = st.load_product(client_id, product_id, repo_root)
     campaign = st.load_campaign(client_id, product_id, campaign_id, repo_root)
 
     # Fail-closed reference gate -- raises B2BReferencePolicyError (never
     # silently substitutes a placeholder) if references are missing/invalid.
-    approved_refs = pol.assert_campaign_generation_allowed(client_id, product_id, repo_root)
-    ref_paths = [r.file_path for r in approved_refs]
+    # Default (strict_approved_refs_required=False) is the seller MVP policy:
+    # >=1 uploaded reference is enough, manual approval is not required to
+    # unblock a seller's own dry-run. Pass strict=True for the admin-only
+    # policy requiring >=3 approved references.
+    usable_refs = pol.assert_campaign_generation_allowed(
+        client_id, product_id, repo_root, strict_approved_refs_required=strict_approved_refs_required)
+    ref_paths = [r.file_path for r in usable_refs]
     forbidden_scan = pol.scan_reference_images_list(ref_paths, repo_root)
+    reference_quality = pol.build_reference_quality(client_id, product_id, repo_root)
 
     all_refs = st.load_references(client_id, product_id, repo_root)
-    approved_paths = {r.file_path for r in approved_refs}
-    rejected_refs = [r for r in all_refs if r.file_path not in approved_paths]
+    usable_paths = {r.file_path for r in usable_refs}
+    rejected_refs = [r for r in all_refs if r.file_path not in usable_paths]
 
     # Product Intelligence Engine -- auto-generate if missing so the dry-run
     # always has a hypothesis to plan around; zero external API calls (local
@@ -113,14 +119,18 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
 
     safety_policy_summary = {
         "policy": "B2B_PRODUCT_REFERENCE_ONLY_POLICY",
+        "strict_approved_refs_required": strict_approved_refs_required,
         "min_approved_references": pol.MIN_APPROVED_REFERENCES,
-        "approved_references_count": len(approved_refs),
+        "min_seller_flow_references": pol.MIN_SELLER_FLOW_REFERENCES,
+        "usable_references_count": len(usable_refs),
         "rejected_references_count": len(rejected_refs),
         "forbidden_path_markers": list(pol.FORBIDDEN_PATH_MARKERS),
         "fails_closed": True,
-        "note": ("Generated outputs can never become product references automatically; "
-                "every reference used here was uploaded and explicitly approved by the "
-                "seller/admin, never a generated/candidate image."),
+        "note": ("Generated outputs can never become product references automatically -- "
+                "every reference used here was uploaded by the seller, never a "
+                "generated/candidate image. Manual approval is an optional admin quality "
+                "signal, not a hard requirement for the seller flow (strict_approved_refs_"
+                "required=False by default)."),
     }
 
     plan = {
@@ -128,8 +138,9 @@ def build_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
         "client": asdict(client),
         "product": asdict(product),
         "campaign": asdict(campaign),
-        "references_used": [asdict(r) for r in approved_refs],
+        "references_used": [asdict(r) for r in usable_refs],
         "references_rejected": [asdict(r) for r in rejected_refs],
+        "reference_quality": reference_quality,
         "forbidden_refs_scan": forbidden_scan,
         "safety_policy_summary": safety_policy_summary,
         "product_intelligence": product_intelligence_summary,
@@ -192,6 +203,18 @@ def render_campaign_dry_run_md(plan: dict) -> str:
     if not plan["references_rejected"]:
         lines.append("- (none)")
 
+    rq = plan["reference_quality"]
+    lines += [
+        "",
+        "## Reference quality",
+        "",
+        f"- Uploaded: {rq['uploaded_count']} (approved: {rq['approved_count']})",
+        f"- Minimum required for seller flow: {rq['minimum_required_for_seller_flow']}",
+        f"- Recommended: {rq['recommended_count']}",
+        f"- Quality risk: {rq['quality_risk']}",
+        f"- {rq['notes']}",
+    ]
+
     pi_summary = plan["product_intelligence"]
     lines += [
         "",
@@ -232,10 +255,14 @@ def render_campaign_dry_run_md(plan: dict) -> str:
         "## Safety policy summary",
         "",
         f"- Policy: {plan['safety_policy_summary']['policy']}",
-        f"- Minimum approved references required: "
+        f"- Strict approved-refs mode: "
+        f"{plan['safety_policy_summary']['strict_approved_refs_required']}",
+        f"- Minimum approved references (admin strict mode): "
         f"{plan['safety_policy_summary']['min_approved_references']}",
-        f"- Approved references count: "
-        f"{plan['safety_policy_summary']['approved_references_count']}",
+        f"- Minimum references (seller flow): "
+        f"{plan['safety_policy_summary']['min_seller_flow_references']}",
+        f"- Usable references count: "
+        f"{plan['safety_policy_summary']['usable_references_count']}",
         f"- Rejected references count: "
         f"{plan['safety_policy_summary']['rejected_references_count']}",
         f"- Forbidden path markers: "
@@ -251,8 +278,10 @@ def render_campaign_dry_run_md(plan: dict) -> str:
 
 
 def write_campaign_dry_run(client_id: str, product_id: str, campaign_id: str,
-                           repo_root: str = ".", out_path=None) -> dict:
-    plan = build_campaign_dry_run(client_id, product_id, campaign_id, repo_root)
+                           repo_root: str = ".", out_path=None,
+                           strict_approved_refs_required: bool = False) -> dict:
+    plan = build_campaign_dry_run(client_id, product_id, campaign_id, repo_root,
+                                  strict_approved_refs_required=strict_approved_refs_required)
     gen_dir = st.campaign_generated_dir(client_id, product_id, campaign_id, repo_root)
     gen_dir.mkdir(parents=True, exist_ok=True)
     out = Path(out_path) if out_path else (gen_dir / "campaign-dry-run.json")

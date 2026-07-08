@@ -326,7 +326,7 @@ def campaign_detail(request: Request, campaign_id: str):
         "delivery_kit_exists": delivery_zip.is_file(),
         "delivery_kit_path": str(delivery_zip),
         "generated_subdirs": st.GENERATED_SUBDIRS,
-        "min_refs": pol.MIN_APPROVED_REFERENCES,
+        "min_refs": pol.MIN_SELLER_FLOW_REFERENCES,
         "intelligence": intelligence,
     })
 

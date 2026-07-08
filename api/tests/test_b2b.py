@@ -152,7 +152,7 @@ class TestReferencePolicyRejectsZeroReferences(unittest.TestCase):
                 pol.assert_campaign_generation_allowed("acme", "widget", tmp)
             self.assertEqual(ctx.exception.code, "NO_REFERENCES_UPLOADED")
 
-    def test_below_minimum_approved_fails_closed(self):
+    def test_below_minimum_approved_fails_closed_in_strict_admin_mode(self):
         with tempfile.TemporaryDirectory() as tmp:
             st.save_client(st.Client(client_id="acme", name="Acme"), tmp)
             st.save_product(st.Product(product_id="widget", client_id="acme",
@@ -162,8 +162,21 @@ class TestReferencePolicyRejectsZeroReferences(unittest.TestCase):
             st.add_reference("acme", "widget", str(fake_img), role="front",
                              approved=True, repo_root=tmp)
             with self.assertRaises(pol.B2BReferencePolicyError) as ctx:
-                pol.assert_campaign_generation_allowed("acme", "widget", tmp)
+                pol.assert_campaign_generation_allowed("acme", "widget", tmp,
+                                                       strict_approved_refs_required=True)
             self.assertEqual(ctx.exception.code, "INSUFFICIENT_APPROVED_REFERENCES")
+
+    def test_below_minimum_approved_still_passes_lenient_seller_flow(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            st.save_client(st.Client(client_id="acme", name="Acme"), tmp)
+            st.save_product(st.Product(product_id="widget", client_id="acme",
+                                       product_name="Widget"), tmp)
+            fake_img = Path(tmp) / "fake.png"
+            fake_img.write_bytes(b"fake")
+            st.add_reference("acme", "widget", str(fake_img), role="front",
+                             approved=True, repo_root=tmp)
+            usable = pol.assert_campaign_generation_allowed("acme", "widget", tmp)
+            self.assertEqual(len(usable), 1)
 
 
 class TestReferencePolicyRejectsGeneratedPaths(unittest.TestCase):
@@ -197,7 +210,7 @@ class TestReferencePolicyAcceptsApprovedRefs(unittest.TestCase):
             self.assertTrue(ref.approved)
             self.assertIn(ref.role, st.PRODUCT_REFERENCE_ROLES)
 
-    def test_unapproved_reference_excluded_from_gate(self):
+    def test_unapproved_reference_excluded_from_strict_admin_gate(self):
         with tempfile.TemporaryDirectory() as tmp:
             st.save_client(st.Client(client_id="acme", name="Acme"), tmp)
             st.save_product(st.Product(product_id="widget", client_id="acme",
@@ -208,7 +221,21 @@ class TestReferencePolicyAcceptsApprovedRefs(unittest.TestCase):
                 st.add_reference("acme", "widget", str(img), role="front",
                                  approved=(i < 2), repo_root=tmp)  # only 2 approved
             with self.assertRaises(pol.B2BReferencePolicyError):
-                pol.assert_campaign_generation_allowed("acme", "widget", tmp)
+                pol.assert_campaign_generation_allowed("acme", "widget", tmp,
+                                                       strict_approved_refs_required=True)
+
+    def test_unapproved_reference_still_usable_in_lenient_seller_flow(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            st.save_client(st.Client(client_id="acme", name="Acme"), tmp)
+            st.save_product(st.Product(product_id="widget", client_id="acme",
+                                       product_name="Widget"), tmp)
+            for i in range(3):
+                img = Path(tmp) / f"ref{i}.png"
+                img.write_bytes(b"fake")
+                st.add_reference("acme", "widget", str(img), role="front",
+                                 approved=(i < 2), repo_root=tmp)  # only 2 approved
+            usable = pol.assert_campaign_generation_allowed("acme", "widget", tmp)
+            self.assertEqual(len(usable), 3)
 
 
 class TestDryRunCreatesFile(unittest.TestCase):
@@ -397,16 +424,18 @@ class TestWebProductCreationFlow(unittest.TestCase):
         refs = st.load_references(self.CLIENT_ID, product_id, str(REPO_ROOT))
         self.assertEqual(next(r for r in refs if r.file_path == file_path).role, "top")
 
-    def test_campaign_creation_gated_on_three_approved(self):
+    def test_campaign_dry_run_succeeds_with_uploaded_unapproved_refs_by_default(self):
+        # Seller MVP policy (the default everywhere, including this admin
+        # route): >=1 uploaded reference is enough, manual approval is not
+        # required to unblock a dry-run. See api.media_pipeline.
+        # b2b_reference_policy for the strict-admin opt-in alternative.
         product_id = self._create_product_with_refs()
         r = self.client.post(f"/b2b/products/{product_id}/campaigns/new",
                              data={"campaign_goal": "external_traffic"}, follow_redirects=False)
-        # route itself doesn't gate creation (UI hides the button); the real
-        # gate is the dry-run/delivery-kit fail-closed policy check
         self.assertEqual(r.status_code, 303)
         campaign_id = r.headers["location"].rsplit("/", 1)[-1]
         r = self.client.post(f"/b2b/campaigns/{campaign_id}/dry-run", follow_redirects=False)
-        self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.status_code, 303)
 
     def test_dry_run_succeeds_after_three_approvals(self):
         product_id = self._create_product_with_refs()

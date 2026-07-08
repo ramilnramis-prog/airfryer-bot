@@ -78,10 +78,15 @@
     <h2>Фото товара для сохранения внешнего вида</h2>
     <span class="badge {% if approved_count >= min_refs %}badge-success{% else %}badge-warning{% endif %}">{{ approved_count }}/{{ references|length }} approved</span>
   </div>
+  <div class="alert alert-info">
+    Подтверждение фото нужно для внутренней проверки качества. В клиентском wizard загруженные
+    фото уже считаются рабочими референсами, если это фото самого товара -- одобрение здесь не
+    блокирует запуск проверки контент-пакета или сборку ZIP у селлера.
+  </div>
   {% if not references %}
   <p class="muted">Нет загруженных референсов.</p>
   {% elif approved_count < min_refs %}
-  <div class="alert alert-error">⚠ Одобрено только {{ approved_count }} из {{ min_refs }} минимально необходимых.</div>
+  <div class="alert alert-error">⚠ Одобрено только {{ approved_count }} из {{ min_refs }} минимально необходимых (для внутренней строгой проверки).</div>
   {% endif %}
   {% if references %}
   <div class="tf-table-wrap">

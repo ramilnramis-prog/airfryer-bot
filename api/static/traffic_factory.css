@@ -203,6 +203,7 @@ input:focus, select:focus, textarea:focus {
 .alert-error { background: #fef2f2; color: var(--tf-danger); border: 1px solid #fecaca; }
 .alert-success { background: #f0fdf4; color: var(--tf-success); border: 1px solid #bbf7d0; }
 .alert-info { background: #eff6ff; color: var(--tf-blue); border: 1px solid #bfdbfe; }
+.alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 
 /* -- tables --------------------------------------------------------------------- */
 

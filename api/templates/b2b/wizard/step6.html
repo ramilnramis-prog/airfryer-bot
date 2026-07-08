@@ -15,7 +15,7 @@
     <li class="{{ 'done' if checklist.product_info_complete else '' }}"><span class="tick">{{ "✓" if checklist.product_info_complete else "" }}</span> Информация о товаре заполнена</li>
     <li class="{{ 'done' if checklist.marketplace_article_or_link_present else '' }}"><span class="tick">{{ "✓" if checklist.marketplace_article_or_link_present else "" }}</span> Артикул или ссылка добавлены</li>
     <li class="{{ 'done' if checklist.at_least_3_uploaded_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_uploaded_references else "" }}</span> Загружено минимум 3 фото товара</li>
-    <li class="{{ 'done' if checklist.at_least_3_approved_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_approved_references else "" }}</span> Фото товара проверены</li>
+    <li class="{{ 'done' if checklist.at_least_1_uploaded_reference else '' }}"><span class="tick">{{ "✓" if checklist.at_least_1_uploaded_reference else "" }}</span> Фото товара загружены</li>
     <li class="{{ 'done' if checklist.customer_positioning_present else '' }}"><span class="tick">{{ "✓" if checklist.customer_positioning_present else "" }}</span> Покупатель и проблема описаны</li>
     <li class="{{ 'done' if checklist.product_intelligence_generated else '' }}"><span class="tick">{{ "✓" if checklist.product_intelligence_generated else "" }}</span> AI-анализ товара готов</li>
     <li class="{{ 'done' if checklist.primary_problem_approved else '' }}"><span class="tick">{{ "✓" if checklist.primary_problem_approved else "" }}</span> Главная проблема подтверждена</li>
@@ -23,18 +23,21 @@
     <li class="{{ 'done' if checklist.package_duration_selected else '' }}"><span class="tick">{{ "✓" if checklist.package_duration_selected else "" }}</span> Период пакета выбран</li>
   </ul>
 
-  {% if not checklist.at_least_3_approved_references %}
+  {% if not checklist.at_least_1_uploaded_reference %}
   <div class="alert alert-error">
-    {% if checklist.at_least_3_uploaded_references %}
-    Фото уже загружены, но их нужно подтвердить как фото товара. Это защита от случайных
-    картинок, людей, еды или интерьера.
-    {% else %}
-    Нужно проверить и подтвердить минимум {{ min_refs }} фото товара. Перейдите на страницу
-    товара и отметьте подходящие фото.
-    {% endif %}
-    <br><a href="/b2b/products/{{ product.product_id }}">Открыть страницу товара</a>
+    Нужно загрузить хотя бы 1 фото товара, чтобы продолжить.
+    <br><a href="/b2b/seller/{{ product.product_id }}/step2">Загрузить фото товара</a>
   </div>
+  {% elif checklist.uploaded_count < 3 %}
+  <div class="alert alert-warning">
+    Фото товара загружены. Можно продолжить, но для лучшего результата рекомендуем добавить
+    {{ recommended_refs }} фото товара с разных ракурсов.
+    <br><a href="/b2b/seller/{{ product.product_id }}/step2">Добавить ещё фото</a>
+  </div>
+  {% else %}
+  <div class="alert alert-success">Фото товара загружены. Этого достаточно для старта.</div>
   {% endif %}
+
   {% if intelligence and not intelligence.approved_by_owner %}
   <div class="alert alert-info">
     Перед генерацией проверьте, правильно ли AI понял главную проблему товара --
@@ -58,7 +61,7 @@
   {% else %}
   <button type="button" disabled>Проверить будущий контент-пакет</button>
   <button type="button" disabled>Собрать готовый ZIP с материалами</button>
-  <p class="muted">Нужно минимум {{ min_refs }} одобренных фото товара.</p>
+  <p class="muted">Нужно загрузить хотя бы {{ min_refs }} фото товара.</p>
   {% endif %}
   <p class="hint">&laquo;Проверить будущий контент-пакет&raquo; ничего не генерирует и не тратит
      деньги -- это только план. &laquo;Собрать готовый ZIP с материалами&raquo; формирует архив с

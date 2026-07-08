@@ -50,6 +50,7 @@ MANUAL_OR_AUTOPOST_LABELS = {
 READINESS_CHECKLIST_ITEMS = (
     "product_info_complete",
     "marketplace_article_or_link_present",
+    "at_least_1_uploaded_reference",
     "at_least_3_uploaded_references",
     "at_least_3_approved_references",
     "customer_positioning_present",
@@ -115,12 +116,20 @@ def update_seller_intake(client_id: str, product_id: str, repo_root: str = ".",
 
 
 def build_readiness_checklist(client_id: str, product_id: str, repo_root: str = ".") -> dict:
-    """Recomputes all 9 readiness checklist items from the current state of
+    """Recomputes all readiness checklist items from the current state of
     Product / references / product-intelligence.json / seller-intake content
-    package settings. Never trusts stale cached booleans."""
+    package settings. Never trusts stale cached booleans.
+
+    Seller MVP flow only requires >=1 uploaded product photo to proceed
+    (can_run_dry_run) -- manual admin approval is a separate, non-blocking
+    quality signal (at_least_3_approved_references), not a hard gate. See
+    api.media_pipeline.b2b_reference_policy for the two-mode policy this
+    mirrors."""
     product = st.load_product(client_id, product_id, repo_root)
     refs = st.load_references(client_id, product_id, repo_root)
     approved_refs = [r for r in refs if r.approved]
+    uploaded_count = len(refs)
+    approved_count = len(approved_refs)
     intelligence = pi.load_product_intelligence(client_id, product_id, repo_root)
     intake = load_seller_intake(client_id, product_id, repo_root) or _new_intake()
     settings = intake.get("content_package_settings", {})
@@ -130,8 +139,9 @@ def build_readiness_checklist(client_id: str, product_id: str, repo_root: str = 
             product.product_name and product.category and product.product_description),
         "marketplace_article_or_link_present": bool(
             product.marketplace_article or product.marketplace_url),
-        "at_least_3_uploaded_references": len(refs) >= MIN_UPLOADED_REFERENCES,
-        "at_least_3_approved_references": len(approved_refs) >= pol.MIN_APPROVED_REFERENCES,
+        "at_least_1_uploaded_reference": uploaded_count >= pol.MIN_SELLER_FLOW_REFERENCES,
+        "at_least_3_uploaded_references": uploaded_count >= MIN_UPLOADED_REFERENCES,
+        "at_least_3_approved_references": approved_count >= pol.MIN_APPROVED_REFERENCES,
         "customer_positioning_present": bool(
             product.who_is_this_for or product.what_problem_does_it_usually_solve or
             product.why_people_buy_it),
@@ -139,8 +149,12 @@ def build_readiness_checklist(client_id: str, product_id: str, repo_root: str = 
         "primary_problem_approved": bool(intelligence and intelligence.get("approved_by_owner")),
         "platforms_selected": bool(settings.get("platforms")),
         "package_duration_selected": bool(settings.get("package_duration")),
+        "uploaded_count": uploaded_count,
+        "approved_count": approved_count,
+        "usable_product_reference_count": uploaded_count,
+        "seller_uploaded_reference_count": uploaded_count,
     }
-    checklist["can_run_dry_run"] = checklist["at_least_3_approved_references"]
+    checklist["can_run_dry_run"] = checklist["at_least_1_uploaded_reference"]
     return checklist
 
 

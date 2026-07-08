@@ -143,13 +143,16 @@ def build_campaign_plan_md(plan: dict) -> str:
 
 def build_reference_policy_md(plan: dict) -> str:
     refs = plan["references_used"]
+    rq = plan["reference_quality"]
     lines = [
         "# Политика product references",
         "",
-        f"Минимум одобренных референсов для запуска генерации: "
-        f"{pol.MIN_APPROVED_REFERENCES}.",
+        f"Минимум загруженных фото товара для запуска: {rq['minimum_required_for_seller_flow']} "
+        f"(рекомендуется {rq['recommended_count']} для лучшего качества).",
         "",
-        f"Использовано одобренных референсов в этом плане: {len(refs)}.",
+        f"Использовано референсов в этом плане: {len(refs)} "
+        f"(из них одобрено вручную: {rq['approved_count']}).",
+        f"Оценка качества: {rq['quality_risk']}. {rq['notes']}",
         "",
         "## Использованные референсы",
         "",

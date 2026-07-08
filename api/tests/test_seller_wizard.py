@@ -161,7 +161,19 @@ class TestReferencesDefaultPendingReview(WizardWebTestCase):
 
 
 class TestReadinessChecklistGatesDryRun(WizardWebTestCase):
-    def test_blocks_dry_run_below_threshold(self):
+    def test_blocks_dry_run_with_zero_uploaded_photos(self):
+        product_id = self._step1()
+        self.client.post(f"/b2b/seller/{product_id}/step3", data={}, follow_redirects=False)
+        self.client.post(f"/b2b/seller/{product_id}/step5",
+                         data={"platforms": ["youtube_shorts"], "package_duration": "14_days"},
+                         follow_redirects=False)
+        r = self.client.post(f"/b2b/seller/{product_id}/step6/dry-run", follow_redirects=False)
+        self.assertEqual(r.status_code, 422)
+
+    def test_allows_dry_run_with_uploaded_unapproved_photos(self):
+        # Seller MVP policy: uploaded (not necessarily approved) references
+        # are enough to unblock the dry-run -- this is the exact scenario
+        # that used to incorrectly 422 before the seller-flow policy fix.
         product_id = self._step1()
         self._step2_upload_n(product_id, n=3)  # uploaded but not approved
         self.client.post(f"/b2b/seller/{product_id}/step3", data={}, follow_redirects=False)
@@ -169,7 +181,16 @@ class TestReadinessChecklistGatesDryRun(WizardWebTestCase):
                          data={"platforms": ["youtube_shorts"], "package_duration": "14_days"},
                          follow_redirects=False)
         r = self.client.post(f"/b2b/seller/{product_id}/step6/dry-run", follow_redirects=False)
-        self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.status_code, 303, r.text)
+
+    def test_allows_dry_run_with_single_uploaded_photo(self):
+        product_id = self._step1()
+        self._step2_upload_n(product_id, n=1)
+        self.client.post(f"/b2b/seller/{product_id}/step5",
+                         data={"platforms": ["youtube_shorts"], "package_duration": "14_days"},
+                         follow_redirects=False)
+        r = self.client.post(f"/b2b/seller/{product_id}/step6/dry-run", follow_redirects=False)
+        self.assertEqual(r.status_code, 303, r.text)
 
     def test_allows_dry_run_at_or_above_threshold(self):
         product_id = self._step1()
