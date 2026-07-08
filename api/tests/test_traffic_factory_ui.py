@@ -103,7 +103,7 @@ class TestLandingCTAButtons(UITestCase):
     def test_landing_has_cta_buttons(self):
         r = self.client.get("/traffic-factory/")
         self.assertIn("Создать контент-пакет", r.text)
-        self.assertIn("Посмотреть пример", r.text)
+        self.assertIn("Посмотреть демо на товаре", r.text)
 
 
 class TestStartPageBetaCard(UITestCase):

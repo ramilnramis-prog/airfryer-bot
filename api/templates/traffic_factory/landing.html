@@ -1,45 +1,90 @@
 {% extends "b2b/base.html" %}
 {% block title %}Крутая внешняя реклама{% endblock %}
 {% block content %}
-<div class="hero">
-  <h1>Крутая внешняя реклама для селлеров Ozon/WB</h1>
-  <p>Загрузите фото товара и ссылку на карточку -- система сама поймёт, какую проблему решает
-     товар, и подготовит контент-пакет для внешнего трафика.</p>
+<div class="hero hero-glow">
+  <h1>AI-контент-завод для селлеров Ozon/WB</h1>
+  <p>Загрузите фото товара, ссылку и короткое описание -- система определит главную боль
+     покупателя и подготовит контент-пакет для внешнего трафика: видео, статьи, картинки,
+     описания и план публикаций.</p>
+
+  <div class="hero-badges">
+    <span class="badge">Для Ozon / WB селлеров</span>
+    <span class="badge">Без автопостинга в MVP</span>
+    <span class="badge">ZIP-пакет для ручной публикации</span>
+    <span class="badge">Product references only</span>
+  </div>
+
   <div class="hero-actions">
     <a href="/traffic-factory/start"><button type="button">Создать контент-пакет</button></a>
-    <a href="/traffic-factory/demo"><button type="button" class="btn-secondary">Посмотреть пример</button></a>
+    <a href="/traffic-factory/demo"><button type="button" class="btn-secondary">Посмотреть демо на товаре</button></a>
   </div>
+</div>
+
+<h2>Что нужно от вас</h2>
+<div class="grid grid-4">
+  <div class="card"><div class="card-icon">📷</div><b>Фото товара</b><p class="muted">3-8 фото самого товара: спереди, сверху, сбоку, детали, упаковка.</p></div>
+  <div class="card"><div class="card-icon">🔗</div><b>Ссылка и артикул</b><p class="muted">Ссылка на карточку Ozon/WB, артикул, цена и категория.</p></div>
+  <div class="card"><div class="card-icon">📝</div><b>Короткое описание</b><p class="muted">Что это за товар, для кого он и зачем его покупают.</p></div>
+  <div class="card"><div class="card-icon">🚫</div><b>Ограничения</b><p class="muted">Что нельзя обещать в рекламе: 100% результат, гарантия, подходит всем и т.п.</p></div>
 </div>
 
 <h2>Как это работает</h2>
 <div class="grid grid-3">
-  <div class="card"><b>Шаг 1</b><p class="muted">Загружаете товар</p></div>
-  <div class="card"><b>Шаг 2</b><p class="muted">AI понимает проблему и выгоды</p></div>
-  <div class="card"><b>Шаг 3</b><p class="muted">Система делает видео, статьи, картинки и описания</p></div>
-  <div class="card"><b>Шаг 4</b><p class="muted">Вы получаете ZIP и план публикаций</p></div>
-  <div class="card"><b>Шаг 5</b><p class="muted">Публикуете вручную и отслеживаете результат</p></div>
+  <div class="card"><div class="card-icon">1️⃣</div><b>Загружаете товар</b><p class="muted">Фото товара + ссылка/артикул + короткое описание.</p></div>
+  <div class="card"><div class="card-icon">2️⃣</div><b>AI понимает проблему</b><p class="muted">Система определяет, какую боль решает товар и какую мысль должен поймать зритель.</p></div>
+  <div class="card"><div class="card-icon">3️⃣</div><b>Создаётся контент</b><p class="muted">Видео, хуки, описания, статьи Дзена, картинки и план публикаций.</p></div>
+  <div class="card"><div class="card-icon">4️⃣</div><b>Получаете ZIP</b><p class="muted">Готовые файлы, разложенные по дням и площадкам.</p></div>
+  <div class="card"><div class="card-icon">5️⃣</div><b>Публикуете и отслеживаете</b><p class="muted">Выкладываете вручную и заносите результаты в трекер.</p></div>
 </div>
 
 <h2>Что вы получите</h2>
 <div class="grid grid-4">
-  <div class="card"><span class="badge">видео</span><p>Short videos</p></div>
-  <div class="card"><span class="badge">площадки</span><p>Описания для YouTube Shorts / Reels / TikTok / VK Клипы</p></div>
-  <div class="card"><span class="badge">статьи</span><p>Статьи для Дзена</p></div>
-  <div class="card"><span class="badge">картинки</span><p>Картинки к статьям</p></div>
-  <div class="card"><span class="badge">план</span><p>План публикаций</p></div>
-  <div class="card"><span class="badge">трекер</span><p>Таблица для отслеживания результатов (performance tracker)</p></div>
-  <div class="card"><span class="badge">архив</span><p>ZIP с материалами (delivery ZIP)</p></div>
+  <div class="card"><div class="card-icon">🎬</div><b>Короткие видео</b><p class="muted">Для YouTube Shorts / Reels / TikTok / VK Клипов.</p></div>
+  <div class="card"><div class="card-icon">✏️</div><b>Описания и хэштеги</b><p class="muted">Отдельно под каждую площадку.</p></div>
+  <div class="card"><div class="card-icon">📰</div><b>Статьи для Дзена</b><p class="muted">Живые статьи с болью, пользой и мягкой интеграцией товара.</p></div>
+  <div class="card"><div class="card-icon">🖼️</div><b>Картинки к статьям</b><p class="muted">Промпты и изображения для публикаций.</p></div>
+  <div class="card"><div class="card-icon">🗓️</div><b>План публикаций</b><p class="muted">Что выкладывать, куда и в какое время.</p></div>
+  <div class="card"><div class="card-icon">📊</div><b>Трекер результатов</b><p class="muted">Таблица для просмотров, реакций, кликов и заказов (performance tracker).</p></div>
+  <div class="card"><div class="card-icon">📦</div><b>ZIP с материалами</b><p class="muted">Готовая папка для ручной публикации (delivery ZIP).</p></div>
 </div>
 
 <div class="card">
   <h2>Почему это не просто генератор картинок</h2>
-  <p><b>Мы не просто генерируем картинки.</b> Сначала система определяет, какую проблему решает
-     товар, кому он нужен и какую мысль должен поймать зритель. Потом на этой основе строятся
-     хуки, видео, статьи и описания.</p>
+  <p><b>Мы не просто генерируем картинки.</b> Сначала система анализирует товар как маркетолог:
+     кому он нужен, какую проблему решает, какие боли и возражения есть у покупателя. Потом на
+     этой основе создаются хуки, видео, статьи и описания.</p>
+  <div class="alert alert-info">
+    Например, для силиконовой формы для аэрогриля система понимает: главная боль -- после
+    готовки сложно мыть чашу. Значит, контент строится вокруг мысли: &laquo;Да, у меня такая же
+    проблема, мне нужно решение.&raquo;
+  </div>
 </div>
 
-<div class="alert alert-info">
-  Сейчас сервис работает в beta-режиме. Автопостинг будет позже. На первом этапе вы получаете
-  готовый пакет для ручной публикации.
+<h2>Кому подойдёт</h2>
+<div class="grid grid-3">
+  <div class="card"><p class="muted">Селлерам Ozon/WB</p></div>
+  <div class="card"><p class="muted">Товарам для дома и кухни</p></div>
+  <div class="card"><p class="muted">Товарам с понятной бытовой проблемой</p></div>
+  <div class="card"><p class="muted">Новым товарам, которым нужен внешний трафик</p></div>
+  <div class="card"><p class="muted">Продуктам, которые легко показать в коротком видео</p></div>
+</div>
+
+<div class="card">
+  <h2>Что сейчас в beta-версии</h2>
+  <ul>
+    <li>Автопостинг пока не включён.</li>
+    <li>Соцсети подключать не нужно.</li>
+    <li>Вы получаете ZIP-пакет для ручной публикации.</li>
+    <li>Запуск генерации происходит после проверки владельцем.</li>
+    <li>AI-гипотезы можно поправить перед созданием контента.</li>
+  </ul>
+</div>
+
+<div class="hero-actions">
+  <a href="/traffic-factory/start"><button type="button">Создать контент-пакет</button></a>
+</div>
+
+<div class="sticky-cta">
+  <a href="/traffic-factory/start"><button type="button">Создать контент-пакет</button></a>
 </div>
 {% endblock %}

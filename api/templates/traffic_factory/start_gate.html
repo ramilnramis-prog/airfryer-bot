@@ -3,8 +3,9 @@
 {% block content %}
 <div class="center-card-wrap">
   <div class="card center-card">
-    <h1>Создать контент-пакет</h1>
-    <p class="muted">Введите код доступа, чтобы открыть beta-версию контент-завода.</p>
+    <h1>Создать контент-пакет для товара</h1>
+    <p class="muted">Сервис сейчас работает в beta-режиме. Введите код доступа, чтобы открыть
+       форму загрузки товара.</p>
 
     {% if error %}
     <div class="alert alert-error">
@@ -18,6 +19,11 @@
       </label>
       <button type="submit">Продолжить</button>
     </form>
+
+    <div class="alert alert-info">
+      После входа вы сможете загрузить фото товара, ссылку/артикул и описание. Система покажет,
+      какую проблему понял AI и какой контент-пакет будет создан.
+    </div>
   </div>
 </div>
 {% endblock %}
