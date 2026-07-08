@@ -14,6 +14,78 @@
                                         при необходимости)
   qa <observations.json>              — детерминированный вердикт по наблюдениям
   sequence-qa <transitions.json>      — вердикт по последовательности
+  product-only-scene --campaign CODE --scene NN — НОВЫЙ безопасный путь
+                                        (product placement plate, product-only policy):
+                                        dry-run по умолчанию, --apply для ОДНОГО
+                                        реального generate-вызова (retries=0,
+                                        hard cap $0.50); НИКОГДА не читает
+                                        campaign_visual_lock.json
+  product-reference-only-scene --campaign CODE --scene NN — PRODUCT ONLY MEANS
+                                        PRODUCT ONLY (после отклонения scene-05
+                                        C1/C2/C3 local compositing, см.
+                                        scene-05-generation-attempts-status.json):
+                                        mode=edit, РОВНО один image reference
+                                        (real-product-v1 master crop), всё
+                                        остальное текстом; dry-run по умолчанию,
+                                        --apply для ОДНОГО реального вызова
+                                        (retries=0, hard cap $0.50)
+  product-reference-only-scene-v2 --campaign CODE --scene NN — multi-product-
+                                        reference (owner clarification): РОВНО
+                                        4 product-only reference images
+                                        (product_45deg, product_top,
+                                        both_handles, bottom_loop) -- НИКОГДА
+                                        airfryer/basket/motion/generated refs;
+                                        dry-run по умолчанию, --apply для
+                                        ОДНОГО реального вызова (retries=0,
+                                        hard cap $0.50)
+  product-reference-only-campaign-v2 --campaign CODE [--scenes scene-01,...]
+                                        — batch runner по всей кампании
+                                        (scene-01..scene-07) поверх
+                                        product-reference-only-v2: dry-run по
+                                        умолчанию (0 вызовов OpenAI), --apply
+                                        для реального прогона; --skip-existing
+                                        пропускает сцены с уже сгенерированным
+                                        файлом на диске, --skip-selected
+                                        (по умолчанию включён) пропускает сцены
+                                        из campaign-selected-working-candidates.json
+                                        (scene-05/scene-07); stop_on_error по
+                                        умолчанию; campaign_total_hard_cap_usd
+                                        $5.00; отчёт по умолчанию (mode-specific,
+                                        --out переопределяет): dry-run ->
+                                        campaign-product-reference-only-v2-dry-run.json,
+                                        --apply -> generated/product-reference-
+                                        only-campaign/apply-summary.json (apply
+                                        никогда не перезаписывает tracked
+                                        dry-run путь); см.
+                                        api.media_pipeline.product_reference_only_campaign_runner
+  render-content-factory-videos --campaign CODE [--limit 10] [--batch batch-001]
+                                        — локальный content-factory renderer:
+                                        MP4 из уже отревьюженных scene-01..07
+                                        PNG (zoom/pan/hold + подписи + CTA-
+                                        карточка в конце); 0 вызовов OpenAI/
+                                        Higgsfield; если ffmpeg недоступен,
+                                        пишет render-plan JSON + HTML preview
+                                        вместо падения; см.
+                                        api.media_pipeline.content_factory_renderer
+
+  b2b-campaign-dry-run --client C --product P --campaign K -- B2B universal
+                                        campaign dry-run; fail-closed по
+                                        B2B_PRODUCT_REFERENCE_ONLY_POLICY;
+                                        0 вызовов OpenAI/Higgsfield
+  b2b-seed-demo                       — идемпотентно создаёт demo B2B
+                                        client/product/campaign
+  b2b-build-delivery-kit --client C --product P --campaign K -- собирает
+                                        delivery kit + DELIVERY-KIT.zip
+  b2b-generate-demo-video --client C --product P --campaign K -- 'Демо -- 1
+                                        тестовый ролик': dry-run по умолчанию
+                                        (0 вызовов OpenAI/Higgsfield), --apply
+                                        для ОДНОГО реального image edit call
+                                        (hard cap $0.50, retries=0) + локальный
+                                        MP4 + upload-ready ZIP; требует
+                                        package_mode=demo_1_video
+  b2b-preflight --expected-branch BRANCH — branch safety guard: текущая
+                                        ветка/git status/последний коммит,
+                                        exit 2 при несовпадении ветки
 
 Выход всегда — структурированный JSON в stdout.
 Коды выхода: 0 ок; 1 ошибка валидации/данных; 2 нарушение гейта.
@@ -25,6 +97,7 @@ import json
 import sys
 from pathlib import Path
 
+from ..config import ROOT
 from .budget import BudgetStop, SpendTracker
 from .models import CandidateObservation, ImageRequest, SceneSpec
 from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
@@ -32,6 +105,22 @@ from .openai_images_client import (BudgetExceededError, MissingAPIKeyError,
 from .openai_vision_evaluator import OpenAIVisionEvaluator
 from .product_only_policy import (ProductOnlyPolicyError,
                                   assert_legacy_generation_allowed)
+from .product_only_scene_runner import ProductOnlyRunnerError, run_product_only_scene
+from .product_reference_only_runner import (ProductReferenceOnlyRunnerError,
+                                            run_product_reference_only_scene,
+                                            run_product_reference_only_scene_v2)
+from .product_reference_only_campaign_runner import (
+    ProductReferenceOnlyCampaignError, run_campaign)
+from .content_factory_renderer import render_batch
+from .content_factory_planner import write_angle_variant_plan
+from .content_factory_performance import (write_performance_summary,
+                                          write_next_batch_recommendations)
+from .b2b_campaign_contract import write_campaign_dry_run
+from .b2b_reference_policy import B2BReferencePolicyError
+from .b2b_seed import seed_demo
+from .b2b_delivery_kit import build_delivery_kit_zip
+from .b2b_demo_video import (B2BDemoVideoError, run_demo_video_generation,
+                             write_demo_video_dry_run)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -94,7 +183,11 @@ def _load_specs(campaign_dir: str) -> list:
 
 
 def _emit(obj, code: int = 0) -> int:
-    print(json.dumps(obj, ensure_ascii=False, indent=2))
+    # ensure_ascii=True — избегает UnicodeEncodeError/побитого вывода при
+    # печати в Windows-консоль с cp1251 (символы вроде "×" не входят в
+    # cp1251); json.loads на стороне тестов/потребителей декодирует \uXXXX
+    # обратно прозрачно (см. reference_library/cli.py — тот же паттерн).
+    print(json.dumps(obj, ensure_ascii=True, indent=2))
     return code
 
 
@@ -355,6 +448,165 @@ def cmd_qa(args) -> int:
     return _emit(decision.to_dict())
 
 
+def cmd_product_only_scene(args) -> int:
+    """product-only generation runner (product placement plate): dry-run по
+    умолчанию, --apply — РОВНО один реальный generate-вызов. НИКОГДА не
+    читает campaign_visual_lock.json, никогда не резолвит appearance
+    asset_id -- весь prompt идёт через product_only_policy.plan_scene_request."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = run_product_only_scene(campaign_dir, args.scene, apply=args.apply)
+    return _emit(report)
+
+
+def cmd_product_reference_only_scene(args) -> int:
+    """product-reference-only generation runner: dry-run по умолчанию,
+    --apply — РОВНО один реальный edit-вызов с real-product-v1 как
+    единственным image reference. НИКОГДА не читает C1/C2/C3 generated
+    outputs, campaign_visual_lock.json -- см.
+    api.media_pipeline.product_reference_only_runner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = run_product_reference_only_scene(campaign_dir, args.scene, apply=args.apply)
+    return _emit(report)
+
+
+def cmd_product_reference_only_scene_v2(args) -> int:
+    """product-reference-only-v2: dry-run по умолчанию, --apply — РОВНО
+    один реальный edit-вызов с 4 product-only reference images (product_45deg,
+    product_top, both_handles, bottom_loop). Никогда не резолвит airfryer/
+    basket/motion/generated assets -- см.
+    api.media_pipeline.product_reference_only_runner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    report = run_product_reference_only_scene_v2(campaign_dir, args.scene, apply=args.apply)
+    return _emit(report)
+
+
+def cmd_product_reference_only_campaign_v2(args) -> int:
+    """product-reference-only-v2 campaign batch runner: dry-run по умолчанию
+    (0 вызовов OpenAI), --apply — реальный прогон по всей кампании (или по
+    --scenes) с stop_on_error, --skip-existing, --skip-selected; см.
+    api.media_pipeline.product_reference_only_campaign_runner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    scenes = [s.strip() for s in args.scenes.split(",") if s.strip()] if args.scenes else None
+    report = run_campaign(campaign_dir, scenes=scenes, apply=args.apply,
+                          skip_existing=args.skip_existing,
+                          skip_selected=args.skip_selected,
+                          out_path=args.out)
+    return _emit(report)
+
+
+def cmd_render_content_factory_videos(args) -> int:
+    """Локальный content-factory renderer: собирает MP4 (zoom/pan/hold +
+    подписи + CTA-карточка в конце) из уже отревьюженных scene-01..07 PNG.
+    Не вызывает OpenAI/Higgsfield -- только PIL + imageio/ffmpeg локально.
+    Если ffmpeg недоступен, пишет render-plan JSON + HTML preview вместо
+    падения. --angle (pain_problem/recipe/meme_conversational/fast_hype)
+    строит отдельный per-batch variant plan под этот угол вместо чтения
+    общего video-variant-plan.json -- поведение без --angle не меняется;
+    см. api.media_pipeline.content_factory_renderer /
+    content_factory_planner."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    variant_plan_path = None
+    if args.angle:
+        plan = write_angle_variant_plan(campaign_dir, angle=args.angle,
+                                        batch_name=args.batch, count=args.limit)
+        variant_plan_path = plan["report_path"]
+    report = render_batch(campaign_dir, limit=args.limit, batch_name=args.batch,
+                          duration_min_seconds=args.duration_min,
+                          duration_max_seconds=args.duration_max,
+                          variant_plan_path=variant_plan_path)
+    return _emit(report)
+
+
+def cmd_analyze_content_performance(args) -> int:
+    """Локальный анализатор перформанса: читает master-performance-tracker
+    (+ daily-input/*.csv с вручную занесёнными метриками владельцем),
+    считает лучшие ролики/хуки/углы/стили/площадки, пишет
+    performance-tracking/reports/{performance-summary,next-batch-
+    recommendations}.{json,md}. Никаких сетевых вызовов -- если метрик ещё
+    нет, пишет пустой отчёт с пометкой "ожидаются метрики после
+    публикаций"; см. api.media_pipeline.content_factory_performance."""
+    campaign_dir = str(Path("content") / "autopilot" / args.campaign)
+    summary = write_performance_summary(campaign_dir)
+    recommendations = write_next_batch_recommendations(campaign_dir)
+    return _emit({"performance_summary": summary, "next_batch_recommendations": recommendations})
+
+
+def cmd_b2b_campaign_dry_run(args) -> int:
+    """B2B seller traffic factory: универсальный campaign dry-run поверх
+    client -> product -> campaign. Fail-closed по B2B_PRODUCT_REFERENCE_ONLY_
+    POLICY (минимум 3 approved product references) ДО построения плана.
+    0 вызовов OpenAI/Higgsfield -- только планирование; см.
+    api.media_pipeline.b2b_campaign_contract."""
+    plan = write_campaign_dry_run(args.client, args.product, args.campaign)
+    return _emit(plan)
+
+
+def cmd_b2b_seed_demo(args) -> int:
+    """B2B seller traffic factory: создаёт (идемпотентно) demo client/product/
+    campaign + legacy adapter manifest поверх уже существующей кампании
+    coating-protect-2026-07. 0 сетевых вызовов; см. api.media_pipeline.b2b_seed."""
+    result = seed_demo(str(ROOT))
+    return _emit(result)
+
+
+def cmd_b2b_build_delivery_kit(args) -> int:
+    """B2B seller traffic factory: собирает delivery kit (OWNER-README.md +
+    PRODUCT-SUMMARY.md + CAMPAIGN-PLAN.md + REFERENCE-POLICY.md +
+    NEXT-STEPS.md + upload-ready/ + publishing-plan/ + performance-tracking/)
+    и DELIVERY-KIT.zip поверх уже посчитанного campaign-dry-run. 0 вызовов
+    OpenAI/Higgsfield, никакого auto-posting; см.
+    api.media_pipeline.b2b_delivery_kit."""
+    result = build_delivery_kit_zip(args.client, args.product, args.campaign, str(ROOT))
+    return _emit(result)
+
+
+def cmd_b2b_generate_demo_video(args) -> int:
+    """B2B seller traffic factory: 'Демо -- 1 тестовый ролик' one-video
+    generation pipeline. Dry-run по умолчанию (0 сетевых вызовов, работает
+    без OPENAI_API_KEY) -- пишет demo-video-dry-run.json/.md. --apply
+    делает РОВНО один OpenAI image edit call (max_image_calls=1, retries=0,
+    hard_cap_usd=0.50), затем локальный MP4 render + upload-ready kit +
+    ZIP; никогда не вызывает Higgsfield, никогда не постит автоматически.
+    Требует package_mode=demo_1_video (выбрано на шаге 5 визарда) и хотя бы
+    1 загруженный product reference; см. api.media_pipeline.b2b_demo_video."""
+    if args.apply:
+        result = run_demo_video_generation(args.client, args.product, args.campaign,
+                                           str(ROOT), apply=True)
+    else:
+        result = write_demo_video_dry_run(args.client, args.product, args.campaign, str(ROOT))
+    return _emit(result)
+
+
+def cmd_b2b_preflight(args) -> int:
+    """Branch safety guard: показывает текущую git-ветку, git status --short
+    и последний коммит; предупреждает/ошибается (exit 2), если текущая ветка
+    не совпадает с --expected-branch. Только чтение -- никаких git-мутаций."""
+    import subprocess
+
+    def _git(*cmd_args):
+        result = subprocess.run(["git", *cmd_args], cwd=str(ROOT),
+                                capture_output=True, text=True)
+        return result.stdout.strip()
+
+    current_branch = _git("branch", "--show-current")
+    status_short = _git("status", "--short")
+    last_commit = _git("log", "-1", "--oneline")
+    branch_matches = current_branch == args.expected_branch
+
+    report = {
+        "current_branch": current_branch,
+        "expected_branch": args.expected_branch,
+        "branch_matches": branch_matches,
+        "git_status_short": status_short.splitlines() if status_short else [],
+        "last_commit": last_commit,
+    }
+    if not branch_matches:
+        report["error"] = (f"WRONG BRANCH: currently on {current_branch!r}, expected "
+                           f"{args.expected_branch!r} -- stop, do not commit/push here")
+        return _emit(report, 2)
+    return _emit(report, 0)
+
+
 def cmd_sequence_qa(args) -> int:
     data = _load_json(args.transitions)
     transitions = data["transitions"] if isinstance(data, dict) else data
@@ -409,10 +661,170 @@ def main(argv=None) -> int:
     p.add_argument("transitions")
     p.set_defaults(fn=cmd_sequence_qa)
 
+    p = sub.add_parser("product-only-scene",
+                       help="НОВЫЙ безопасный путь: product placement plate product-only "
+                            "generation (не читает campaign_visual_lock.json)")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1)")
+    p.set_defaults(fn=cmd_product_only_scene)
+
+    p = sub.add_parser("product-reference-only-scene",
+                       help="PRODUCT ONLY MEANS PRODUCT ONLY: mode=edit, единственный "
+                            "image reference real-product-v1, всё остальное текстом")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1)")
+    p.set_defaults(fn=cmd_product_reference_only_scene)
+
+    p = sub.add_parser("product-reference-only-scene-v2",
+                       help="multi-product-reference (product+handles+bottom, "
+                            "4 real-v1 crops); никаких airfryer/basket/motion/generated refs")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scene", required=True, help="например scene-05")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1)")
+    p.set_defaults(fn=cmd_product_reference_only_scene_v2)
+
+    p = sub.add_parser("product-reference-only-campaign-v2",
+                       help="batch runner по всей кампании (scene-01..scene-07) поверх "
+                            "product-reference-only-v2; scene-05/scene-07 (working "
+                            "candidates) пропускаются по умолчанию (--skip-selected)")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--scenes", default=None,
+                   help="список сцен через запятую, например scene-01,scene-02,scene-03 "
+                        "(по умолчанию — все scene-01..scene-07)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply); "
+                        "0 вызовов OpenAI/Higgsfield")
+    p.add_argument("--apply", action="store_true",
+                   help="РЕАЛЬНЫЙ прогон: до одного вызова OpenAI на configured-сцену "
+                        "(retries=0, max_calls_per_scene=1, campaign_total_hard_cap_usd=$5.00)")
+    p.add_argument("--skip-existing", action="store_true", default=False,
+                   help="пропустить сцены, для которых уже есть сгенерированный файл на диске")
+    p.add_argument("--skip-selected", dest="skip_selected", action="store_true",
+                   help="пропустить сцены с уже выбранным working candidate "
+                        "(campaign-selected-working-candidates.json, напр. scene-05/scene-07) "
+                        "-- включено по умолчанию")
+    p.add_argument("--no-skip-selected", dest="skip_selected", action="store_false",
+                   help="ОПАСНО: разрешить регенерацию сцен с уже выбранным working "
+                        "candidate; не использовать без явного подтверждения владельца")
+    p.add_argument("--out", "--out-path", dest="out", default=None,
+                   help="явный путь для campaign-level отчёта; по умолчанию mode-specific: "
+                        "dry-run -> content/autopilot/<campaign>/campaign-product-reference-"
+                        "only-v2-dry-run.json, --apply -> content/autopilot/<campaign>/"
+                        "generated/product-reference-only-campaign/apply-summary.json "
+                        "(apply НИКОГДА не перезаписывает tracked dry-run путь)")
+    p.set_defaults(fn=cmd_product_reference_only_campaign_v2, skip_selected=True)
+
+    p = sub.add_parser("render-content-factory-videos",
+                       help="локальный content-factory renderer: MP4 из уже отревьюженных "
+                            "scene-01..07 PNG (zoom/pan/hold + подписи + CTA-карточка); "
+                            "0 вызовов OpenAI/Higgsfield")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.add_argument("--limit", type=int, default=10,
+                   help="сколько вариантов рендерить (по умолчанию 10; с --angle -- это ещё и "
+                        "количество вариантов, которые будут сгенерированы под этот angle)")
+    p.add_argument("--batch", default="batch-001",
+                   help="имя подпапки в generated/content-factory/video-renders/ (по умолчанию batch-001)")
+    p.add_argument("--angle", default=None,
+                   choices=["pain_problem", "recipe", "meme_conversational", "fast_hype"],
+                   help="creative angle -- строит отдельный per-batch variant plan "
+                        "(video-variant-plan-<batch>.json) под этот угол вместо общего "
+                        "video-variant-plan.json; без --angle поведение не меняется")
+    p.add_argument("--duration-min", type=float, default=None,
+                   help="исключить варианты короче этого числа секунд")
+    p.add_argument("--duration-max", type=float, default=None,
+                   help="исключить варианты длиннее этого числа секунд")
+    p.set_defaults(fn=cmd_render_content_factory_videos)
+
+    p = sub.add_parser("analyze-content-performance",
+                       help="локальный анализ перформанса контент-фабрики: читает "
+                            "master-performance-tracker + daily-input/*.csv (метрики, "
+                            "занесённые владельцем вручную), пишет performance-summary "
+                            "и next-batch-recommendations; 0 внешних вызовов")
+    p.add_argument("--campaign", required=True,
+                   help="код кампании (например coating-protect-2026-07), "
+                        "резолвится как content/autopilot/<campaign>")
+    p.set_defaults(fn=cmd_analyze_content_performance)
+
+    p = sub.add_parser("b2b-campaign-dry-run",
+                       help="B2B seller traffic factory: универсальный campaign dry-run "
+                            "(client -> product -> campaign); fail-closed по "
+                            "B2B_PRODUCT_REFERENCE_ONLY_POLICY; 0 вызовов OpenAI/Higgsfield")
+    p.add_argument("--client", required=True, help="client_id, например demo-ozon-airfryer")
+    p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
+    p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
+    p.set_defaults(fn=cmd_b2b_campaign_dry_run)
+
+    p = sub.add_parser("b2b-seed-demo",
+                       help="B2B seller traffic factory: идемпотентно создаёт demo "
+                            "client/product/campaign (+ legacy adapter manifest); "
+                            "0 вызовов OpenAI/Higgsfield")
+    p.set_defaults(fn=cmd_b2b_seed_demo)
+
+    p = sub.add_parser("b2b-build-delivery-kit",
+                       help="B2B seller traffic factory: собирает delivery kit "
+                            "(OWNER-README/PRODUCT-SUMMARY/CAMPAIGN-PLAN/REFERENCE-POLICY/"
+                            "NEXT-STEPS + upload-ready/publishing-plan/performance-tracking) "
+                            "и DELIVERY-KIT.zip; 0 вызовов OpenAI/Higgsfield, без auto-posting")
+    p.add_argument("--client", required=True, help="client_id, например demo-ozon-airfryer")
+    p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
+    p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
+    p.set_defaults(fn=cmd_b2b_build_delivery_kit)
+
+    p = sub.add_parser("b2b-generate-demo-video",
+                       help="B2B seller traffic factory: 'Демо -- 1 тестовый ролик' -- "
+                            "dry-run по умолчанию (0 вызовов OpenAI/Higgsfield); --apply "
+                            "делает РОВНО один OpenAI image edit call (hard cap $0.50, "
+                            "retries=0) + локальный MP4 render + upload-ready ZIP; "
+                            "требует package_mode=demo_1_video")
+    p.add_argument("--client", required=True, help="client_id, например demo-ozon-airfryer")
+    p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
+    p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1); без ключа -- честный "
+                        "no_api_key отчёт, без падения")
+    p.set_defaults(fn=cmd_b2b_generate_demo_video)
+
+    p = sub.add_parser("b2b-preflight",
+                       help="Branch safety guard: текущая ветка/git status/последний коммит; "
+                            "exit 2 если ветка не совпадает с --expected-branch")
+    p.add_argument("--expected-branch", required=True,
+                   help="ожидаемая git-ветка, например feature/product-only-scene05-runner")
+    p.set_defaults(fn=cmd_b2b_preflight)
+
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
-    except ProductOnlyPolicyError as e:
+    except (B2BReferencePolicyError, B2BDemoVideoError) as e:
+        return _emit({"gate_error": str(e), "code": e.code}, 2)
+    except (ProductOnlyPolicyError, ProductOnlyRunnerError, ProductReferenceOnlyRunnerError,
+            ProductReferenceOnlyCampaignError) as e:
         return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (MissingAPIKeyError, BudgetExceededError, BudgetStop,
             VisionSchemaError, FileNotFoundError, ValueError, KeyError) as e:

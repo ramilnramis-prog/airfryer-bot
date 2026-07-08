@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.campaign_id }}{% endblock %}
+{% block content %}
+<h1>Контент-пакет: {{ campaign.campaign_id }}</h1>
+<div class="card">
+  <div class="card-title-row">
+    <p><b>Товар:</b> {% if product %}<a href="/b2b/products/{{ product.product_id }}">{{ product.product_name }}</a>{% endif %}</p>
+    <span class="status-badge">{{ campaign.status }}</span>
+  </div>
+  <p><b>Цель:</b> {{ campaign.campaign_goal }}</p>
+  <p><b>Площадки:</b> {{ campaign.platforms|join(", ") }}</p>
+  {% if is_demo_mode %}
+  <p><span class="badge badge-success">Режим: демо -- 1 тестовый ролик</span></p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Что создаст контент-завод</h2>
+  {% if is_demo_mode %}
+  <div class="grid grid-4">
+    <div class="card"><p class="muted">1 рекламный сценарий</p></div>
+    <div class="card"><p class="muted">1 short video creative</p></div>
+    <div class="card"><p class="muted">описание под выбранную площадку</p></div>
+    <div class="card"><p class="muted">мини-план публикации</p></div>
+    <div class="card"><p class="muted">тестовый ZIP после генерации</p></div>
+  </div>
+  {% else %}
+  <div class="grid grid-4">
+    <div class="card"><p class="muted">рекламные сцены</p></div>
+    <div class="card"><p class="muted">short video creatives</p></div>
+    <div class="card"><p class="muted">описания под площадки</p></div>
+    <div class="card"><p class="muted">статьи Дзена</p></div>
+    <div class="card"><p class="muted">картинки к статьям</p></div>
+    <div class="card"><p class="muted">план публикаций</p></div>
+    <div class="card"><p class="muted">таблица для отслеживания результатов</p></div>
+    <div class="card"><p class="muted">ZIP с материалами</p></div>
+  </div>
+  {% endif %}
+  {% if intelligence %}
+  {% set r = intelligence.report %}
+  <p><b>Контент будет строиться на основе главной проблемы товара:</b> {{ r.core_problem_solved }}</p>
+  <p><b>Главная мысль зрителя:</b>
+     &ldquo;{{ r.video_message_angles[0].viewer_thought_to_trigger if r.video_message_angles else r.core_problem_solved }}&rdquo;</p>
+  {% else %}
+  <p class="muted">Анализ товара ещё не запускался -- откройте страницу товара, чтобы построить гипотезы.</p>
+  {% endif %}
+</div>
+
+{% if intelligence %}
+{% set r = intelligence.report %}
+<div class="card">
+  <h2>Как система будет делать контент</h2>
+  <p>На основе анализа товара система будет делать контент так, чтобы зритель узнавал свою проблему.</p>
+
+  <p><b>Suggested hook angles:</b></p>
+  <ul>
+    {% for h in r.hook_angles if h.enabled %}<li>[{{ h.angle_type }}] {{ h.hook }}</li>{% endfor %}
+  </ul>
+
+  <p><b>Suggested video angles:</b></p>
+  <ul>
+    {% for v in r.video_message_angles %}<li>{{ v.angle }} -- &ldquo;{{ v.viewer_thought_to_trigger }}&rdquo;</li>{% endfor %}
+  </ul>
+
+  <p><b>Suggested content directions (recommended content mix):</b></p>
+  <ul>
+    {% for k, v in r.recommended_content_mix.items() %}<li>{{ k }}: {{ v }}%</li>{% endfor %}
+  </ul>
+  <p><a href="/b2b/products/{{ campaign.product_id }}/intelligence">Полный разбор товара &raquo;</a></p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Проверить будущий контент-пакет</h2>
+  {% if dry_run_exists %}
+  <p><span class="badge badge-success">готово</span> план уже создан</p>
+  {% if dry_run_md_exists %}
+  <p class="hint"><code>{{ dry_run_md_path }}</code></p>
+  {% endif %}
+  {% else %}
+  <p class="muted">Проверка ещё не запускалась.</p>
+  {% endif %}
+  <form action="/b2b/campaigns/{{ campaign.campaign_id }}/dry-run" method="post">
+    <button type="submit">Проверить будущий контент-пакет</button>
+  </form>
+  <p class="hint">Ничего не генерирует и не тратит деньги -- это только план. Реальная генерация
+     запускается вручную отдельно, не с этой страницы.</p>
+</div>
+
+{% if is_demo_mode %}
+<div class="card">
+  <h2>Тестовый ролик</h2>
+  {% if demo_video_state == "generated" %}
+  <p><span class="badge badge-success">готово</span> Тестовый ролик готов.</p>
+  {% elif demo_video_state == "dry_run_ready" %}
+  <p><span class="badge badge-success">план готов</span> План тестового ролика готов.</p>
+  {% else %}
+  <p class="muted">Тестовый ролик ещё не создан.</p>
+  {% endif %}
+
+  <form action="/b2b/campaigns/{{ campaign.campaign_id }}/demo-video/dry-run" method="post" style="display:inline">
+    <button type="submit">Подготовить план тестового ролика</button>
+  </form>
+  <button type="button" disabled>Сгенерировать тестовый ролик</button>
+  {% if demo_video_zip_exists %}
+  <a href="/b2b/campaigns/{{ campaign.campaign_id }}/demo-video/kit.zip"><button type="button" class="btn-orange">Скачать тестовый ZIP</button></a>
+  {% else %}
+  <button type="button" disabled>Скачать тестовый ZIP</button>
+  {% endif %}
+  <p class="hint">После проверки плана владелец сервиса может запустить генерацию одного ролика --
+     это дешевле и быстрее, чем сразу делать пакет на 7/14/30 дней. Реальная генерация
+     запускается владельцем сервиса.</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Готовый ZIP с материалами</h2>
+  {% if delivery_kit_exists %}
+  <p><span class="badge badge-success">готово</span> DELIVERY-KIT.zip собран</p>
+  <p><a href="/b2b/campaigns/{{ campaign.campaign_id }}/delivery-kit.zip"><button type="button" class="btn-orange">Скачать ZIP</button></a></p>
+  {% else %}
+  <p class="muted">ZIP ещё не собран.</p>
+  {% endif %}
+  <form action="/b2b/campaigns/{{ campaign.campaign_id }}/build-delivery-kit" method="post">
+    <button type="submit">Собрать готовый ZIP с материалами</button>
+  </form>
+  <p class="hint">Требует минимум {{ min_refs }} загруженного фото товара (та же fail-closed
+     политика, что и проверка пакета). Ручное подтверждение (approve) не обязательно.</p>
+</div>
+
+<div class="card">
+  <h2>Папки вывода</h2>
+  <p class="hint"><code>{{ generated_dir }}</code></p>
+  <ul class="hint">
+    {% for sub in generated_subdirs %}<li>{{ sub }}/</li>{% endfor %}
+  </ul>
+</div>
+{% endblock %}

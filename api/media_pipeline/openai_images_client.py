@@ -52,6 +52,49 @@ DEFAULT_PRICE_ESTIMATE_USD = 0.30
 DEFAULT_BUDGET_USD = 5.0
 MAX_CANDIDATES_PER_REQUEST = 3
 
+# Read timeout for the image-generation HTTP call. 300s was too short --
+# scene-05 C3's real --apply attempt hit a client-side read timeout after
+# waiting 300s for OpenAI's response headers (request was sent, no response
+# ever arrived within that window; not a retry-worthy application error,
+# just an under-provisioned timeout for image-generation latency).
+DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS = 900
+IMAGE_GENERATION_TIMEOUT_ENV_VAR = "IMAGE_GENERATION_TIMEOUT_SECONDS"
+MIN_IMAGE_GENERATION_TIMEOUT_SECONDS = 60
+MAX_IMAGE_GENERATION_TIMEOUT_SECONDS = 1800
+
+
+def resolve_image_generation_timeout_seconds(env: dict | None = None) -> tuple[int, list]:
+    """Resolves the read timeout (seconds) for the image-generation HTTP
+    call. env override (IMAGE_GENERATION_TIMEOUT_SECONDS) is validated:
+    must parse as an integer and fall within [MIN, MAX] inclusive -- any
+    invalid value (non-integer, out of range, empty/unset) falls back to
+    DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS and is recorded as a warning
+    (never raises, never silently substitutes a made-up number without
+    saying so). Never reads/logs OPENAI_API_KEY -- unrelated to this env
+    var entirely."""
+    env = os.environ if env is None else env
+    raw = (env.get(IMAGE_GENERATION_TIMEOUT_ENV_VAR) or "").strip()
+    if not raw:
+        return DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS, []
+
+    warnings = []
+    try:
+        value = int(raw)
+    except ValueError:
+        warnings.append(
+            f"{IMAGE_GENERATION_TIMEOUT_ENV_VAR}={raw!r} is not an integer -- "
+            f"falling back to default {DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS}s")
+        return DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS, warnings
+
+    if not (MIN_IMAGE_GENERATION_TIMEOUT_SECONDS <= value <= MAX_IMAGE_GENERATION_TIMEOUT_SECONDS):
+        warnings.append(
+            f"{IMAGE_GENERATION_TIMEOUT_ENV_VAR}={value} outside allowed range "
+            f"[{MIN_IMAGE_GENERATION_TIMEOUT_SECONDS}, {MAX_IMAGE_GENERATION_TIMEOUT_SECONDS}] -- "
+            f"falling back to default {DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS}s")
+        return DEFAULT_IMAGE_GENERATION_TIMEOUT_SECONDS, warnings
+
+    return value, warnings
+
 
 class MediaPipelineError(RuntimeError):
     pass
@@ -99,11 +142,16 @@ class OpenAIImagesProvider(ImageProvider):
                  price_per_image_usd: float = DEFAULT_PRICE_ESTIMATE_USD,
                  budget_usd: float = DEFAULT_BUDGET_USD,
                  tracker: SpendTracker | None = None,
-                 token_prices: dict | None = None):
+                 token_prices: dict | None = None,
+                 timeout_seconds: int | None = None):
         self.model = model or default_image_model()
         self.price_per_image_usd = price_per_image_usd
         self.tracker = tracker or SpendTracker(cap_usd=budget_usd)
         self.token_prices = token_prices  # если заданы — считаем actual из usage
+        if timeout_seconds is None:
+            self.timeout_seconds, self.timeout_warnings = resolve_image_generation_timeout_seconds()
+        else:
+            self.timeout_seconds, self.timeout_warnings = timeout_seconds, []
 
     @property
     def budget_usd(self) -> float:
@@ -143,6 +191,7 @@ class OpenAIImagesProvider(ImageProvider):
         planned = dict(self._payload_params(req))
         planned["endpoint"] = ("/images/edits" if req.mode == "edit"
                                else "/images/generations")
+        planned["timeout_seconds"] = self.timeout_seconds
         if req.mode == "edit":
             planned["reference_images"] = list(req.reference_images)
             if req.mask_path:
@@ -202,8 +251,10 @@ class OpenAIImagesProvider(ImageProvider):
                 headers={"Authorization": f"Bearer {key}",
                          "Content-Type": "application/json"})
 
-        # Без retries: одна попытка, ошибка — наверх (первый пилот).
-        with urllib.request.urlopen(http_req, timeout=300) as resp:
+        # Без retries: одна попытка, ошибка (включая TimeoutError) — наверх,
+        # вызывающий код (product_only_scene_runner) решает, что с ней делать
+        # (см. no_candidate_timeout report) -- этот метод сам не ретраит.
+        with urllib.request.urlopen(http_req, timeout=self.timeout_seconds) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
 
         usage = payload.get("usage")

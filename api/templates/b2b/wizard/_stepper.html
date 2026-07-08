@@ -1,0 +1,7 @@
+{% set tf_wizard_steps = ["Товар", "Фото", "Покупатель", "AI-анализ", "Пакет", "Готовность"] %}
+<div class="stepper">
+  {% for label in tf_wizard_steps %}
+  {% set step_num = loop.index %}
+  <div class="step {% if step_num == current_step %}active{% elif step_num < current_step %}done{% endif %}">{{ step_num }}. {{ label }}</div>
+  {% endfor %}
+</div>

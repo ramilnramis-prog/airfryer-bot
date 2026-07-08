@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Шаг 5: Настройки пакета{% endblock %}
+{% block content %}
+{% set current_step = 5 %}
+{% include "wizard/_stepper.html" %}
+
+<h1>Настройки контент-пакета</h1>
+
+<div class="card">
+  <form action="/b2b/seller/{{ product.product_id }}/step5" method="post">
+    <label>Площадки</label>
+    {% for p in platforms %}
+    <label style="display:inline-block;margin-right:16px;font-weight:400;">
+      <input type="checkbox" name="platforms" value="{{ p }}"
+        {% if p in settings.get('platforms', []) %}checked{% endif %} style="width:auto;"> {{ platform_labels.get(p, p) }}
+    </label>
+    {% endfor %}
+
+    <label>Длительность пакета</label>
+    <div class="grid grid-2">
+      {% for d in durations %}
+      <label class="card" style="cursor:pointer;display:block;font-weight:400;margin-top:0;">
+        <input type="radio" name="package_duration" value="{{ d }}" style="width:auto;display:inline;"
+          {% if d == (settings.get('package_duration') or demo_package_duration) %}checked{% endif %}>
+        <b>{{ duration_labels.get(d, d) }}</b>
+        {% if d == demo_package_duration %}<span class="badge badge-success">Рекомендуется для первого теста</span>{% endif %}
+        <p class="muted">{{ duration_descriptions.get(d, "") }}</p>
+      </label>
+      {% endfor %}
+    </div>
+
+    <label>Что включить в пакет</label>
+    {% for c in content_types %}
+    <label style="display:inline-block;margin-right:16px;font-weight:400;">
+      <input type="checkbox" name="content_types" value="{{ c }}"
+        {% if c in settings.get('content_types', []) %}checked{% endif %} style="width:auto;"> {{ content_type_labels.get(c, c) }}
+    </label>
+    {% endfor %}
+
+    <div class="alert alert-info">
+      Автопостинг будет доступен позже. Сейчас система готовит &laquo;{{ manual_or_autopost_label }}&raquo;.
+    </div>
+
+    <button type="submit">Далее: Чеклист готовности &raquo;</button>
+  </form>
+</div>
+<p><a href="/b2b/seller/{{ product.product_id }}/step4">&laquo; Назад</a></p>
+{% endblock %}

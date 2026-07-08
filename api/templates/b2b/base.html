@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Крутая внешняя реклама{% endblock %}</title>
+<link rel="stylesheet" href="/static/traffic_factory.css">
+</head><body>
+<header class="tf-header">
+  <div class="tf-nav-inner">
+    <a class="tf-logo" href="/traffic-factory">Крутая внешняя реклама</a>
+    <nav class="tf-nav-links">
+      <a href="/traffic-factory">Главная</a>
+      <a href="/traffic-factory/start">Создать пакет</a>
+      <a href="/traffic-factory/demo">Демо</a>
+      <a href="/traffic-factory/status/airfryer-silicone-form" title="пример страницы статуса">Статус</a>
+    </nav>
+  </div>
+</header>
+
+<main class="tf-container">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="tf-footer">
+  <p>Крутая внешняя реклама -- AI-контент-завод для селлеров Ozon/WB.
+     <a href="/b2b">Admin dashboard</a> (только для команды)</p>
+</footer>
+</body></html>

@@ -1,0 +1,30 @@
+{% extends "b2b/base.html" %}
+{% block title %}Статус: {{ request_id }}{% endblock %}
+{% block content %}
+<h1>Статус запроса</h1>
+<p class="muted">{{ request_id }}</p>
+
+{% if not found %}
+<div class="alert alert-info">
+  Запрос с таким ID не найден. Если вы только что начали wizard, убедитесь, что дошли хотя бы
+  до Шага 1 (Товар).
+</div>
+{% else %}
+<div class="card">
+  <h2>{{ product.product_name }}</h2>
+  <ul class="checklist">
+    <li class="{{ 'done' if draft_saved else '' }}"><span class="tick">{{ "✓" if draft_saved else "" }}</span> draft saved</li>
+    <li class="{{ 'done' if product_info_complete else '' }}"><span class="tick">{{ "✓" if product_info_complete else "" }}</span> product info complete</li>
+    <li class="{{ 'done' if references_uploaded else '' }}"><span class="tick">{{ "✓" if references_uploaded else "" }}</span> references uploaded</li>
+    <li class="{{ 'done' if ai_analysis_ready else '' }}"><span class="tick">{{ "✓" if ai_analysis_ready else "" }}</span> AI analysis ready</li>
+    <li class="{{ 'done' if content_package_plan_ready else '' }}"><span class="tick">{{ "✓" if content_package_plan_ready else "" }}</span> content package plan ready</li>
+  </ul>
+</div>
+
+<div class="alert alert-info">
+  <b>Следующий шаг:</b> {{ next_step }}
+</div>
+
+<p><a href="/b2b/products/{{ product.product_id }}"><button type="button" class="btn-secondary">Открыть страницу товара</button></a></p>
+{% endif %}
+{% endblock %}

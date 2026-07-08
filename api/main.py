@@ -18,10 +18,13 @@ from fastapi import FastAPI, Depends, BackgroundTasks, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 
-from .config import PHOTOS_DIR, GEN_DIR, BASE_URL, REGISTRY_AUTO_MIGRATE
+from .config import PHOTOS_DIR, GEN_DIR, BASE_URL, REGISTRY_AUTO_MIGRATE, ROOT
 from .auth import require_api_key
 from . import db, jobs, registry_db
 from .registry import router as registry_router
+from .b2b import router as b2b_router
+from .b2b_seller_wizard import router as b2b_seller_wizard_router
+from .traffic_factory import router as traffic_factory_router
 from .posts import prepare_post
 
 logging.basicConfig(
@@ -50,8 +53,22 @@ def _startup():
 app.mount("/files/photos", StaticFiles(directory=str(PHOTOS_DIR)), name="photos")
 app.mount("/files", StaticFiles(directory=str(GEN_DIR)), name="files")
 
+# CSS/JS for server-rendered B2B/Traffic Factory pages (api/templates/b2b/base.html)
+app.mount("/static", StaticFiles(directory=str(ROOT / "api" / "static")), name="static")
+
 # Единый реестр (источник истины) — отдельный набор роутов /registry/*
 app.include_router(registry_router)
+
+# B2B seller traffic factory -- admin-first server-rendered pages, /b2b/*
+# (no X-API-Key auth yet, see api/b2b.py module docstring)
+app.include_router(b2b_router)
+
+# Seller-facing guided onboarding wizard, /b2b/seller/* (same MVP auth gap)
+app.include_router(b2b_seller_wizard_router)
+
+# Public seller entry point ("Крутая внешняя реклама"), /traffic-factory/*
+# (beta access code gate only, no full auth yet)
+app.include_router(traffic_factory_router)
 
 
 @app.exception_handler(sqlite3.IntegrityError)

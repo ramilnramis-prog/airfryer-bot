@@ -1,0 +1,76 @@
+{
+  "status": "dry_run_only",
+  "plan_version": "product-reference-only-v1",
+  "scene_id": "scene-05",
+  "campaign_code": "coating-protect-2026-07",
+  "content_code": "coating-protect-ad",
+
+  "supersedes_generation_strategy_of": [
+    "content/autopilot/coating-protect-2026-07/scene-05-product-only-plan.json (C1, hands-holding-handles concept)",
+    "content/autopilot/coating-protect-2026-07/video-scene-prompts-product-only.md scene-05 entry (C1/C2/C3 local deterministic compositing of generated air fryer plates)"
+  ],
+  "supersede_reason": "Owner decision (see scene-05-generation-attempts-status.json): stop local deterministic compositing of generated air fryer/kitchen/basket plates for scene-05 -- C1 (duplicate AI product + placement mismatch), C2 (hand/product occlusion mismatch) and C3 (correct geometry, but the pasted real-product-v1 layer still shows visible seams/artifacts) all showed this compositing mechanism keeps producing the same class of defect regardless of transform accuracy. New policy: PRODUCT ONLY MEANS PRODUCT ONLY -- real-product-v1 is the one and only permanent visual reference in this project (campaign_visual_policy.json: mandatory_product_reference, forbidden_global_reference_categories). Everything else (kitchen, air fryer, basket, food, hands, person, clothing, lighting, generated plates, previous candidate composites) is generated per scene from text only, never image-locked, never carried forward as a reusable visual asset.",
+
+  "mandatory_product_reference": "real-product-v1",
+  "product_manifest": "assets/product-lock/airfryer-silicone-form/product_asset_manifest.json",
+
+  "reference_images": ["real-product-v1"],
+  "reference_images_note": "The ONLY visual reference used anywhere in this plan. Not any C1/C2/C3 generated PNG, not any generated air fryer/kitchen/food/hands/basket image, not any previous candidate composite. real-product-v1 is used as the product-lock ground truth (silhouette, flat corner handle tabs, short horizontal slots, matte dark grey silicone, ribbed bottom) for QA/compositing purposes and, if a future --apply implementation adopts mode='edit', as the sole uploaded image input -- this dry-run does not itself change runner code or execute mode='edit'; it is a planning document only.",
+  "forbidden_reference_sources": [
+    "generated/product-only-scene/scene-05/scene-05-c1.png",
+    "generated/product-only-scene/scene-05/scene-05-c2-ai-plate-raw.png",
+    "generated/product-only-scene/scene-05/scene-05-c2-candidate-composite.png",
+    "generated/product-only-scene/scene-05/scene-05-c3-ai-plate-raw.png",
+    "generated/product-only-scene/scene-05/scene-05-c3-candidate-composite.png",
+    "any other generated air fryer / kitchen / basket / food / hands / person image",
+    "any previous candidate composite from C1/C2/C3"
+  ],
+  "not_image_locked": ["kitchen", "airfryer", "basket", "food", "hands", "person", "clothing", "lighting"],
+
+  "generation_mode": "generate",
+  "size": "720x1280",
+  "n": 1,
+  "retries": 0,
+  "max_calls_future_apply": 1,
+  "hard_cap_usd": 0.50,
+
+  "scene_prompt_direction": {
+    "no_hands": true,
+    "product_visible_inside_air_fryer_basket": true,
+    "food": "exactly 3 roasted golden chicken thighs with potato wedges",
+    "basket": "clean around the form, generated per scene from text -- not image-locked, may differ between videos",
+    "kitchen": "cozy clean white home kitchen, generated per scene from text -- not image-locked, may differ between videos",
+    "product_shape_description_text_only": "square dark grey matte silicone form, flat corner handle tabs, short horizontal slots in each tab, ribbed bottom -- described in text so the model attempts a plausible product-like likeness; the canonical product identity for QA/compositing purposes still comes only from real-product-v1, not from what the model draws",
+    "negative": [
+      "redesigned or fake handles",
+      "loop handles",
+      "vertical oval holes",
+      "duplicate tray or second product",
+      "extra product",
+      "text, watermark, logo"
+    ]
+  },
+
+  "model_prompt_draft": "Cozy clean white home kitchen, warm daylight coming from the left. Black air fryer with an open square basket, high 3/4 top-down camera angle looking down into the basket. Inside the basket, a square silicone baking form matching the reference image exactly: dark grey matte silicone, flat corner handle tabs on each side, a short horizontal slot in each tab, ribbed bottom. Do not redesign the handles. Do not draw loop handles. Do not draw vertical oval holes. Do not draw a duplicate tray or a second product. Inside the form, exactly 3 roasted golden chicken thighs with potato wedges. The basket is clean around the form. No hands, no arms, no fingers, no person anywhere in the frame. Realistic home cooking photo, DSLR 50mm look, shallow depth of field. No CGI, no illustration, no 3D render. No text, no watermark, no logo. Vertical 9:16, 720x1280.",
+
+  "qa_reject_conditions": [
+    "форма отличается от real-product-v1 (pixel_similarity/silhouette fail, если проверяется через product-lock)",
+    "ручки не плоские / не соответствуют flat corner handle tabs (handle_geometry_mismatch)",
+    "прорези ручек не горизонтальные короткие",
+    "нарисован дублирующий лоток/вставка/второй товар",
+    "не ровно 3 куриных бедра с картофельными дольками",
+    "корзина под формой грязная",
+    "руки/человек в кадре",
+    "текст/watermark/логотип в кадре"
+  ],
+
+  "openai_calls_planned": 0,
+  "higgsfield_calls_planned": 0,
+  "openai_calls_executed": 0,
+  "higgsfield_calls_executed": 0,
+  "api_spend_usd": 0,
+
+  "implementation_status": "plan_only -- no runner code changes made in this step; a future runner implementation (mode='generate' with a text-described product, or mode='edit' with real-product-v1 as the sole uploaded reference) requires a separate explicit owner-approved change before any --apply is possible.",
+
+  "created_at": "2026-07-06"
+}

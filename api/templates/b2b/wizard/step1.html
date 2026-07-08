@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Шаг 1: Товар{% endblock %}
+{% block content %}
+{% set current_step = 1 %}
+{% include "wizard/_stepper.html" %}
+
+<h1>Расскажите о товаре</h1>
+<p class="muted">Опишите товар простыми словами: что это, для кого и зачем.</p>
+
+<div class="card">
+  <form action="/b2b/seller/start" method="post">
+    <label>Ваше имя / название компании
+      <input name="client_name" required placeholder="Например: ИП Иванов / KitchenMarket">
+    </label>
+
+    <label>Контакт
+      <input name="contact" placeholder="Email, телефон или Telegram">
+    </label>
+
+    <label>Название товара
+      <input name="product_name" required placeholder="Силиконовая форма для аэрогриля">
+    </label>
+
+    <label>Площадка
+      <select name="marketplace">
+        {% for m in marketplaces %}<option value="{{ m }}">{{ marketplace_labels.get(m, m) }}</option>{% endfor %}
+      </select>
+    </label>
+
+    <label>Артикул на площадке
+      <input name="marketplace_article" placeholder="Артикул Ozon: 1931921872">
+    </label>
+
+    <label>Ссылка на карточку товара
+      <input name="marketplace_url" placeholder="Ссылка на карточку товара">
+    </label>
+
+    <label>Цена
+      <input name="price" placeholder="например 990">
+    </label>
+
+    <label>Категория
+      <input name="category" placeholder="Кухонные принадлежности">
+    </label>
+
+    <label>Короткое описание товара
+      <textarea name="short_product_description" rows="4"
+        placeholder="Помогает готовить аккуратнее и проще убирать после готовки"></textarea>
+    </label>
+
+    <button type="submit">Далее: Фото товара &raquo;</button>
+  </form>
+</div>
+{% endblock %}

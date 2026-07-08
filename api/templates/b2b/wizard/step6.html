@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Шаг 6: Готовность{% endblock %}
+{% block content %}
+{% set current_step = 6 %}
+{% include "wizard/_stepper.html" %}
+
+<h1>Чеклист готовности</h1>
+
+{% if saved %}
+<div class="alert alert-success">Черновик сохранён.</div>
+{% endif %}
+
+{% if is_demo_mode %}
+<div class="alert alert-info">Будет создан тестовый план на 1 ролик.</div>
+{% endif %}
+
+<div class="card">
+  <ul class="checklist">
+    <li class="{{ 'done' if checklist.product_info_complete else '' }}"><span class="tick">{{ "✓" if checklist.product_info_complete else "" }}</span> Информация о товаре заполнена</li>
+    <li class="{{ 'done' if checklist.marketplace_article_or_link_present else '' }}"><span class="tick">{{ "✓" if checklist.marketplace_article_or_link_present else "" }}</span> Артикул или ссылка добавлены</li>
+    <li class="{{ 'done' if checklist.at_least_3_uploaded_references else '' }}"><span class="tick">{{ "✓" if checklist.at_least_3_uploaded_references else "" }}</span> Загружено минимум 3 фото товара</li>
+    <li class="{{ 'done' if checklist.at_least_1_uploaded_reference else '' }}"><span class="tick">{{ "✓" if checklist.at_least_1_uploaded_reference else "" }}</span> Фото товара загружены</li>
+    <li class="{{ 'done' if checklist.customer_positioning_present else '' }}"><span class="tick">{{ "✓" if checklist.customer_positioning_present else "" }}</span> Покупатель и проблема описаны</li>
+    <li class="{{ 'done' if checklist.product_intelligence_generated else '' }}"><span class="tick">{{ "✓" if checklist.product_intelligence_generated else "" }}</span> AI-анализ товара готов</li>
+    <li class="{{ 'done' if checklist.primary_problem_approved else '' }}"><span class="tick">{{ "✓" if checklist.primary_problem_approved else "" }}</span> Главная проблема подтверждена</li>
+    <li class="{{ 'done' if checklist.platforms_selected else '' }}"><span class="tick">{{ "✓" if checklist.platforms_selected else "" }}</span> Площадки выбраны</li>
+    <li class="{{ 'done' if checklist.package_duration_selected else '' }}"><span class="tick">{{ "✓" if checklist.package_duration_selected else "" }}</span> Период пакета выбран</li>
+  </ul>
+
+  {% if not checklist.at_least_1_uploaded_reference %}
+  <div class="alert alert-error">
+    Нужно загрузить хотя бы 1 фото товара, чтобы продолжить.
+    <br><a href="/b2b/seller/{{ product.product_id }}/step2">Загрузить фото товара</a>
+  </div>
+  {% elif checklist.uploaded_count < 3 %}
+  <div class="alert alert-warning">
+    Фото товара загружены. Можно продолжить, но для лучшего результата рекомендуем добавить
+    {{ recommended_refs }} фото товара с разных ракурсов.
+    <br><a href="/b2b/seller/{{ product.product_id }}/step2">Добавить ещё фото</a>
+  </div>
+  {% else %}
+  <div class="alert alert-success">Фото товара загружены. Этого достаточно для старта.</div>
+  {% endif %}
+
+  {% if intelligence and not intelligence.approved_by_owner %}
+  <div class="alert alert-info">
+    Перед генерацией проверьте, правильно ли AI понял главную проблему товара --
+    <a href="/b2b/seller/{{ product.product_id }}/step4">вернуться к шагу 4</a>.
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <form action="/b2b/seller/{{ product.product_id }}/step6/save-draft" method="post" style="display:inline">
+    <button type="submit" class="btn-secondary">Сохранить черновик</button>
+  </form>
+
+  {% set check_button_label = "Проверить будущий тестовый ролик" if is_demo_mode else "Проверить будущий контент-пакет" %}
+  {% if checklist.can_run_dry_run %}
+  <form action="/b2b/seller/{{ product.product_id }}/step6/dry-run" method="post" style="display:inline">
+    <button type="submit">{{ check_button_label }}</button>
+  </form>
+  <form action="/b2b/seller/{{ product.product_id }}/step6/create-package" method="post" style="display:inline">
+    <button type="submit" class="btn-orange">Собрать готовый ZIP с материалами</button>
+  </form>
+  {% else %}
+  <button type="button" disabled>{{ check_button_label }}</button>
+  <button type="button" disabled>Собрать готовый ZIP с материалами</button>
+  <p class="muted">Нужно загрузить хотя бы {{ min_refs }} фото товара.</p>
+  {% endif %}
+  <p class="hint">&laquo;{{ check_button_label }}&raquo; ничего не генерирует и не тратит
+     деньги -- это только план. &laquo;Собрать готовый ZIP с материалами&raquo; формирует архив с
+     планом и пояснениями, готовый для ручной публикации.</p>
+</div>
+<p><a href="/b2b/seller/{{ product.product_id }}/step5">&laquo; Назад</a></p>
+{% endblock %}

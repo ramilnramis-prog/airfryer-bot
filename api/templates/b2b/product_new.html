@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}New product{% endblock %}
+{% block content %}
+<h1>New product</h1>
+<form action="/b2b/products/new" method="post" enctype="multipart/form-data">
+  <label>Client name<input name="client_name" required></label>
+  <label>Client contact (email/телефон/telegram)<input name="contact"></label>
+  <label>Product name<input name="product_name" required></label>
+  <label>Marketplace
+    <select name="marketplace">
+      {% for m in marketplaces %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Marketplace article<input name="marketplace_article"></label>
+  <label>Marketplace URL<input name="marketplace_url"></label>
+  <label>Category<input name="category"></label>
+  <label>Target audience<textarea name="target_audience" rows="2"></textarea></label>
+  <label>Main pain<textarea name="main_pain" rows="2"></textarea></label>
+  <label>Product description<textarea name="product_description" rows="4"></textarea></label>
+
+  <h2>Customer and positioning (опционально)</h2>
+  <p class="muted">Эти поля помогают Product Intelligence Engine точнее определить проблему/аудиторию.
+     Если оставить пустыми -- движок всё равно построит гипотезы автоматически по названию/категории/описанию.</p>
+  <label>Who is this for (для кого этот товар)<textarea name="who_is_this_for" rows="2"></textarea></label>
+  <label>What problem does it usually solve (какую проблему обычно решает)
+    <textarea name="what_problem_does_it_usually_solve" rows="2"></textarea></label>
+  <label>Why people buy it (почему покупают)<textarea name="why_people_buy_it" rows="2"></textarea></label>
+  <label>Top 3 benefits (через запятую или с новой строки)<textarea name="top_3_benefits" rows="2"></textarea></label>
+  <label>Common questions (частые вопросы, через запятую)<textarea name="common_questions" rows="2"></textarea></label>
+  <label>What should NOT be claimed (что нельзя заявлять)
+    <textarea name="what_should_not_be_claimed" rows="2"></textarea></label>
+  <label>Tone preference (тон коммуникации)<input name="tone_preference" placeholder="например: дружелюбный, экспертный, с юмором"></label>
+
+  <label>Product reference images (front/top/side/detail/packaging photos)
+    <input type="file" name="reference_images" multiple accept="image/*">
+  </label>
+  <p class="muted">Загруженные фото попадут в references/ со статусом approved=false --
+     подтвердить их нужно будет на странице продукта (минимум 3 approved перед генерацией).</p>
+  <button type="submit">Create product</button>
+</form>
+{% endblock %}

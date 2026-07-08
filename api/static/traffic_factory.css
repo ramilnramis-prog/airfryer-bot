@@ -1,0 +1,285 @@
+/* Крутая внешняя реклама -- shared UI theme for B2B Traffic Factory pages
+   (public /traffic-factory/*, seller wizard /b2b/seller/*, admin /b2b/*).
+   Plain CSS, no build step -- server-rendered FastAPI/Jinja templates. */
+
+:root {
+  --tf-navy: #101828;
+  --tf-blue: #2563eb;
+  --tf-cyan: #06b6d4;
+  --tf-orange: #f97316;
+  --tf-bg: #f8fafc;
+  --tf-card: #ffffff;
+  --tf-muted: #667085;
+  --tf-border: #e5e7eb;
+  --tf-success: #16a34a;
+  --tf-warning: #f59e0b;
+  --tf-danger: #dc2626;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--tf-bg);
+  color: var(--tf-navy);
+  margin: 0;
+  padding: 0;
+  line-height: 1.55;
+}
+
+a { color: var(--tf-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1 { font-size: 28px; margin: 0 0 12px; color: var(--tf-navy); }
+h2 { font-size: 18px; margin: 0 0 12px; color: var(--tf-navy); }
+p { margin: 0 0 10px; }
+code {
+  background: #f1f5f9; border: 1px solid var(--tf-border); border-radius: 4px;
+  padding: 1px 6px; font-size: 12px;
+}
+
+/* -- header / nav ----------------------------------------------------- */
+
+.tf-header {
+  background: var(--tf-navy);
+  color: #fff;
+  padding: 16px 24px;
+}
+.tf-nav-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.tf-logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+}
+.tf-logo:hover { text-decoration: none; opacity: .9; }
+.tf-nav-links a {
+  color: #cbd5e1;
+  margin-left: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.tf-nav-links a:first-child { margin-left: 0; }
+.tf-nav-links a:hover { color: #fff; text-decoration: none; }
+
+/* -- layout ------------------------------------------------------------ */
+
+.tf-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.tf-footer {
+  border-top: 1px solid var(--tf-border);
+  margin-top: 48px;
+  padding: 24px 20px;
+  text-align: center;
+  color: var(--tf-muted);
+  font-size: 13px;
+}
+.tf-footer a { color: var(--tf-muted); }
+
+/* -- hero ---------------------------------------------------------------- */
+
+.hero { padding: 28px 0 32px; position: relative; }
+.hero h1 { font-size: 34px; max-width: 760px; }
+.hero p { font-size: 17px; color: var(--tf-muted); max-width: 640px; }
+.hero-actions { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+.hero-badges { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Soft radial glow behind the hero -- pure CSS, no images/JS */
+.hero-glow {
+  background:
+    radial-gradient(560px 280px at 12% 0%, rgba(37, 99, 235, .10), transparent 60%),
+    radial-gradient(480px 260px at 92% 10%, rgba(249, 115, 22, .10), transparent 60%);
+  border-radius: 16px;
+  padding: 32px 24px 36px;
+  margin: -8px -24px 8px;
+}
+@media (max-width: 760px) { .hero-glow { margin: -8px -14px 8px; padding: 24px 16px 28px; } }
+
+/* -- cards / grid --------------------------------------------------------- */
+
+.card {
+  background: var(--tf-card);
+  border: 1px solid var(--tf-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+.card-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+}
+.card-icon { font-size: 26px; line-height: 1; margin-bottom: 8px; }
+.grid .card { margin-bottom: 0; }
+
+.grid { display: grid; gap: 14px; margin-bottom: 20px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 760px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* -- buttons -------------------------------------------------------------- */
+
+button, .btn {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 26px;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  background: var(--tf-blue);
+  color: #fff;
+  margin-top: 14px;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, .15);
+  transition: background .15s ease, transform .05s ease;
+}
+.hero-actions button, .hero-actions .btn { font-size: 16px; padding: 15px 30px; }
+button:hover, .btn:hover { background: #1d4ed8; text-decoration: none; }
+button:active, .btn:active { transform: translateY(1px); }
+button:disabled {
+  background: var(--tf-border); color: var(--tf-muted); cursor: not-allowed;
+}
+.btn-secondary { background: #fff; color: var(--tf-navy); border: 1px solid var(--tf-border); }
+.btn-secondary:hover { background: var(--tf-bg); }
+.btn-orange { background: var(--tf-orange); }
+.btn-orange:hover { background: #ea580c; }
+
+/* -- forms ------------------------------------------------------------------ */
+
+label {
+  display: block; margin-top: 14px; font-size: 13px; font-weight: 600;
+  color: var(--tf-navy);
+}
+input, select, textarea {
+  width: 100%; max-width: 520px; padding: 10px 12px; margin-top: 6px;
+  background: #fff; color: var(--tf-navy); border: 1px solid var(--tf-border);
+  border-radius: 8px; font-size: 14px; font-family: inherit;
+}
+details {
+  margin-top: 16px; border: 1px solid var(--tf-border); border-radius: 8px;
+  padding: 10px 14px; background: var(--tf-bg);
+}
+details summary {
+  cursor: pointer; font-weight: 600; font-size: 13px; color: var(--tf-navy);
+}
+details[open] summary { margin-bottom: 8px; }
+
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--tf-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+.hint { font-size: 12px; color: var(--tf-muted); margin-top: 4px; }
+
+/* -- badges ------------------------------------------------------------------ */
+
+.status-badge, .badge {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; background: #eef2ff; color: var(--tf-blue);
+}
+.badge-success { background: #dcfce7; color: var(--tf-success); }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-muted { background: #f1f5f9; color: var(--tf-muted); }
+
+/* -- alerts -------------------------------------------------------------------- */
+
+.alert {
+  padding: 14px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;
+}
+.alert-error { background: #fef2f2; color: var(--tf-danger); border: 1px solid #fecaca; }
+.alert-success { background: #f0fdf4; color: var(--tf-success); border: 1px solid #bbf7d0; }
+.alert-info { background: #eff6ff; color: var(--tf-blue); border: 1px solid #bfdbfe; }
+.alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+/* -- tables --------------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+th, td {
+  text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--tf-border);
+  font-size: 13px;
+}
+th {
+  color: var(--tf-muted); font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.tf-table-wrap { overflow-x: auto; }
+
+.muted { color: var(--tf-muted); font-size: 13px; }
+
+/* -- stepper ---------------------------------------------------------------------- */
+
+.stepper { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.stepper .step {
+  flex: 1; min-width: 96px; text-align: center; padding: 10px 6px;
+  border-radius: 8px; background: #fff; border: 1px solid var(--tf-border);
+  font-size: 12px; color: var(--tf-muted); font-weight: 600;
+}
+.stepper .step.active { background: var(--tf-blue); color: #fff; border-color: var(--tf-blue); }
+.stepper .step.done { background: #eef2ff; color: var(--tf-blue); border-color: #c7d2fe; }
+
+/* -- upload blocks ------------------------------------------------------------------ */
+
+.upload-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 760px) { .upload-grid { grid-template-columns: 1fr; } }
+.upload-card {
+  border: 1.5px dashed var(--tf-border); border-radius: 10px; padding: 16px;
+  background: #fbfcfe; text-align: center;
+}
+.upload-card.filled { border-style: solid; border-color: var(--tf-cyan); background: #ecfeff; }
+.upload-card .upload-label { font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+.upload-card input[type=file] { max-width: 100%; font-size: 12px; padding: 6px; }
+
+/* -- checklist ------------------------------------------------------------------------ */
+
+.checklist { list-style: none; padding: 0; margin: 0; }
+.checklist li {
+  display: flex; align-items: center; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid var(--tf-border); font-size: 14px;
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist .tick {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 700;
+  background: var(--tf-border); color: #fff; flex-shrink: 0;
+}
+.checklist li.done .tick { background: var(--tf-success); }
+
+/* -- centered card (beta gate) ------------------------------------------------------------ */
+
+.center-card-wrap { display: flex; justify-content: center; padding: 24px 0; }
+.center-card { max-width: 440px; width: 100%; }
+
+/* -- sticky mobile CTA ------------------------------------------------------------------------- */
+
+.sticky-cta {
+  display: none;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: #fff; border-top: 1px solid var(--tf-border);
+  padding: 10px 14px; box-shadow: 0 -2px 8px rgba(16, 24, 40, .08);
+}
+.sticky-cta a, .sticky-cta button { width: 100%; margin: 0; text-align: center; }
+
+/* -- mobile ---------------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  h1 { font-size: 22px; }
+  .hero h1 { font-size: 26px; }
+  .tf-container { padding: 20px 14px 84px; }
+  .hero-actions { flex-direction: column; }
+  .hero-actions button, .hero-actions .btn { width: 100%; }
+  .sticky-cta { display: block; }
+}

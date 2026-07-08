@@ -194,9 +194,13 @@ class TestScene05FinalPromptIncludesContinuityBlock(unittest.TestCase):
         self.assertTrue(SCENE05_FINAL_PROMPT_PATH.is_file())
 
     def test_final_prompt_contains_continuity_language(self):
+        # scene-05 is now the C3 no-hands result shot: NO_HANDS_CONTINUITY_PROMPT
+        # (used instead of the shared continuity block for this scene_variant)
+        # deliberately drops "grey ribbed sweater sleeves" (a hands/sleeves
+        # line that would contradict a no-hands scene) -- see
+        # test_product_only_scene05_c3_continuity_fix.py for that check.
         text = load_text(SCENE05_FINAL_PROMPT_PATH)
-        for token in ("Cozy clean white home kitchen", "grey ribbed sweater",
-                     "9:16", "720", "1280"):
+        for token in ("Cozy clean white home kitchen", "9:16", "720", "1280"):
             self.assertIn(token, text)
 
     def test_final_prompt_built_from_same_planner_as_dry_run(self):
@@ -211,8 +215,12 @@ class TestScene05FinalPromptIncludesProductLockInstruction(unittest.TestCase):
     """8: scene-05 final prompt включает product lock instruction."""
 
     def test_final_prompt_has_product_lock_section(self):
+        # regenerated (scene-05 "product placement plate" refinement) --
+        # heading is now pipeline_product_lock_instruction, kept structurally
+        # separate from model_prompt (see test_product_only_scene_runner.py
+        # TestPlacementPlateRefinement for the full split coverage).
         text = load_text(SCENE05_FINAL_PROMPT_PATH)
-        self.assertIn("Product lock instruction", text)
+        self.assertIn("pipeline_product_lock_instruction", text)
         self.assertIn("real-product-v1", text)
 
     def test_final_prompt_has_pixel_faithful_instruction(self):
@@ -230,9 +238,12 @@ class TestScene05FinalPromptHasNoMandatoryImageRefs(unittest.TestCase):
         self.assertIn("Mandatory image refs: НЕТ", text)
 
     def test_final_prompt_explicitly_states_no_mandatory_refs(self):
+        # regenerated (Step 5 of the product-only-scene-runner task) from
+        # product_only_scene_runner.build_request_contract() -- wording
+        # updated accordingly, still asserts zero mandatory image refs.
         text = load_text(SCENE05_FINAL_PROMPT_PATH)
-        self.assertIn("appearance_image_refs", text)
-        self.assertIn("пустые", text)  # "все ... пустые" (может переноситься строкой в markdown)
+        self.assertIn("Mandatory image refs: НЕТ", text)
+        self.assertIn("reference_images: []", text)
 
     def test_scene05_dry_run_confirms_empty_refs(self):
         scene05 = load_json(SCENE05_DRY_RUN_PATH)
