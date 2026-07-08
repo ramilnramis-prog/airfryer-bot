@@ -38,7 +38,7 @@
       <select name="tone_preference">
         <option value="">-- не указано --</option>
         {% for t in tone_options %}
-        <option value="{{ t }}" {% if t == product.tone_preference %}selected{% endif %}>{{ t }}</option>
+        <option value="{{ t }}" {% if t == product.tone_preference %}selected{% endif %}>{{ tone_labels.get(t, t) }}</option>
         {% endfor %}
       </select>
     </label>

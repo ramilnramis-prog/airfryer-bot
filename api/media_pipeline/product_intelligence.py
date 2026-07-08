@@ -29,6 +29,15 @@ from . import b2b_storage as st
 
 POSITIONING_MODES = ("pain", "desire", "comfort", "status", "emotion")
 
+# Human-readable labels for seller-facing UI -- backend values unchanged.
+POSITIONING_MODE_LABELS = {
+    "pain": "Решение боли",
+    "desire": "Желание",
+    "comfort": "Удобство",
+    "status": "Статус",
+    "emotion": "Эмоция",
+}
+
 MANUAL_POSITIONING_FIELDS = (
     "who_is_this_for", "what_problem_does_it_usually_solve", "why_people_buy_it",
     "top_3_benefits", "use_cases", "common_questions", "objections",

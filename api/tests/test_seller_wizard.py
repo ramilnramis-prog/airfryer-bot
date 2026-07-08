@@ -120,7 +120,7 @@ class TestOnboardingFormFieldsExist(WizardWebTestCase):
         self.assertIn("platforms", r.text)
         self.assertIn("package_duration", r.text)
         self.assertIn("content_types", r.text)
-        self.assertIn("manual_upload_ready_kit", r.text)
+        self.assertIn("Готовый ZIP для ручной публикации", r.text)
 
 
 class TestProductBasicsSaved(WizardWebTestCase):

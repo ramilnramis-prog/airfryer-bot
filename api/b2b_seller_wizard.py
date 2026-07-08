@@ -44,6 +44,17 @@ REFERENCE_UPLOAD_SLOTS = (
     ("packaging_photo", "packaging", "Фото упаковки (если есть)"),
 )
 
+# STEP 3 tone_preference options -- human-readable labels, backend values unchanged.
+TONE_PREFERENCE_OPTIONS = ("calm", "emotional", "expert", "funny", "premium", "simple")
+TONE_PREFERENCE_LABELS = {
+    "calm": "Спокойный",
+    "emotional": "Эмоциональный",
+    "expert": "Экспертный",
+    "funny": "С юмором",
+    "premium": "Премиальный",
+    "simple": "Простой и понятный",
+}
+
 
 def _require_product(product_id: str):
     product = _find_product(product_id)
@@ -71,6 +82,7 @@ def _get_or_create_wizard_campaign(product: "st.Product", settings: dict) -> "st
 def step1_form(request: Request):
     return templates.TemplateResponse(request, "wizard/step1.html", {
         "marketplaces": st.PRODUCT_MARKETPLACES,
+        "marketplace_labels": st.PRODUCT_MARKETPLACE_LABELS,
     })
 
 
@@ -197,8 +209,8 @@ async def step2_submit(
 def step3_form(request: Request, product_id: str):
     product = _require_product(product_id)
     return templates.TemplateResponse(request, "wizard/step3.html", {
-        "product": product, "tone_options": ("calm", "emotional", "expert", "funny",
-                                             "premium", "simple"),
+        "product": product, "tone_options": TONE_PREFERENCE_OPTIONS,
+        "tone_labels": TONE_PREFERENCE_LABELS,
     })
 
 
@@ -262,6 +274,7 @@ def step4_form(request: Request, product_id: str):
     return templates.TemplateResponse(request, "wizard/step4.html", {
         "product": product, "intelligence": envelope,
         "positioning_modes": pi.POSITIONING_MODES,
+        "positioning_mode_labels": pi.POSITIONING_MODE_LABELS,
     })
 
 
@@ -321,7 +334,10 @@ def step5_form(request: Request, product_id: str):
     settings = intake.get("content_package_settings", {})
     return templates.TemplateResponse(request, "wizard/step5.html", {
         "product": product, "platforms": st.CAMPAIGN_PLATFORMS,
-        "durations": si.PACKAGE_DURATIONS, "content_types": si.CONTENT_TYPES,
+        "platform_labels": st.CAMPAIGN_PLATFORM_LABELS,
+        "durations": si.PACKAGE_DURATIONS, "duration_labels": si.PACKAGE_DURATION_LABELS,
+        "content_types": si.CONTENT_TYPES, "content_type_labels": si.CONTENT_TYPE_LABELS,
+        "manual_or_autopost_label": si.MANUAL_OR_AUTOPOST_LABELS["manual_upload_ready_kit"],
         "settings": settings,
     })
 

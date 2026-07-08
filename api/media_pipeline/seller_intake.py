@@ -28,6 +28,25 @@ PACKAGE_DURATIONS = ("7_days", "14_days", "30_days")
 MANUAL_OR_AUTOPOST_OPTIONS = ("manual_upload_ready_kit",)
 MIN_UPLOADED_REFERENCES = 3
 
+# Human-readable labels for seller-facing UI -- backend values unchanged.
+CONTENT_TYPE_LABELS = {
+    "short_videos": "Короткие видео",
+    "platform_descriptions": "Описания под площадки",
+    "dzen_articles": "Статьи для Дзена",
+    "article_images": "Картинки к статьям",
+    "publishing_plan": "План публикаций",
+    "performance_tracker": "Трекер результатов",
+    "delivery_zip": "ZIP с материалами",
+}
+PACKAGE_DURATION_LABELS = {
+    "7_days": "7 дней",
+    "14_days": "14 дней",
+    "30_days": "30 дней",
+}
+MANUAL_OR_AUTOPOST_LABELS = {
+    "manual_upload_ready_kit": "Готовый ZIP для ручной публикации",
+}
+
 READINESS_CHECKLIST_ITEMS = (
     "product_info_complete",
     "marketplace_article_or_link_present",

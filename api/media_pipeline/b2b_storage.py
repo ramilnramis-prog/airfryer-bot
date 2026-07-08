@@ -39,6 +39,17 @@ class Client:
 
 PRODUCT_MARKETPLACES = ("ozon", "wildberries", "yandex_market", "own_site", "other")
 
+# Human-readable labels for seller-facing UI (api/templates/b2b/wizard/*.html,
+# api/templates/b2b/product_new.html) -- backend values above are never
+# renamed, only how they're displayed to a non-technical seller changes.
+PRODUCT_MARKETPLACE_LABELS = {
+    "ozon": "OZON",
+    "wildberries": "Wildberries",
+    "yandex_market": "Яндекс Маркет",
+    "own_site": "Свой сайт",
+    "other": "Другое",
+}
+
 
 @dataclass
 class Product:
@@ -84,6 +95,15 @@ CAMPAIGN_GOALS = ("external_traffic", "marketplace_sales", "awareness", "content
 CAMPAIGN_PLATFORMS = ("youtube_shorts", "instagram_reels", "tiktok", "vk_clips", "dzen")
 CAMPAIGN_STATUSES = ("draft", "ready_for_generation", "generating",
                     "ready_for_owner_review", "delivered")
+
+# Human-readable labels for seller-facing UI -- backend values unchanged.
+CAMPAIGN_PLATFORM_LABELS = {
+    "youtube_shorts": "YouTube Shorts",
+    "instagram_reels": "Instagram Reels",
+    "tiktok": "TikTok",
+    "vk_clips": "VK Клипы",
+    "dzen": "Дзен",
+}
 
 
 @dataclass

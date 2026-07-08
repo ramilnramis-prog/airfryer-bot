@@ -12,14 +12,14 @@
     {% for p in platforms %}
     <label style="display:inline-block;margin-right:16px;font-weight:400;">
       <input type="checkbox" name="platforms" value="{{ p }}"
-        {% if p in settings.get('platforms', []) %}checked{% endif %} style="width:auto;"> {{ p }}
+        {% if p in settings.get('platforms', []) %}checked{% endif %} style="width:auto;"> {{ platform_labels.get(p, p) }}
     </label>
     {% endfor %}
 
     <label>Длительность пакета
       <select name="package_duration">
         {% for d in durations %}
-        <option value="{{ d }}" {% if d == settings.get('package_duration') %}selected{% endif %}>{{ d }}</option>
+        <option value="{{ d }}" {% if d == settings.get('package_duration') %}selected{% endif %}>{{ duration_labels.get(d, d) }}</option>
         {% endfor %}
       </select>
     </label>
@@ -28,13 +28,12 @@
     {% for c in content_types %}
     <label style="display:inline-block;margin-right:16px;font-weight:400;">
       <input type="checkbox" name="content_types" value="{{ c }}"
-        {% if c in settings.get('content_types', []) %}checked{% endif %} style="width:auto;"> {{ c }}
+        {% if c in settings.get('content_types', []) %}checked{% endif %} style="width:auto;"> {{ content_type_labels.get(c, c) }}
     </label>
     {% endfor %}
 
     <div class="alert alert-info">
-      Автопостинг будет доступен позже. Сейчас система готовит готовый ZIP с материалами для
-      ручной публикации (manual_upload_ready_kit).
+      Автопостинг будет доступен позже. Сейчас система готовит &laquo;{{ manual_or_autopost_label }}&raquo;.
     </div>
 
     <button type="submit">Далее: Чеклист готовности &raquo;</button>

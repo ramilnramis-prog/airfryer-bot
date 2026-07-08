@@ -68,7 +68,7 @@
     <label>Mark product as
       <select name="mode" onchange="this.form.submit()">
         {% for m in positioning_modes %}
-        <option value="{{ m }}" {% if m == r.positioning_mode %}selected{% endif %}>{{ m }}</option>
+        <option value="{{ m }}" {% if m == r.positioning_mode %}selected{% endif %}>{{ positioning_mode_labels.get(m, m) }}</option>
         {% endfor %}
       </select>
     </label>

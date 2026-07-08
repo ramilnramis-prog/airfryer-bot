@@ -10,12 +10,11 @@
 <div class="card">
   <form action="/b2b/seller/start" method="post">
     <label>Ваше имя / название компании
-      <input name="client_name" required>
+      <input name="client_name" required placeholder="Например: ИП Иванов / KitchenMarket">
     </label>
-    <p class="hint">client_name</p>
 
-    <label>Контакт (email/телефон/telegram)
-      <input name="contact">
+    <label>Контакт
+      <input name="contact" placeholder="Email, телефон или Telegram">
     </label>
 
     <label>Название товара
@@ -24,7 +23,7 @@
 
     <label>Площадка
       <select name="marketplace">
-        {% for m in marketplaces %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+        {% for m in marketplaces %}<option value="{{ m }}">{{ marketplace_labels.get(m, m) }}</option>{% endfor %}
       </select>
     </label>
 
