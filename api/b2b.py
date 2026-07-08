@@ -24,6 +24,7 @@ from .media_pipeline import b2b_reference_policy as pol
 from .media_pipeline import b2b_seed as seed
 from .media_pipeline.b2b_campaign_contract import write_campaign_dry_run
 from .media_pipeline.b2b_delivery_kit import build_delivery_kit_zip
+from .media_pipeline.b2b_demo_video import B2BDemoVideoError, write_demo_video_dry_run
 from .media_pipeline import product_intelligence as pi
 from .media_pipeline import seller_intake as si
 
@@ -331,6 +332,20 @@ def campaign_detail(request: Request, campaign_id: str):
         package_mode = intake.get("content_package_settings", {}).get("package_duration")
     is_demo_mode = package_mode == si.DEMO_PACKAGE_DURATION
 
+    # "Тестовый ролик" block state (demo_1_video only) -- not_started /
+    # dry_run_ready / generated, purely derived from what's on disk so it
+    # never drifts from what the dry-run/apply CLI actually produced.
+    demo_video_dir = gen_dir / "demo-video"
+    demo_video_dry_run_path = demo_video_dir / "demo-video-dry-run.json"
+    demo_video_mp4_path = demo_video_dir / "demo-video-test.mp4"
+    demo_video_zip_path = demo_video_dir / "DEMO-ONE-VIDEO-KIT.zip"
+    if demo_video_mp4_path.is_file():
+        demo_video_state = "generated"
+    elif demo_video_dry_run_path.is_file():
+        demo_video_state = "dry_run_ready"
+    else:
+        demo_video_state = "not_started"
+
     return templates.TemplateResponse(request, "campaign_detail.html", {
         "campaign": campaign, "product": product, "generated_dir": str(gen_dir),
         "dry_run_exists": dry_run_path.is_file(),
@@ -343,6 +358,8 @@ def campaign_detail(request: Request, campaign_id: str):
         "min_refs": pol.MIN_SELLER_FLOW_REFERENCES,
         "intelligence": intelligence,
         "is_demo_mode": is_demo_mode,
+        "demo_video_state": demo_video_state,
+        "demo_video_zip_exists": demo_video_zip_path.is_file(),
     })
 
 
@@ -357,6 +374,36 @@ def run_campaign_dry_run(campaign_id: str):
     except pol.B2BReferencePolicyError as e:
         raise HTTPException(422, f"{e.code}: {e}")
     return RedirectResponse(url=f"/b2b/campaigns/{campaign_id}", status_code=303)
+
+
+@router.post("/campaigns/{campaign_id}/demo-video/dry-run")
+def run_demo_video_dry_run(campaign_id: str):
+    """TASK 7: 'Подготовить план тестового ролика' -- planning only, 0
+    network calls; see api.media_pipeline.b2b_demo_video. Real generation
+    (--apply) is CLI-only at this step, not exposed as a web route."""
+    campaign = _find_campaign(campaign_id)
+    if not campaign:
+        raise HTTPException(404, "campaign not found")
+    try:
+        write_demo_video_dry_run(campaign.client_id, campaign.product_id, campaign.campaign_id,
+                                 REPO_ROOT)
+    except (pol.B2BReferencePolicyError, B2BDemoVideoError) as e:
+        raise HTTPException(422, f"{e.code}: {e}")
+    return RedirectResponse(url=f"/b2b/campaigns/{campaign_id}", status_code=303)
+
+
+@router.get("/campaigns/{campaign_id}/demo-video/kit.zip")
+def download_demo_video_kit(campaign_id: str):
+    campaign = _find_campaign(campaign_id)
+    if not campaign:
+        raise HTTPException(404, "campaign not found")
+    gen_dir = st.campaign_generated_dir(campaign.client_id, campaign.product_id,
+                                        campaign.campaign_id, REPO_ROOT)
+    zip_path = gen_dir / "demo-video" / "DEMO-ONE-VIDEO-KIT.zip"
+    if not zip_path.is_file():
+        raise HTTPException(404, "demo video kit not built yet")
+    return FileResponse(str(zip_path), media_type="application/zip",
+                        filename=f"{campaign_id}-DEMO-ONE-VIDEO-KIT.zip")
 
 
 @router.post("/campaigns/{campaign_id}/build-delivery-kit")

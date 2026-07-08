@@ -89,10 +89,27 @@
 
 {% if is_demo_mode %}
 <div class="card">
-  <h2>Следующий шаг: сгенерировать 1 тестовый ролик</h2>
-  <p class="muted">После проверки плана владелец сервиса может запустить генерацию одного ролика.
-     Это дешевле и быстрее, чем сразу делать пакет на 7/14/30 дней.</p>
-  <button type="button" disabled>Генерация тестового ролика будет добавлена следующим шагом</button>
+  <h2>Тестовый ролик</h2>
+  {% if demo_video_state == "generated" %}
+  <p><span class="badge badge-success">готово</span> Тестовый ролик готов.</p>
+  {% elif demo_video_state == "dry_run_ready" %}
+  <p><span class="badge badge-success">план готов</span> План тестового ролика готов.</p>
+  {% else %}
+  <p class="muted">Тестовый ролик ещё не создан.</p>
+  {% endif %}
+
+  <form action="/b2b/campaigns/{{ campaign.campaign_id }}/demo-video/dry-run" method="post" style="display:inline">
+    <button type="submit">Подготовить план тестового ролика</button>
+  </form>
+  <button type="button" disabled>Сгенерировать тестовый ролик</button>
+  {% if demo_video_zip_exists %}
+  <a href="/b2b/campaigns/{{ campaign.campaign_id }}/demo-video/kit.zip"><button type="button" class="btn-orange">Скачать тестовый ZIP</button></a>
+  {% else %}
+  <button type="button" disabled>Скачать тестовый ZIP</button>
+  {% endif %}
+  <p class="hint">После проверки плана владелец сервиса может запустить генерацию одного ролика --
+     это дешевле и быстрее, чем сразу делать пакет на 7/14/30 дней. Реальная генерация
+     запускается владельцем сервиса.</p>
 </div>
 {% endif %}
 

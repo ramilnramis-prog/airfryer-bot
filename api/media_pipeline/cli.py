@@ -76,6 +76,13 @@
                                         client/product/campaign
   b2b-build-delivery-kit --client C --product P --campaign K -- собирает
                                         delivery kit + DELIVERY-KIT.zip
+  b2b-generate-demo-video --client C --product P --campaign K -- 'Демо -- 1
+                                        тестовый ролик': dry-run по умолчанию
+                                        (0 вызовов OpenAI/Higgsfield), --apply
+                                        для ОДНОГО реального image edit call
+                                        (hard cap $0.50, retries=0) + локальный
+                                        MP4 + upload-ready ZIP; требует
+                                        package_mode=demo_1_video
   b2b-preflight --expected-branch BRANCH — branch safety guard: текущая
                                         ветка/git status/последний коммит,
                                         exit 2 при несовпадении ветки
@@ -112,6 +119,8 @@ from .b2b_campaign_contract import write_campaign_dry_run
 from .b2b_reference_policy import B2BReferencePolicyError
 from .b2b_seed import seed_demo
 from .b2b_delivery_kit import build_delivery_kit_zip
+from .b2b_demo_video import (B2BDemoVideoError, run_demo_video_generation,
+                             write_demo_video_dry_run)
 from .vision_provider import (VisionEvaluationRequest, VisionSchemaError,
                               needs_food_second_pass, needs_handle_second_pass,
                               reconcile_food_counts, reconcile_handle_geometry,
@@ -551,6 +560,23 @@ def cmd_b2b_build_delivery_kit(args) -> int:
     return _emit(result)
 
 
+def cmd_b2b_generate_demo_video(args) -> int:
+    """B2B seller traffic factory: 'Демо -- 1 тестовый ролик' one-video
+    generation pipeline. Dry-run по умолчанию (0 сетевых вызовов, работает
+    без OPENAI_API_KEY) -- пишет demo-video-dry-run.json/.md. --apply
+    делает РОВНО один OpenAI image edit call (max_image_calls=1, retries=0,
+    hard_cap_usd=0.50), затем локальный MP4 render + upload-ready kit +
+    ZIP; никогда не вызывает Higgsfield, никогда не постит автоматически.
+    Требует package_mode=demo_1_video (выбрано на шаге 5 визарда) и хотя бы
+    1 загруженный product reference; см. api.media_pipeline.b2b_demo_video."""
+    if args.apply:
+        result = run_demo_video_generation(args.client, args.product, args.campaign,
+                                           str(ROOT), apply=True)
+    else:
+        result = write_demo_video_dry_run(args.client, args.product, args.campaign, str(ROOT))
+    return _emit(result)
+
+
 def cmd_b2b_preflight(args) -> int:
     """Branch safety guard: показывает текущую git-ветку, git status --short
     и последний коммит; предупреждает/ошибается (exit 2), если текущая ветка
@@ -768,6 +794,23 @@ def main(argv=None) -> int:
     p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
     p.set_defaults(fn=cmd_b2b_build_delivery_kit)
 
+    p = sub.add_parser("b2b-generate-demo-video",
+                       help="B2B seller traffic factory: 'Демо -- 1 тестовый ролик' -- "
+                            "dry-run по умолчанию (0 вызовов OpenAI/Higgsfield); --apply "
+                            "делает РОВНО один OpenAI image edit call (hard cap $0.50, "
+                            "retries=0) + локальный MP4 render + upload-ready ZIP; "
+                            "требует package_mode=demo_1_video")
+    p.add_argument("--client", required=True, help="client_id, например demo-ozon-airfryer")
+    p.add_argument("--product", required=True, help="product_id, например airfryer-silicone-form")
+    p.add_argument("--campaign", required=True, help="campaign_id, например coating-protect-2026-07")
+    p.add_argument("--dry-run", action="store_true",
+                   help="явный dry-run (это и так поведение по умолчанию без --apply)")
+    p.add_argument("--apply", action="store_true",
+                   help="РОВНО один реальный вызов OpenAI (нужен OPENAI_API_KEY, "
+                        "hard cap $0.50, retries=0, max_calls=1); без ключа -- честный "
+                        "no_api_key отчёт, без падения")
+    p.set_defaults(fn=cmd_b2b_generate_demo_video)
+
     p = sub.add_parser("b2b-preflight",
                        help="Branch safety guard: текущая ветка/git status/последний коммит; "
                             "exit 2 если ветка не совпадает с --expected-branch")
@@ -778,7 +821,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.fn(args)
-    except B2BReferencePolicyError as e:
+    except (B2BReferencePolicyError, B2BDemoVideoError) as e:
         return _emit({"gate_error": str(e), "code": e.code}, 2)
     except (ProductOnlyPolicyError, ProductOnlyRunnerError, ProductReferenceOnlyRunnerError,
             ProductReferenceOnlyCampaignError) as e:
